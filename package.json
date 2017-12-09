@@ -11,14 +11,45 @@
         "Other"
     ],
     "activationEvents": [
-        "onCommand:extension.sayHello"
+        "onCommand:extension.plan",
+        "onCommand:extension.init",
+        "onCommand:extension.visualize",
+        "onCommand:extension.execTest",
+        "onCommand:extension.apply",
+        "onCommand:extension.lint"
     ],
     "main": "./out/extension",
     "contributes": {
         "commands": [
             {
-                "command": "extension.sayHello",
-                "title": "Hello World"
+                "command": "extension.plan",
+                "title": "Terraform Plan",
+                "category": "Azure"
+            },
+            {
+                "command": "extension.visualize",
+                "title": "Terraform Visualize",
+                "category": "Azure"
+            },
+            {
+                "command": "extension.init",
+                "title": "Terraform Init",
+                "category": "Azure"                
+            },
+            {
+                "command": "extension.execTest",
+                "title": "Terraform - Execute test",
+                "category": "Azure"                
+            },
+            {
+                "command": "extension.apply",
+                "title": "Terraform Apply",
+                "category": "Azure"                
+            },
+            {
+                "command": "extension.lint",
+                "title": "Terraform Lint Module",
+                "category": "Azure"                
             }
         ]
     },
@@ -34,5 +65,9 @@
         "vscode": "^1.1.6",
         "@types/node": "^7.0.43",
         "@types/mocha": "^2.2.42"
-    }
+    },
+    "extensionDependencies": [
+        "ms-vscode.azure-account",
+        "mauve.terraform"
+    ]
 }
