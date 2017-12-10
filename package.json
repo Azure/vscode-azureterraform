@@ -11,16 +11,48 @@
         "Other"
     ],
     "activationEvents": [
-        "onCommand:extension.sayHello"
+        "onCommand:vscode-terraform-azure.init",
+        "onCommand:vscode-terraform-azure.plan",
+        "onCommand:vscode-terraform-azure.apply",
+        "onCommand:vscode-terraform-azure.validate",
+        "onCommand:vscode-terraform-azure.refresh",
+        "onCommand:vscode-terraform-azure.destroy",
+        "onCommand:tf.apply"
     ],
     "main": "./out/extension",
     "contributes": {
-        "commands": [
-            {
-                "command": "extension.sayHello",
-                "title": "Hello World"
-            }
-        ]
+            "commands": [
+                {
+                    "command": "vscode-terraform-azure.plan",
+                    "title": "plan",
+                    "category": "Terraform"
+                },
+                { 
+                    "command": "vscode-terraform-azure.apply",
+                    "title": "apply",
+                    "category": "Terraform"
+                },
+                { 
+                    "command": "vscode-terraform-azure.init",
+                    "title": "init",
+                    "category": "Terraform"
+                },
+                { 
+                    "command": "vscode-terraform-azure.validate",
+                    "title": "validate",
+                    "category": "Terraform"
+                },
+                { 
+                    "command": "vscode-terraform-azure.refresh",
+                    "title": "refresh",
+                    "category": "Terraform"
+                },
+                { 
+                    "command": "vscode-terraform-azure.destroy",
+                    "title": "destroy",
+                    "category": "Terraform"
+                }
+            ]
     },
     "scripts": {
         "vscode:prepublish": "npm run compile",
