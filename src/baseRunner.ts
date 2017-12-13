@@ -49,16 +49,18 @@ export abstract class BaseRunner {
     //         })
     // }
 
-    public runTerraform(): void {
+    public runTerraform(TFCommand: string): void {
         var TFConfiguration = vscode.window.activeTextEditor ? vscode.window.activeTextEditor.document.fileName : null;
+        // var TFFolder = vscode.workspace.getWorkspaceFolder(vscode.Uri.file()
+        //var TFFiles = vscode.workspace.findFiles('*')
         this._outputChannel.append("Starting Cloudshell - Terraform")
         this._outputChannel.show();
 
-        return this.runTerraformInternal(TFConfiguration);
+        return this.runTerraformInternal(TFConfiguration, TFCommand);
     
     }
 
 
     //protected abstract runPlaybookInternal(playbook: string);
-    protected abstract runTerraformInternal(TFConfiguration: string);
+    protected abstract runTerraformInternal(TFConfiguration: string, TFCommand: string);
 }

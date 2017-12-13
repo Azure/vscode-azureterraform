@@ -40,16 +40,16 @@ export class CloudShellRunner extends BaseRunner {
     //         });
     // }
 
-    protected runTerraformInternal(TFconfiguration: string): void {
+    protected runTerraformInternal(TFconfiguration: string, TFCommand: string): void {
         //const installedExtension: any[] = vscode.extensions.all;
 
         let azureAccount: AzureAccount;
-        this.startCloudShell(TFconfiguration);
+        this.startCloudShell(TFconfiguration, TFCommand);
         return;
     }
 
 
-    protected startCloudShell(TFconfiguration: string): void {
+    protected startCloudShell(TFconfiguration: string, TFCommand: string): void {
         const msgOption: vscode.MessageOptions = { modal: false };
         const msgItem: vscode.MessageItem = { title: 'Confirm' };
 
@@ -69,7 +69,7 @@ export class CloudShellRunner extends BaseRunner {
                                     fsExtra.removeSync(tempFile);
 
                                     // terminal.sendText('export ' + Constants.UserAgentName + '=' + utilities.getUserAgent());
-                                    terminal.sendText('terraform init'); // + path.basename(TFconfiguration));
+                                    terminal.sendText('terraform ' + TFCommand ); // + path.basename(TFconfiguration));
                                     terminal.show();
 
                                     count = 0;

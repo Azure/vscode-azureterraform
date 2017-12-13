@@ -108,7 +108,7 @@ export function openCloudConsole(api: AzureAccount, os: OS, files, outputChannel
 				for (let file of files) {
                     const data = fsExtra.readFileSync(file, { encoding: 'utf8' });
                     var newdata = data.replace(/"/g, '\\"');
-					outputChannel.append(Constants.LineSeperator + '\nUpload playbook to CloudShell: ' + file + ' as ' + path.basename(file) + '\n');
+					outputChannel.append(Constants.LineSeperator + '\nUpload Terraform files to CloudShell: ' + file + ' as ' + path.basename(file) + '\n');
 					response.send('echo -e "' + newdata + '" > ' + path.basename(file) + ' \n');
 				}
 				break;
