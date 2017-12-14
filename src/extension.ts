@@ -48,7 +48,6 @@ export function activate(ctx: vscode.ExtensionContext) {
         activeShell.runTerraformCmd("terraform init");
     }));
 
-
     ctx.subscriptions.push(vscode.commands.registerCommand('vscode-terraform-azure.plan', () =>{
         activeShell.runTerraformCmd("plan");
     }));
@@ -80,11 +79,7 @@ export function activate(ctx: vscode.ExtensionContext) {
     else {
 
     }
-
-
-
-    
-
+  
    // "tf-azure.terminal": "integrated"
 
     var dir = vscode.workspace.workspaceFolders[0].uri.fsPath;
