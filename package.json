@@ -18,18 +18,17 @@
         "onCommand:vscode-terraform-azure.validate",
         "onCommand:vscode-terraform-azure.refresh",
         "onCommand:vscode-terraform-azure.destroy",
-        "onCommand:vscode-terraform-azure.cloudshell",
-        "onCommand:tf.apply"
+        "onCommand:vscode-terraform-azure.cloudshell"
     ],
     "main": "./out/extension",
     "contributes": {
-        "configuration":{
+        "configuration": {
             "title": "Terraform Azure",
             "properties": {
                 "tf-azure.terminal": {
                     "type": "string",
                     "default": "integrated",
-                    "description": "Type of terminal to use to run the Terraform commands. Can be `cloudshell` or `integrated`"
+                    "description": "Specifies terminal used to run Terraform commands. Valid settings are `cloudshell` or `integrated`"
                 }
             }
         },
