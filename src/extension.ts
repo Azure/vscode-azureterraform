@@ -3,37 +3,98 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 
+import { extensions, commands, Disposable, window } from 'vscode';
+import { AzureAccount }from './azure-account.api';
+import { AzureServiceClient } from 'ms-rest-azure';
+import { CloudShell } from './cloudShell';
+import { IntegratedShell } from './integratedShell';
+import { BaseShell } from './baseShell';
+
+export var CSTerminal: boolean;
+
+function getShell(outputChannel: vscode.OutputChannel) : BaseShell
+{
+    var activeShell = null;
+    if (CSTerminal) {
+        activeShell = new CloudShell(outputChannel);
+    }
+    else {
+        activeShell = new IntegratedShell(outputChannel);
+    }
+
+    return activeShell;
+}
+
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
-export function activate(context: vscode.ExtensionContext) {
+export function activate(ctx: vscode.ExtensionContext) {
+
+    console.log('Loading extension "vscode-terraform-azure"');
+    CSTerminal = (vscode.workspace.getConfiguration('tf-azure').get('terminal') == "cloudshell");
+
+
+    var outputChannel = vscode.window.createOutputChannel("VSCode extension for Azure Terraform");    
+    // var cloudShellRunner = new CloudShellRunner(outputChannel);
+    // var terminalRunner = new IntegratedTerminalRunner(outputChannel);
+    let activeShell = getShell(outputChannel);
+
+
 
     // Use the console to output diagnostic information (console.log) and errors (console.error)
-    // This line of code will only be executed once when your extension is activated
-    console.log('Congratulations, your extension "vscode-terraform-azure" is now active!');
+    // This line of code will only be executed once when your extension is 
+    const azureAccount: AzureAccount = vscode.extensions.getExtension<AzureAccount>('ms-vscode.azure-account')!.exports;
 
-    // The command has been defined in the package.json file
-    // Now provide the implementation of the command with  registerCommand
-    // The commandId parameter must match the command field in package.json
-    context.subscriptions.push(
-        vscode.commands.registerCommand('extension.plan',() => {
-            vscode.window.showInformationMessage('Hello tf.plan');
-        }),
-        vscode.commands.registerCommand('extension.init',() => {
-            vscode.window.showInformationMessage('Hello tf.init');
-        }),
-        vscode.commands.registerCommand('extension.visualize',() => {
-            vscode.window.showInformationMessage('Hello tf.visualize');
-        }),
-        vscode.commands.registerCommand('extension.execTest',() => {
-            vscode.window.showInformationMessage('Hello tf.execTest');
-        }),
-        vscode.commands.registerCommand('extension.apply',() => {
-            vscode.window.showInformationMessage('Hello tf.apply');
-        }),
-        vscode.commands.registerCommand('extension.lint',() => {
-            vscode.window.showInformationMessage('Hello tf.lint');
-        })                                
-    );
+    ctx.subscriptions.push(vscode.commands.registerCommand('vscode-terraform-azure.init', () => {
+        activeShell.runTerraformCmd("terraform init");
+    }));
+
+    ctx.subscriptions.push(vscode.commands.registerCommand('vscode-terraform-azure.plan', () =>{
+        activeShell.runTerraformCmd("plan");
+    }));
+
+    ctx.subscriptions.push(vscode.commands.registerCommand('vscode-terraform-azure.apply', () => {
+        activeShell.runTerraformCmd("apply");
+    }));
+    
+    ctx.subscriptions.push(vscode.commands.registerCommand('vscode-terraform-azure.destroy', () => {
+        activeShell.runTerraformCmd("destroy");
+    }));
+    
+    ctx.subscriptions.push(vscode.commands.registerCommand('vscode-terraform-azure.refresh', () => {
+        activeShell.runTerraformCmd("refresh");
+    }));
+    
+    ctx.subscriptions.push(vscode.commands.registerCommand('vscode-terraform-azure.validate', () => {
+        activeShell.runTerraformCmd("validate");
+    }));
+
+    if (!CSTerminal) {
+        ctx.subscriptions.push(vscode.commands.registerCommand('vscode-terraform-azure.visualize', () => {
+            activeShell.runTerraformCmd("visualize")
+        }));
+        ctx.subscriptions.push(vscode.commands.registerCommand('vscode-terraform-azure.execTest', () =>{
+            //TODO
+        }));
+    }
+    else {
+
+    }
+  
+   // "tf-azure.terminal": "integrated"
+
+    var dir = vscode.workspace.workspaceFolders[0].uri.fsPath;
+//     = vscode.workspace.onDidChangeTextDocument
+    // let subscriptions: Disposable[] = [];
+    // vscode.window.
+
+}
+
+export async function TFLogin(api: AzureAccount){
+    console.log('entering TFLogin')
+            if (!(await api.waitForLogin())){
+                return commands.executeCommand('azure-account.askForLogin');
+            }
+    console.log('done TFLogin')
 }
 
 // this method is called when your extension is deactivated

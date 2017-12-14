@@ -7,49 +7,66 @@
     "engines": {
         "vscode": "^1.18.0"
     },
+    "preview": true,
     "categories": [
         "Other"
     ],
     "activationEvents": [
-        "onCommand:extension.plan",
-        "onCommand:extension.init",
-        "onCommand:extension.visualize",
-        "onCommand:extension.execTest",
-        "onCommand:extension.apply",
-        "onCommand:extension.lint"
+        "onCommand:vscode-terraform-azure.init",
+        "onCommand:vscode-terraform-azure.plan",
+        "onCommand:vscode-terraform-azure.apply",
+        "onCommand:vscode-terraform-azure.validate",
+        "onCommand:vscode-terraform-azure.refresh",
+        "onCommand:vscode-terraform-azure.destroy",
+        "onCommand:vscode-terraform-azure.cloudshell"
     ],
     "main": "./out/extension",
     "contributes": {
+        "configuration": {
+            "title": "Terraform Azure",
+            "properties": {
+                "tf-azure.terminal": {
+                    "type": "string",
+                    "default": "integrated",
+                    "description": "Specifies terminal used to run Terraform commands. Valid settings are `cloudshell` or `integrated`"
+                }
+            }
+        },
         "commands": [
             {
-                "command": "extension.plan",
-                "title": "Terraform Plan",
-                "category": "Azure"
+                "command": "vscode-terraform-azure.plan",
+                "title": "plan",
+                "category": "Terraform"
             },
             {
-                "command": "extension.visualize",
-                "title": "Terraform Visualize",
-                "category": "Azure"
+                "command": "vscode-terraform-azure.apply",
+                "title": "apply",
+                "category": "Terraform"
             },
             {
-                "command": "extension.init",
-                "title": "Terraform Init",
-                "category": "Azure"                
+                "command": "vscode-terraform-azure.init",
+                "title": "init",
+                "category": "Terraform"
             },
             {
-                "command": "extension.execTest",
-                "title": "Terraform - Execute test",
-                "category": "Azure"                
+                "command": "vscode-terraform-azure.validate",
+                "title": "validate",
+                "category": "Terraform"
             },
             {
-                "command": "extension.apply",
-                "title": "Terraform Apply",
-                "category": "Azure"                
+                "command": "vscode-terraform-azure.refresh",
+                "title": "refresh",
+                "category": "Terraform"
             },
             {
-                "command": "extension.lint",
-                "title": "Terraform Lint Module",
-                "category": "Azure"                
+                "command": "vscode-terraform-azure.destroy",
+                "title": "destroy",
+                "category": "Terraform"
+            },
+            {
+                "command": "vscode-terraform-azure.cloudshell",
+                "title": "cloudshell",
+                "category": "Terraform"
             }
         ]
     },
@@ -64,10 +81,19 @@
         "typescript": "^2.6.1",
         "vscode": "^1.1.6",
         "@types/node": "^7.0.43",
-        "@types/mocha": "^2.2.42"
+        "@types/mocha": "^2.2.42",
+        "@types/keytar": "^4.0.1"
+    },
+    "dependencies": {
+        "azure-arm-resource": "^2.0.0-preview",
+        "ms-rest-azure": "^2.2.3",
+        "vscode-nls": "2.0.2",
+        "ws": "3.1.0",
+        "request-promise": "4.2.1",
+        "fs-extra": "^4.0.2",
+        "opn": "5.1.0"
     },
     "extensionDependencies": [
-        "ms-vscode.azure-account",
-        "mauve.terraform"
+        "ms-vscode.azure-account"
     ]
 }
