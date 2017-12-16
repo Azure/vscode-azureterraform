@@ -18,7 +18,8 @@
         "onCommand:vscode-terraform-azure.validate",
         "onCommand:vscode-terraform-azure.refresh",
         "onCommand:vscode-terraform-azure.destroy",
-        "onCommand:vscode-terraform-azure.cloudshell"
+        "onCommand:vscode-terraform-azure.cloudshell",
+        "onCommand:vscode-terraform-azure.visualize"
     ],
     "main": "./out/extension",
     "contributes": {
@@ -67,7 +68,12 @@
                 "command": "vscode-terraform-azure.cloudshell",
                 "title": "cloudshell",
                 "category": "Terraform"
-            }
+            },
+            {
+                "command": "vscode-terraform-azure.visualize",
+                "title": "visualize",
+                "category": "Terraform"
+            }                    
         ]
     },
     "scripts": {

@@ -34,6 +34,19 @@ export class IntegratedShell extends BaseShell {
         return;
     }
 
+
+    protected runTerraformAsyncInternal(TFConfiguration: string, TFCommand: string) : Promise<any>{
+        this.checkCreateTerminal();
+
+        var term = this.iTerm.terminal;
+        
+        term.show();
+
+        let ret = term.sendText(TFCommand);
+
+        return Promise.all([ret]);
+    }
+
     protected syncWorkspaceInternal()
     {
         //not implemented for integrated terminal

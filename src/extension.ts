@@ -9,6 +9,7 @@ import { AzureServiceClient } from 'ms-rest-azure';
 import { CloudShell } from './cloudShell';
 import { IntegratedShell } from './integratedShell';
 import { BaseShell } from './baseShell';
+import { join } from 'path';
 
 export var CSTerminal: boolean;
 
@@ -49,28 +50,32 @@ export function activate(ctx: vscode.ExtensionContext) {
     }));
 
     ctx.subscriptions.push(vscode.commands.registerCommand('vscode-terraform-azure.plan', () =>{
-        activeShell.runTerraformCmd("plan");
+        activeShell.runTerraformCmd("terraform plan");
     }));
 
     ctx.subscriptions.push(vscode.commands.registerCommand('vscode-terraform-azure.apply', () => {
-        activeShell.runTerraformCmd("apply");
+        activeShell.runTerraformCmd("terraform apply");
     }));
     
     ctx.subscriptions.push(vscode.commands.registerCommand('vscode-terraform-azure.destroy', () => {
-        activeShell.runTerraformCmd("destroy");
+        activeShell.runTerraformCmd("terraform destroy");
     }));
     
     ctx.subscriptions.push(vscode.commands.registerCommand('vscode-terraform-azure.refresh', () => {
-        activeShell.runTerraformCmd("refresh");
+        activeShell.runTerraformCmd("terraform refresh");
     }));
     
     ctx.subscriptions.push(vscode.commands.registerCommand('vscode-terraform-azure.validate', () => {
-        activeShell.runTerraformCmd("validate");
+        activeShell.runTerraformCmd("terraform validate");
     }));
 
     if (!CSTerminal) {
         ctx.subscriptions.push(vscode.commands.registerCommand('vscode-terraform-azure.visualize', () => {
-            activeShell.runTerraformCmd("visualize")
+            activeShell.runTerraformCmdAsync("terraform graph | dot -Tpng > graph.png").then(function(){;
+
+            let uri = vscode.Uri.file(join(vscode.workspace.rootPath || '', './graph.png'));
+            let b = commands.executeCommand('vscode.open', uri);
+            return Promise.all([b]);});
         }));
         ctx.subscriptions.push(vscode.commands.registerCommand('vscode-terraform-azure.execTest', () =>{
             //TODO
