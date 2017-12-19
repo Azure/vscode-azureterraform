@@ -19,7 +19,8 @@
         "onCommand:vscode-terraform-azure.refresh",
         "onCommand:vscode-terraform-azure.destroy",
         "onCommand:vscode-terraform-azure.cloudshell",
-        "onCommand:vscode-terraform-azure.visualize"
+        "onCommand:vscode-terraform-azure.visualize",
+        "onCommand:vscode-terraform-azure.exectest"
     ],
     "main": "./out/extension",
     "contributes": {
@@ -73,7 +74,12 @@
                 "command": "vscode-terraform-azure.visualize",
                 "title": "visualize",
                 "category": "Terraform"
-            }                    
+            },
+            {
+                "command": "vscode-terraform-azure.exectest",
+                "title": "exectest",
+                "category": "Terraform"
+            }
         ]
     },
     "scripts": {

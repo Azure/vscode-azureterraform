@@ -32,6 +32,10 @@ export class CloudShell extends BaseShell {
         
     }
 
+    protected runTerraformTestsInternal(){
+        
+    }
+
     protected runTerraformAsyncInternal(TFConfiguration: string, TFCommand: string) : Promise<any>{
         return null;
     }

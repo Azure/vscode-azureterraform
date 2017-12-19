@@ -6,6 +6,13 @@ import * as path from 'path';
 import * as fsExtra from 'fs-extra';
 import * as os from 'os';
 import { Constants } from './constants';
+import { execSync } from 'child_process';
+
+
+export enum Option {
+    lint = "lint",
+    e2e = "2e2"
+} 
 
 export function localExecCmd(cmd: string, args: string[], outputChannel: vscode.OutputChannel, cb: Function): void {
     try {
@@ -40,19 +47,37 @@ export function localExecCmd(cmd: string, args: string[], outputChannel: vscode.
 }
 
 
-export function isDockerInstalled(outputChannel: vscode.OutputChannel/*, cb: Function*/): Boolean {
+export function isDockerInstalled(outputChannel: vscode.OutputChannel, cb: Function): void {
     var retVal = false;
-    
+
     if (process.platform === 'win32') {
         localExecCmd('cmd.exe', ['/c', 'docker', '-v'], outputChannel, function (err) {
             if (err) {
                 vscode.window.showErrorMessage('Docker isn\'t installed, please install Docker to continue (https://www.docker.com/).');
+                cb(err)
             } else {
-                retVal = true;
+                cb();
             }
         });
     }
+    else {
 
-    return retVal;
+    localExecCmd('docker', ['version'], outputChannel, function(err) {
+            if (err) {
+                vscode.window.showErrorMessage('Docker isn\'t installed, please install Docker to continue (https://www.docker.com)');
+                cb(err);
+            } else {
+                cb();
+            }
+        })
+    }
+
 }
 
+
+export function isEmpty(param){
+    if ( param==null || param.lenght==0 || param == undefined)
+        return true;
+    else
+        return false;
+}

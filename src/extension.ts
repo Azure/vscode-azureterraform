@@ -10,6 +10,8 @@ import { CloudShell } from './cloudShell';
 import { IntegratedShell } from './integratedShell';
 import { BaseShell } from './baseShell';
 import { join } from 'path';
+import { Option } from './utilities';
+
 
 export var CSTerminal: boolean;
 
@@ -77,8 +79,18 @@ export function activate(ctx: vscode.ExtensionContext) {
             let b = commands.executeCommand('vscode.open', uri);
             return Promise.all([b]);});
         }));
-        ctx.subscriptions.push(vscode.commands.registerCommand('vscode-terraform-azure.execTest', () =>{
-            //TODO
+
+        ctx.subscriptions.push(vscode.commands.registerCommand('vscode-terraform-azure.exectest', () =>{
+            console.log('Testing current module');
+
+
+            // TODO - asking the type of test to run e2e or lint
+            vscode.window.showQuickPick([Option.lint, Option.e2e], {placeHolder: "Select the type of test that you want to run"}).then((pick) => {
+                activeShell.runTerraformTests(pick);
+            })
+
+
+
         }));
     }
     else {
