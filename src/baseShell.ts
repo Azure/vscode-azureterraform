@@ -4,6 +4,7 @@ import * as vscode from 'vscode';
 import { Constants } from "./constants";
 import * as path from "path";
 import { isEmpty, isDockerInstalled } from './utilities';
+import { CloudShell } from './cloudShell';
 
 export abstract class BaseShell {
     protected _outputChannel: vscode.OutputChannel;
@@ -26,11 +27,19 @@ export abstract class BaseShell {
     }
 
     public runTerraformCmd(TFCommand: string): void {
+        // We keep the TFConfiguration for the moment - will need to be updated to sync folders
         var TFConfiguration = vscode.window.activeTextEditor ? vscode.window.activeTextEditor.document.fileName : null;
-        this._outputChannel.append("Starting Cloudshell - Terraform")
-        this._outputChannel.show();
+        this._outputChannel.append("Starting Cloudshell - Terraform \n")
 
-        return this.runTerraformInternal(TFConfiguration, TFCommand);
+        // Open Cloud Console 
+        
+
+        // Sync files to cloudshell
+
+        // Run Terraform command 
+        this.runTerraformInternal("", "");
+
+        // return this.runTerraformInternal(TFConfiguration, TFCommand);
 
     }
 
@@ -69,4 +78,5 @@ export abstract class BaseShell {
     protected abstract initShellInternal();
     protected abstract syncWorkspaceInternal();
     protected abstract runTerraformTestsInternal(TestType: string);
+
 }

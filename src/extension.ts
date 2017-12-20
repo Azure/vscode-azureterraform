@@ -10,7 +10,7 @@ import { CloudShell } from './cloudShell';
 import { IntegratedShell } from './integratedShell';
 import { BaseShell } from './baseShell';
 import { join } from 'path';
-import { Option } from './utilities';
+import { TestOption } from './utilities';
 
 
 export var CSTerminal: boolean;
@@ -85,7 +85,7 @@ export function activate(ctx: vscode.ExtensionContext) {
 
 
             // TODO - asking the type of test to run e2e or lint
-            vscode.window.showQuickPick([Option.lint, Option.e2e], {placeHolder: "Select the type of test that you want to run"}).then((pick) => {
+            vscode.window.showQuickPick([TestOption.lint, TestOption.e2enossh, TestOption.e2ewithssh, TestOption.custom], {placeHolder: "Select the type of test that you want to run"}).then((pick) => {
                 activeShell.runTerraformTests(pick);
             })
 

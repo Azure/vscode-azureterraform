@@ -9,17 +9,22 @@ import * as path from 'path';
 import * as fsExtra from 'fs-extra';
 import * as ost from 'os';
 import { setInterval, clearInterval } from 'timers';
+import { Terminal } from 'vscode';
+import { openCloudConsole } from './cloudConsole';
+import { TerminalType } from './shared';
+import { CSTerminal } from './utilities';
+import { configure } from 'vscode/lib/testrunner';
 
 const tempFile = path.join(ost.tmpdir(), 'cloudshell' + vscode.env.sessionId + '.log');
 
 export class CloudShell extends BaseShell {
 
     protected runTerraformInternal(TFconfiguration: string, TFCommand: string): void {
-        //const installedExtension: any[] = vscode.extensions.all;
+        
+        // TODO: Check if logged with azure account 
 
-        let azureAccount: AzureAccount;
-        this.startCloudShell(TFconfiguration, TFCommand);
-        return;
+        this.startCloudShell()
+        //const installedExtension: any[] = vscode.extensions.all;
     }
 
     protected initShellInternal()
@@ -40,47 +45,28 @@ export class CloudShell extends BaseShell {
         return null;
     }
 
-    protected startCloudShell(TFconfiguration: string, TFCommand: string): void {
-        const msgOption: vscode.MessageOptions = { modal: false };
-        const msgItem: vscode.MessageItem = { title: 'Confirm' };
+    protected startCloudShell(): void {
+        const accountAPI: AzureAccount = vscode.extensions.getExtension<AzureAccount>("ms-vscode.azure-account")!.exports;
 
-        const cancelItem: vscode.MessageItem = { title: "View detail" };
-        //const promptMsg = 'Run ansible playbook in Cloudshell will generate Azure usage fee since need uploading playbook to CloudShell !';
-        //vscode.window.showWarningMessage(promptMsg, msgOption, msgItem, cancelItem).then(
-        //    response => {
-        //        if (response === msgItem) {
-                    const accountApi: AzureAccount = vscode.extensions.getExtension<AzureAccount>("ms-vscode.azure-account")!.exports;
+        openCloudConsole(accountAPI, this._outputChannel, tempFile).then(terminal => {
+            // This is where we send the text to the terminal 
+            console.log('Terminal obtained - ready to proceed');
+            this.runTFCommand(terminal);
+        }
+    )
+        console.log('openCloudConsole returned to startCloudShell');
 
-                    // openCloudConsole(accountApi, OSes.Linux, [TFconfiguration], this._outputChannel, tempFile).then(terminal => {
-                    //     var count = 30;
-                    //     const interval = setInterval(function () {
-                    //         count--;
-                    //         if (count > 0) {
-                    //             if (fsExtra.existsSync(tempFile)) {
-                    //                 fsExtra.removeSync(tempFile);
+    }
 
-                    //                 // terminal.sendText('export ' + Constants.UserAgentName + '=' + utilities.getUserAgent());
-                    //                 terminal.sendText('terraform ' + TFCommand ); // + path.basename(TFconfiguration));
-                    //                 terminal.show();
-
-                    //                 count = 0;
-                    //             }
-                    //         } else {
-                    //            // this.stop(interval);
-                    //         }
-                    //     }, 500);
-                    // });
-
-
-                // } else if (response === cancelItem) {
-                //     //opn('https://docs.microsoft.com/en-us/azure/cloud-shell/pricing');
-                // }
-            //}
-        //)
+    protected runTFCommand(csterminal : CSTerminal) {
+        console.log('Console URI: {0}', csterminal.consoleURI );
+        console.log('Tokens: {0}', csterminal.accessToken);
+        // csterminal.terminal.show();
 
     }
 
     protected stop(interval: NodeJS.Timer): void {
         clearInterval(interval);
     }
+
 }

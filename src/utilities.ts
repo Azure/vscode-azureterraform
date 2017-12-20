@@ -9,10 +9,18 @@ import { Constants } from './constants';
 import { execSync } from 'child_process';
 
 
-export enum Option {
+export enum TestOption {
     lint = "lint",
-    e2e = "2e2"
+    e2enossh = "2e2 - no ssh",
+    e2ewithssh = "e2e - with ssh",
+    custom = "custom"
 } 
+
+export class CSTerminal {
+    accessToken: string;
+    consoleURI: string;
+    terminal: vscode.Terminal;
+}
 
 export function localExecCmd(cmd: string, args: string[], outputChannel: vscode.OutputChannel, cb: Function): void {
     try {
