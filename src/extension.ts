@@ -15,6 +15,7 @@ import { TestOption } from './utilities';
 
 export var CSTerminal: boolean;
 
+
 function getShell(outputChannel: vscode.OutputChannel) : BaseShell
 {
     var activeShell = null;

@@ -1,6 +1,6 @@
 
 import { AzureAccount, AzureSession } from "./azure-account.api";
-import { OutputChannel, commands, window, MessageItem } from "vscode";
+import { OutputChannel, commands, window, MessageItem, Terminal, env } from "vscode";
 import { getUserSettings, provisionConsole, runInTerminal, resetConsole , Errors} from './cloudConsoleLauncher'
 import { clearInterval, setTimeout } from "timers";
 import { CSTerminal } from './utilities';
@@ -39,7 +39,7 @@ export function openCloudConsole(api: AzureAccount, outputChannel: OutputChannel
             const armEndpoint = result.token.session.environment.resourceManagerEndpointUrl;
             const inProgress = delayed(() => window.showInformationMessage('Provisioning Cloud Shell may take few seconds'), 2000);
             try {
-                consoleUri = await provisionConsole(result.token.accessToken, armEndpoint, result.userSettings);
+                consoleUri = await provisionConsole(result.token.accessToken, armEndpoint, result.userSettings, "linux");
                 inProgress.cancel();
                 progress.cancel();
             }
@@ -62,26 +62,27 @@ export function openCloudConsole(api: AzureAccount, outputChannel: OutputChannel
 
             let response = await runInTerminal(result.token.accessToken, consoleUri, '');
 
-            let myCSTerminal: CSTerminal;
-            myCSTerminal.accessToken = result.token.accessToken;
-            myCSTerminal.consoleURI = consoleUri;
+            //var myCSTerminal: CSTerminal = null;
+            //myCSTerminal.accessToken = result.token.accessToken;
+            //myCSTerminal.consoleURI = consoleUri;
 
             progress.cancel()
             const terminal = window.createTerminal({
-                name: "Terraform in CloudShell",
-                shellPath,
-                shellArgs,
-                env: {
-                    CLOUD_CONSOLE_ACCESS_TOKEN: result.token.accessToken,
-                    CLOUD_CONSOLE_URI: consoleUri,
-                    CLOUDSHELL_TEMP_FILE: tempFile,
-                    // to workaround tls error: https://github.com/VSChina/vscode-ansible/pull/44
-                    NODE_TLS_REJECT_UNAUTHORIZED: "0"
+            name: "Terraform in CloudShell",
+            shellPath,
+            shellArgs,
+            env: {
+                CLOUD_CONSOLE_ACCESS_TOKEN: result.token.accessToken,
+                CLOUD_CONSOLE_URI: consoleUri,
+                CLOUDSHELL_TEMP_FILE: tempFile,
+                // to workaround tls error: https://github.com/VSChina/vscode-ansible/pull/44
+                NODE_TLS_REJECT_UNAUTHORIZED: "0"
                 }
             });
-    
-            terminal.show();
+            
+            //terminal.show();
             return terminal;
+  
 
         })().catch(err => {
             outputChannel.append('\nConnecting to CloudShell failed with error: \n' + err);

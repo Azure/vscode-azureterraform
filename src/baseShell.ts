@@ -37,7 +37,7 @@ export abstract class BaseShell {
         // Sync files to cloudshell
 
         // Run Terraform command 
-        this.runTerraformInternal("", "");
+        this.runTerraformInternal("", TFCommand);
 
         // return this.runTerraformInternal(TFConfiguration, TFCommand);
 

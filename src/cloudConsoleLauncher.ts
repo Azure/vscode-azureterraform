@@ -48,9 +48,9 @@ export async function getUserSettings(accessToken: string, armEndpoint: string):
 }
 
 
-export async function provisionConsole(accessToken: string, armEndpoint: string, userSettings: UserSettings): Promise<string> {
-	let response = await createTerminal(accessToken, armEndpoint, userSettings, true);
-	for (let i = 0; i < 10; i++ , response = await createTerminal(accessToken, armEndpoint, userSettings, false)) {
+export async function provisionConsole(accessToken: string, armEndpoint: string, userSettings: UserSettings, osType: string): Promise<string> {
+	let response = await createTerminal(accessToken, armEndpoint, userSettings, osType, true);
+	for (let i = 0; i < 10; i++ , response = await createTerminal(accessToken, armEndpoint, userSettings, osType, false)) {
 		if (response.statusCode < 200 || response.statusCode > 299) {
 			if (response.statusCode === 409 && response.body && response.body.error && response.body.error.code === Errors.DeploymentOsTypeConflict) {
 				throw new Error(Errors.DeploymentOsTypeConflict);
@@ -71,8 +71,7 @@ export async function provisionConsole(accessToken: string, armEndpoint: string,
 	throw new Error(`Sorry, your Cloud Shell failed to provision. Please retry later. Request correlation id: ${response.headers['x-ms-routing-request-id']}`);
 }
 
-async function createTerminal(accessToken: string, armEndpoint: string, userSettings: UserSettings, initial: boolean) {
-    var osType = "linux";
+async function createTerminal(accessToken: string, armEndpoint: string, userSettings: UserSettings, osType: string, initial: boolean) {
 	return request({
 		uri: getConsoleUri(armEndpoint),
 		method: initial ? 'PUT' : 'GET',
@@ -280,4 +279,12 @@ function connectSocket(url: string) {
 
 export async function delay(ms: number){ 
     return new Promise<void>(resole => setTimeout(resole, ms));
+}
+
+export function main() {
+	const accessToken = process.env.CLOUD_CONSOLE_ACCESS_TOKEN!;
+	const consoleUri = process.env.CLOUD_CONSOLE_URI!;
+	const tempFile = process.env.CLOUDSHELL_TEMP_FILE!;
+	return runInTerminal(accessToken, consoleUri, tempFile)
+		.catch(console.error);
 }
