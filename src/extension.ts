@@ -2,7 +2,6 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
-
 import { extensions, commands, Disposable, window } from 'vscode';
 import { AzureAccount }from './azure-account.api';
 import { AzureServiceClient } from 'ms-rest-azure';
@@ -71,11 +70,9 @@ export function activate(ctx: vscode.ExtensionContext) {
 
     if (!CSTerminal) {
         ctx.subscriptions.push(vscode.commands.registerCommand('vscode-terraform-azure.visualize', () => {
-            activeShell.runTerraformCmdAsync("terraform graph | dot -Tpng > graph.png").then(function(){;
-
-            let uri = vscode.Uri.file(join(vscode.workspace.rootPath || '', './graph.png'));
-            let b = commands.executeCommand('vscode.open', uri);
-            return Promise.all([b]);});
+            var iShell : IntegratedShell;
+            iShell = <IntegratedShell> activeShell;
+            iShell.visualize();
         }));
         ctx.subscriptions.push(vscode.commands.registerCommand('vscode-terraform-azure.execTest', () =>{
             //TODO
@@ -84,8 +81,6 @@ export function activate(ctx: vscode.ExtensionContext) {
     else {
 
     }
-  
-   // "tf-azure.terminal": "integrated"
 
     var dir = vscode.workspace.workspaceFolders[0].uri.fsPath;
 //     = vscode.workspace.onDidChangeTextDocument
