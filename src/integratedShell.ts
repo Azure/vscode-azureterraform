@@ -25,7 +25,7 @@ export class IntegratedShell extends BaseShell {
         }
     }
 
-    protected runTerraformInternal(TFconfiguration: string, TFCommand: string): void {
+    protected runTerraformInternal(TFCommand: string): void {
         this.checkCreateTerminal();
 
         var term = this.iTerm.terminal;

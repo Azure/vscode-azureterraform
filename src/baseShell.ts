@@ -31,15 +31,8 @@ export abstract class BaseShell {
         var TFConfiguration = vscode.window.activeTextEditor ? vscode.window.activeTextEditor.document.fileName : null;
         this._outputChannel.append("Starting Cloudshell - Terraform \n")
 
-        // Open Cloud Console 
-        
-
-        // Sync files to cloudshell
-
         // Run Terraform command 
-        this.runTerraformInternal("", TFCommand);
-
-        // return this.runTerraformInternal(TFConfiguration, TFCommand);
+        this.runTerraformInternal(TFCommand);
 
     }
 
@@ -78,10 +71,10 @@ export abstract class BaseShell {
     }
 
     //protected abstract runPlaybookInternal(playbook: string);
-    protected abstract runTerraformInternal(TFConfiguration: string, TFCommand: string);
+    protected abstract runTerraformInternal(TFCommand: string);
     protected abstract runTerraformAsyncInternal(TFConfiguration: string, TFCommand: string): Promise<any>;
     protected abstract initShellInternal();
-    protected abstract syncWorkspaceInternal();
+    protected abstract syncWorkspaceInternal(fileName: string);
     protected abstract runTerraformTestsInternal(TestType: string);
     protected abstract uploadTFFiles(TFFiles);
 }
