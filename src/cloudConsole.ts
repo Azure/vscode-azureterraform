@@ -80,8 +80,8 @@ export function openCloudConsole(api: AzureAccount, outputChannel: OutputChannel
                 }
             });
             
-            //terminal.show();
-            return terminal;
+            terminal.show();
+            return [terminal, response];
   
 
         })().catch(err => {

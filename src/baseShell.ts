@@ -51,6 +51,11 @@ export abstract class BaseShell {
         return this.runTerraformAsyncInternal(TFConfiguration, TFCommand);
     }
 
+
+    public copyTerraformFiles(TFFile) {
+        this.uploadTFFiles(TFFile);
+    }
+
     // Method used to run the end to end tests 
     public async runTerraformTests(test: string): Promise<any> {
 
@@ -78,5 +83,5 @@ export abstract class BaseShell {
     protected abstract initShellInternal();
     protected abstract syncWorkspaceInternal();
     protected abstract runTerraformTestsInternal(TestType: string);
-
+    protected abstract uploadTFFiles(TFFiles);
 }

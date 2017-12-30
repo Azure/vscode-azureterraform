@@ -11,12 +11,15 @@ import * as ost from 'os';
 import { setInterval, clearInterval } from 'timers';
 import { Terminal, ThemeColor } from 'vscode';
 import { openCloudConsole } from './cloudConsole';
-import { TerminalType, TFTerminal } from './shared';
+import { TerminalType, TFTerminal, escapeFile} from './shared';
 import { CSTerminal } from './utilities';
 import { configure } from 'vscode/lib/testrunner';
 import * as extension from './extension';
 import { cursorTo } from 'readline';
 import { delay } from './cloudConsoleLauncher';
+import * as ws from 'ws';
+import { escape } from 'querystring';
+
 
 const tempFile = path.join(ost.tmpdir(), 'cloudshell' + vscode.env.sessionId + '.log');
 
@@ -34,12 +37,15 @@ export class CloudShell extends BaseShell {
         // TODO: Check if logged with azure account 
         if (this.csTerm.terminal == null) {
             this.startCloudShell().then(terminal => {
-                    this.csTerm.terminal = terminal;
+                    this.csTerm.terminal = terminal[0];
+                    this.csTerm.ws = terminal[1];
                     console.log('Terminal not existing already');
             });
         } 
 
-        this.runTFCommand("terraform version", this.csTerm.terminal);
+        delay(500).then(() => {
+            this.runTFCommand(TFCommand, this.csTerm.terminal);
+        });
         //const installedExtension: any[] = vscode.extensions.all;
         //this.runTerraformCmd("terraform");
     }
@@ -49,11 +55,15 @@ export class CloudShell extends BaseShell {
         if ('onDidCloseTerminal' in <any>vscode.window) {
             (<any>vscode.window).onDidCloseTerminal((terminal) => {
                 if (terminal == this.csTerm.terminal) {
-                    this.outputLine('Terraform CloudShell Term closed', terminal.name);
+                    this.outputLine('\nTerraform CloudShell Term closed', terminal.name);
+                    console.log('CloudShell terminal was closed');
+                    fsExtra.removeSync(tempFile);
                     this.csTerm.terminal = null;
                 }
             });
         }
+
+
         
     }
 
@@ -72,19 +82,17 @@ export class CloudShell extends BaseShell {
 
     protected async startCloudShell(): Promise<Terminal> {
         const accountAPI: AzureAccount = vscode.extensions.getExtension<AzureAccount>("ms-vscode.azure-account")!.exports;
-        var iTerm: Terminal;
+        var iTerm;
 
         await openCloudConsole(accountAPI, this._outputChannel, tempFile).then(terminal => {
             // This is where we send the text to the terminal 
             console.log('Terminal obtained - moving on to running a command');
             // Running 'terraform version' in the newly created terminal  
-            this.runTFCommand("terraform version", terminal);
+            //this.runTFCommand("terraform version", terminal);
             iTerm = terminal;
-
             });
+        console.log("\nEnd of the startCloudShell() - iTerm returned");
         return iTerm;
-        console.log("\nin startCloudShell() now");
-        
     }
 
     protected runTFCommand(command: string, terminal: Terminal) {
@@ -92,13 +100,6 @@ export class CloudShell extends BaseShell {
         var count = 30;
         if (terminal) {
             var _localthis = this;
-
-            // delay (10000).then(()=> {
-            //     console.log("\nReady to send the command");
-            //     terminal.sendText(command);
-            //     terminal.show();
-            // });
-
             var interval = setInterval(function () {
                 count--;
                 console.log(count);
@@ -117,6 +118,33 @@ export class CloudShell extends BaseShell {
             }, 500);
         } else {
             this._outputChannel.appendLine('\nConnecting to terminal failed, please retry.');
+        }
+
+    }
+
+    protected async uploadTFFiles(TFFiles){
+        console.log('Uploading files to CloudShell');
+        const retry_interval = 500;
+        const retry_times = 30; 
+
+        for (var i = 0; i < retry_times; i++ ){
+            if (this.csTerm.ws.readyState != ws.OPEN ){
+                await delay (retry_interval);
+            } else {
+                for (let file of TFFiles.map( a => a.fileName)) {
+                    try {
+                        if (fsExtra.existsSync(file)) { 
+                        const data = fsExtra.readFileSync(file, { encoding: 'utf8' }).toString();
+                        this.csTerm.ws.send('echo -e "' + escapeFile(data) + '" > ' + path.basename(file) + ' \n');
+                        }
+                    }
+                    catch (err) {
+                        console.log(err)
+                    }
+                }
+                break;
+            }
+
         }
 
     }

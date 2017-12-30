@@ -2,6 +2,7 @@
 
 import * as vscode from 'vscode';
 import { AzureAccount, AzureSession, AzureLoginStatus } from './azure-account.api';
+import { WebResource } from 'ms-rest';
 
 export class TFTerminal{
 
@@ -13,6 +14,7 @@ export class TFTerminal{
     public type : TerminalType;
     public terminal : vscode.Terminal;
     public name : string;
+    public ws;
 }
 
 export enum TerminalType{
@@ -25,3 +27,8 @@ export enum Option {
     local = "local",
     cloudshell = "cloudshell"
 }
+
+export function escapeFile(data: string): string {
+    return data.replace(/"/g, '\\"');
+}
+

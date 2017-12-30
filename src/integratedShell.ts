@@ -116,6 +116,9 @@ export class IntegratedShell extends BaseShell {
         //not implemented for integrated terminal
     }
 
+    protected async uploadTFFiles(TFFiles){
+    }
+
     private checkCreateTerminal(): void {
 
         if (this.iTerm.terminal == null) {
