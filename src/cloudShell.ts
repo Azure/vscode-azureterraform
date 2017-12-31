@@ -88,7 +88,8 @@ export class CloudShell extends BaseShell {
                     await delay (retry_interval);
                 } else {
                         try {
-                            this.csTerm.ws.send('rm ' + path.basename(file) + ' \n');
+                            this.csTerm.ws.send('rm ' + path.relative(vscode.workspace.rootPath, file) + ' \n');
+                            // TODO: Add directory management
                         }
                         catch (err) {
                             console.log(err)
@@ -165,18 +166,22 @@ export class CloudShell extends BaseShell {
                 if (this.csTerm.ws.readyState != ws.OPEN ){
                     await delay (retry_interval);
                 } else {
-                    for (let file of TFFiles.map( a => a.fileName)) {
+                    for (let file of TFFiles.map( a => a.fsPath)) {
                         try {
                             if (fsExtra.existsSync(file)) { 
-                            const data = fsExtra.readFileSync(file, { encoding: 'utf8' }).toString();
-                            this.csTerm.ws.send('echo -e "' + escapeFile(data) + '" > ' + path.basename(file) + ' \n');
-                            vscode.window.showInformationMessage(`Uploaded all the text files in the current workspace to CloudShell`);
+                                console.log(`Uploading file ${file} to cloud shell as ${path.relative(vscode.workspace.rootPath, file)}`)
+                                const data = fsExtra.readFileSync(file, { encoding: 'utf8' }).toString();
+                               // this.csTerm.ws.send('mkdir -p ' + path.relative(vscode.workspace.rootPath, path.dirname(file)) + ' \n'); 
+                                this.csTerm.ws.send('mkdir -p ' + path.relative(vscode.workspace.rootPath, path.dirname(file))
+                                + ' && ' + 
+                                'echo -e "' + escapeFile(data) + '" > ./' + path.relative(vscode.workspace.rootPath, file) + ' \n');
                             }
                         }
                         catch (err) {
                             console.log(err)
                         }
                     }
+                    vscode.window.showInformationMessage(`Uploaded all the text files in the current workspace to CloudShell`);
                     break;
                 }
             }
