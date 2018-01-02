@@ -74,7 +74,9 @@ export class IntegratedShell extends BaseShell {
                                 console.log('Error running the lint test: '+ err);}
                             else {
                                 console.log('Lint test ran successfully');}
+                            return;
                         })
+                        break;
                     }
                     case "e2e - no ssh": {
                         console.log('Running e2e test in '+process.env['ARM_TEST_LOCATION']);
@@ -86,7 +88,9 @@ export class IntegratedShell extends BaseShell {
                                 console.log('Error running the end to end test: '+ err);}
                             else {
                                 console.log('End to end test ran successfully');}
+                            return;
                         })
+                        break;
                     }
                     case "e2e - with ssh": {
                         console.log('Running e2e test in '+process.env['ARM_TEST_LOCATION']);
@@ -98,7 +102,9 @@ export class IntegratedShell extends BaseShell {
                                 console.log('Error running the end to end test: '+ err);}
                             else {
                                 console.log('End to end test ran successfully');}
+                            return;
                         })
+                        break;
                     }
                     case "custom": {
                         console.log('Running custom test in '+process.env['ARM_TEST_LOCATION']);
@@ -108,9 +114,14 @@ export class IntegratedShell extends BaseShell {
                                     console.log('Error running the custom test: '+ err);}
                                 else {
                                     console.log('Custom test ran successfully');}
+                                return;
                             })
                         ));
-
+                        break;
+                    }
+                    default:{
+                        console.log("default step in test");
+                        break;
                     }
                 }
             }
