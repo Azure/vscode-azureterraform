@@ -172,11 +172,13 @@ export class CloudShell extends BaseShell {
                                 console.log(`Uploading file ${file} to cloud shell as ${path.relative(vscode.workspace.rootPath, file)}`)
                                 const data = fsExtra.readFileSync(file, { encoding: 'utf8' }).toString();
                                // this.csTerm.ws.send('mkdir -p ' + path.relative(vscode.workspace.rootPath, path.dirname(file)) + ' \n'); 
-                                this.csTerm.ws.send('mkdir -p ' + path.relative(vscode.workspace.rootPath, path.dirname(file))
-                                + ' && ' + 
-                                'echo -e "' + escapeFile(data) + '" > ./' + path.relative(vscode.workspace.rootPath, file) + ' \n');
+                                this.csTerm.ws.send('mkdir -p ' + path.relative(vscode.workspace.rootPath, path.dirname(file)) 
+                                + ' ; ' + 
+                                'echo -e "' + escapeFile(data) + '" > ./' + path.relative(vscode.workspace.rootPath, file) + ' \n', function() {
+                                        console.log("File send to CloudShell");
+                                    });
+                                };   
                             }
-                        }
                         catch (err) {
                             console.log(err)
                         }
