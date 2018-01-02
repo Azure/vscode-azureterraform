@@ -33,8 +33,17 @@ export abstract class BaseShell {
     
     }
 
+    public async runTerraformCmdAsync(TFCommand: string): Promise<any> {
+        var TFConfiguration = vscode.window.activeTextEditor ? vscode.window.activeTextEditor.document.fileName : null;
+        this._outputChannel.append("Starting Cloudshell - Terraform")
+        this._outputChannel.show();
+
+        return this.runTerraformAsyncInternal(TFConfiguration, TFCommand);
+    
+    }
     //protected abstract runPlaybookInternal(playbook: string);
     protected abstract runTerraformInternal(TFConfiguration: string, TFCommand: string);
+    protected abstract runTerraformAsyncInternal(TFConfiguration: string, TFCommand: string) : Promise<any>;
     protected abstract initShellInternal();
     protected abstract syncWorkspaceInternal();
 }

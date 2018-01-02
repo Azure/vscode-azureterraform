@@ -2,13 +2,13 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
-
 import { extensions, commands, Disposable, window } from 'vscode';
 import { AzureAccount }from './azure-account.api';
 import { AzureServiceClient } from 'ms-rest-azure';
 import { CloudShell } from './cloudShell';
 import { IntegratedShell } from './integratedShell';
 import { BaseShell } from './baseShell';
+import { join } from 'path';
 
 export var CSTerminal: boolean;
 
@@ -49,28 +49,30 @@ export function activate(ctx: vscode.ExtensionContext) {
     }));
 
     ctx.subscriptions.push(vscode.commands.registerCommand('vscode-terraform-azure.plan', () =>{
-        activeShell.runTerraformCmd("plan");
+        activeShell.runTerraformCmd("terraform plan");
     }));
 
     ctx.subscriptions.push(vscode.commands.registerCommand('vscode-terraform-azure.apply', () => {
-        activeShell.runTerraformCmd("apply");
+        activeShell.runTerraformCmd("terraform apply");
     }));
     
     ctx.subscriptions.push(vscode.commands.registerCommand('vscode-terraform-azure.destroy', () => {
-        activeShell.runTerraformCmd("destroy");
+        activeShell.runTerraformCmd("terraform destroy");
     }));
     
     ctx.subscriptions.push(vscode.commands.registerCommand('vscode-terraform-azure.refresh', () => {
-        activeShell.runTerraformCmd("refresh");
+        activeShell.runTerraformCmd("terraform refresh");
     }));
     
     ctx.subscriptions.push(vscode.commands.registerCommand('vscode-terraform-azure.validate', () => {
-        activeShell.runTerraformCmd("validate");
+        activeShell.runTerraformCmd("terraform validate");
     }));
 
     if (!CSTerminal) {
         ctx.subscriptions.push(vscode.commands.registerCommand('vscode-terraform-azure.visualize', () => {
-            activeShell.runTerraformCmd("visualize")
+            var iShell : IntegratedShell;
+            iShell = <IntegratedShell> activeShell;
+            iShell.visualize();
         }));
         ctx.subscriptions.push(vscode.commands.registerCommand('vscode-terraform-azure.execTest', () =>{
             //TODO
@@ -79,8 +81,6 @@ export function activate(ctx: vscode.ExtensionContext) {
     else {
 
     }
-  
-   // "tf-azure.terminal": "integrated"
 
     var dir = vscode.workspace.workspaceFolders[0].uri.fsPath;
 //     = vscode.workspace.onDidChangeTextDocument

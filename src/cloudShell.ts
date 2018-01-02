@@ -3,7 +3,7 @@
 import { BaseShell } from './baseShell';
 import * as vscode from 'vscode';
 import { AzureAccount } from './azure-account.api';
-import { Constants } from './constants';
+import { Constants } from './Constants';
 import * as path from 'path';
 //import * as opn from 'opn';
 import * as fsExtra from 'fs-extra';
@@ -30,6 +30,10 @@ export class CloudShell extends BaseShell {
     protected syncWorkspaceInternal()
     {
         
+    }
+
+    protected runTerraformAsyncInternal(TFConfiguration: string, TFCommand: string) : Promise<any>{
+        return null;
     }
 
     protected startCloudShell(TFconfiguration: string, TFCommand: string): void {
