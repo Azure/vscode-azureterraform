@@ -4,13 +4,16 @@
 import * as vscode from 'vscode';
 import { extensions, commands, Disposable, window } from 'vscode';
 import { AzureAccount }from './azure-account.api';
-import { AzureServiceClient } from 'ms-rest-azure';
+import { AzureServiceClient, BaseResource } from 'ms-rest-azure';
 import { CloudShell } from './cloudShell';
 import { IntegratedShell } from './integratedShell';
 import { BaseShell } from './baseShell';
 import { join } from 'path';
+import { TestOption } from './utilities';
+
 
 export var CSTerminal: boolean;
+
 
 function getShell(outputChannel: vscode.OutputChannel) : BaseShell
 {
@@ -25,6 +28,7 @@ function getShell(outputChannel: vscode.OutputChannel) : BaseShell
     return activeShell;
 }
 
+
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export function activate(ctx: vscode.ExtensionContext) {
@@ -34,11 +38,16 @@ export function activate(ctx: vscode.ExtensionContext) {
 
 
     var outputChannel = vscode.window.createOutputChannel("VSCode extension for Azure Terraform");    
-    // var cloudShellRunner = new CloudShellRunner(outputChannel);
-    // var terminalRunner = new IntegratedTerminalRunner(outputChannel);
     let activeShell = getShell(outputChannel);
 
-
+    // // Capture save events and then sycn them to cloudshell if cloudshell
+    // if ('onDidSaveTextDocument' in <any>vscode.workspace) {
+    //     (<any>vscode.workspace).onDidSaveTextDocument((textDocument) => {
+    //             // this.outputLine('\nTerraform File saved');
+    //             console.log('File was saved: '+ textDocument.uri );
+    //             activeShell.copyTerraformFiles([textDocument.uri]);
+    //     });
+    // }
 
     // Use the console to output diagnostic information (console.log) and errors (console.error)
     // This line of code will only be executed once when your extension is 
@@ -74,12 +83,27 @@ export function activate(ctx: vscode.ExtensionContext) {
             iShell = <IntegratedShell> activeShell;
             iShell.visualize();
         }));
-        ctx.subscriptions.push(vscode.commands.registerCommand('vscode-terraform-azure.execTest', () =>{
-            //TODO
+
+        ctx.subscriptions.push(vscode.commands.registerCommand('vscode-terraform-azure.exectest', () =>{
+            console.log('Testing current module');
+
+
+            // TODO - asking the type of test to run e2e or lint
+            vscode.window.showQuickPick([TestOption.lint, TestOption.e2enossh, TestOption.e2ewithssh, TestOption.custom], {placeHolder: "Select the type of test that you want to run"}).then((pick) => {
+                activeShell.runTerraformTests(pick);
+            })
+
+
+
         }));
     }
     else {
-
+        ctx.subscriptions.push(vscode.commands.registerCommand('vscode-terraform-azure.push', () => {
+            // Create a function that will sync the files to Cloudshell
+            vscode.workspace.findFiles('**/*.tf').then(TFfiles => {
+                activeShell.copyTerraformFiles(TFfiles);
+                });
+        }));
     }
 
     var dir = vscode.workspace.workspaceFolders[0].uri.fsPath;
