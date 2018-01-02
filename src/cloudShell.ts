@@ -175,7 +175,7 @@ export class CloudShell extends BaseShell {
                                 this.csTerm.ws.send('mkdir -p ' + path.relative(vscode.workspace.rootPath, path.dirname(file)) 
                                 + ' ; ' + 
                                 'echo -e "' + escapeFile(data) + '" > ./' + path.relative(vscode.workspace.rootPath, file) + ' \n', function() {
-                                        console.log("File send to CloudShell");
+                                        console.log(`File ${path.relative(vscode.workspace.rootPath, file)} send to CloudShell`);
                                     });
                                 };   
                             }
