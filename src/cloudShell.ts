@@ -40,7 +40,6 @@ export class CloudShell extends BaseShell {
             this.startCloudShell().then(terminal => {
                     this.csTerm.terminal = terminal[0];
                     this.csTerm.ws = terminal[1];
-                    console.log(`Obtained terminal info ans ws \n Running command: ${TFCommand}`);
                     this.runTFCommand(TFCommand, this.csTerm.terminal);
             });
         } 
