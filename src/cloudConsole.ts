@@ -1,7 +1,7 @@
 
 import { AzureAccount, AzureSession } from "./azure-account.api";
 import { OutputChannel, commands, window, MessageItem, Terminal, env } from "vscode";
-import { getUserSettings, provisionConsole, runInTerminal, resetConsole , Errors} from './cloudConsoleLauncher'
+import { getUserSettings, provisionConsole, runInTerminal, resetConsole , Errors, delay} from './cloudConsoleLauncher'
 import { clearInterval, setTimeout } from "timers";
 import { CSTerminal } from './utilities';
 import { configure } from "vscode/lib/testrunner";
@@ -80,9 +80,11 @@ export function openCloudConsole(api: AzureAccount, outputChannel: OutputChannel
                 }
             });
             
+            // Introducing arbitrary delay to allow to send the command.
+            await delay(500);
+
             terminal.show();
-            return [terminal, response];
-  
+            return [ terminal, response ];
 
         })().catch(err => {
             outputChannel.append('\nConnecting to CloudShell failed with error: \n' + err);
