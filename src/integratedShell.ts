@@ -4,7 +4,7 @@ import * as vscode from 'vscode';
 import { BaseShell } from './baseShell';
 import { isDockerInstalled, localExecCmd } from './utilities'
 import { join } from 'path';
-import { extensions, commands, workspace, Disposable, Uri, window, ViewColumn } from 'vscode';
+import { extensions, commands, workspace, Disposable, Uri, window, ViewColumn, WorkspaceEdit } from 'vscode';
 import { TFTerminal, TerminalType } from './shared'
 import { Constants } from './constants'
 const fs = require('fs-extra')
@@ -131,10 +131,18 @@ export class IntegratedShell extends BaseShell {
 
     public visualize(): void {
         this.deletePng();
-        this.runTerraformCmdAsync("terraform graph | dot -Tpng > graph.png").then(() => {
-            this.displayPng();
+
+        const cp = require('child_process');
+        const child = cp.spawnSync('terraform graph | dot -Tpng -o graph.png', {
+            stdio: 'inherit',
+            shell: true,
+            cwd: vscode.workspace.workspaceFolders[0].uri.fsPath
         });
-    }
+
+        this.displayPng();
+        console.log(`Vizualization rendering complete in ${vscode.workspace.workspaceFolders[0].uri.fsPath}`);
+
+}
 
     private  deletePng() : void {
         if(fs.existsSync(this.graphUri.path)){
