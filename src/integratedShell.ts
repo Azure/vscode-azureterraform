@@ -132,13 +132,14 @@ export class IntegratedShell extends BaseShell {
     public visualize(): void {
         this.deletePng();
 
-        const { spawn } = require('child_process');
-        const child = spawn('terraform graph | dot -Tpng -o graph.png', {
+        const cp = require('child_process');
+        const child = cp.spawnSync('terraform graph | dot -Tpng -o graph.png', {
             stdio: 'inherit',
             shell: true,
             cwd: vscode.workspace.workspaceFolders[0].uri.fsPath
         });
 
+        this.displayPng();
         console.log(`Vizualization rendering complete in ${vscode.workspace.workspaceFolders[0].uri.fsPath}`);
 
 }
