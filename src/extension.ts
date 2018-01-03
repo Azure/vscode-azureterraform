@@ -9,7 +9,7 @@ import { CloudShell } from './cloudShell';
 import { IntegratedShell } from './integratedShell';
 import { BaseShell } from './baseShell';
 import { join } from 'path';
-import { TestOption } from './utilities';
+import { TestOption, isDotInstalled } from './utilities';
 
 
 export var CSTerminal: boolean;
@@ -77,8 +77,16 @@ export function activate(ctx: vscode.ExtensionContext) {
     }));
 
     ctx.subscriptions.push(vscode.commands.registerCommand('vscode-terraform-azure.visualize', () => {
-            var iShell = new IntegratedShell(outputChannel);
-            iShell.visualize();
+        isDotInstalled(outputChannel, function (err) {
+            if (err) {
+                console.log('GraphViz - Dot not installed');
+            }
+            else{
+                var iShell = new IntegratedShell(outputChannel);
+                iShell.visualize();
+            }
+        });
+
     }));
 
     ctx.subscriptions.push(vscode.commands.registerCommand('vscode-terraform-azure.exectest', () => {
@@ -93,16 +101,17 @@ export function activate(ctx: vscode.ExtensionContext) {
 
     ctx.subscriptions.push(vscode.commands.registerCommand('vscode-terraform-azure.push', () => {
         // Create a function that will sync the files to Cloudshell
+        if(CSTerminal)
+        {
         vscode.workspace.findFiles(vscode.workspace.getConfiguration('tf-azure').get('files')).then(TFfiles => {
             activeShell.copyTerraformFiles(TFfiles);
         });
+        }
+        else{
+            vscode.window.showErrorMessage("Push function only available when using cloudshell.")
+            .then(() => {return;})
+        }
     }));
-
-    var dir = vscode.workspace.workspaceFolders[0].uri.fsPath;
-    //     = vscode.workspace.onDidChangeTextDocument
-    // let subscriptions: Disposable[] = [];
-    // vscode.window.
-
 }
 
 export async function TFLogin(api: AzureAccount) {
