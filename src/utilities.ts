@@ -82,6 +82,32 @@ export function isDockerInstalled(outputChannel: vscode.OutputChannel, cb: Funct
 
 }
 
+export function isDotInstalled(outputChannel: vscode.OutputChannel, cb: Function): void {
+    var retVal = false;
+
+    if (process.platform === 'win32') {
+        localExecCmd('cmd.exe', ['/c', 'dot', '-V'], outputChannel, function (err) {
+            if (err) {
+                vscode.window.showErrorMessage('GraphViz - Dot is not installed, please install GraphViz to continue (https://www.graphviz.org).');
+                cb(err)
+            } else {
+                cb();
+            }
+        });
+    }
+    else {
+
+    localExecCmd('dot', ['-V'], outputChannel, function(err) {
+            if (err) {
+                vscode.window.showErrorMessage('GraphViz - Dot is not installed, please install GraphViz to continue (https://www.graphviz.org).');
+                cb(err);
+            } else {
+                cb();
+            }
+        })
+    }
+
+}
 
 export function isEmpty(param){
     if ( param==null || param.lenght==0 || param == undefined)

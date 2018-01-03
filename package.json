@@ -78,7 +78,7 @@
             },
             {
                 "command": "vscode-terraform-azure.exectest",
-                "title": "exectest",
+                "title": "Execute test",
                 "category": "Terraform"
             },
             {
