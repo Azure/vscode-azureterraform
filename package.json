@@ -32,6 +32,11 @@
                     "type": "string",
                     "default": "integrated",
                     "description": "Specifies terminal used to run Terraform commands. Valid settings are `cloudshell` or `integrated`"
+                },
+                "tf-azure.files": {
+                    "type": "string",
+                    "default": "**/*.tf",
+                    "description": "Indicates the files that should be synchronized to Azure cloudshell using the glob pattern string, for example **/*.{tf,txt}"
                 }
             }
         },

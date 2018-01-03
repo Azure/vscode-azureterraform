@@ -100,7 +100,7 @@ export function activate(ctx: vscode.ExtensionContext) {
     else {
         ctx.subscriptions.push(vscode.commands.registerCommand('vscode-terraform-azure.push', () => {
             // Create a function that will sync the files to Cloudshell
-            vscode.workspace.findFiles('**/*.tf').then(TFfiles => {
+            vscode.workspace.findFiles(vscode.workspace.getConfiguration('tf-azure').get('files')).then(TFfiles => {
                 activeShell.copyTerraformFiles(TFfiles);
                 });
         }));
