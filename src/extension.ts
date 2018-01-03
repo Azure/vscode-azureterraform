@@ -83,9 +83,11 @@ export function activate(ctx: vscode.ExtensionContext) {
 
     ctx.subscriptions.push(vscode.commands.registerCommand('vscode-terraform-azure.exectest', () => {
         console.log('Testing current module');
+
+        var iShell = new IntegratedShell(outputChannel);
         // TODO - asking the type of test to run e2e or lint
         vscode.window.showQuickPick([TestOption.lint, TestOption.e2enossh, TestOption.e2ewithssh, TestOption.custom], { placeHolder: "Select the type of test that you want to run" }).then((pick) => {
-            activeShell.runTerraformTests(pick);
+            iShell.runTerraformTests(pick);
         })
     }));
 
@@ -113,4 +115,5 @@ export async function TFLogin(api: AzureAccount) {
 
 // this method is called when your extension is deactivated
 export function deactivate() {
+
 }

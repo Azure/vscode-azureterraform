@@ -72,11 +72,6 @@
                 "category": "Terraform"
             },
             {
-                "command": "vscode-terraform-azure.cloudshell",
-                "title": "cloudshell",
-                "category": "Terraform"
-            },
-            {
                 "command": "vscode-terraform-azure.visualize",
                 "title": "visualize",
                 "category": "Terraform"

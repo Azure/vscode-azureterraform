@@ -11,7 +11,7 @@ import { execSync } from 'child_process';
 
 export enum TestOption {
     lint = "lint",
-    e2enossh = "2e2 - no ssh",
+    e2enossh = "e2e - no ssh",
     e2ewithssh = "e2e - with ssh",
     custom = "custom"
 } 
