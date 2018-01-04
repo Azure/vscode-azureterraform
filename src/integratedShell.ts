@@ -137,6 +137,7 @@ export class IntegratedShell extends BaseShell {
 
     }
 
+    //Creates a png of terraform resource graph to visualize the resources under management.
     public visualize(): void {
         this.deletePng();
         var output;

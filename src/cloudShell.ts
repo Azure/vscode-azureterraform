@@ -1,28 +1,28 @@
 "use strict";
+import { AzureAccount } from "./azure-account.api";
+import { BaseShell } from "./baseShell";
+import { openCloudConsole } from "./cloudConsole";
+import { delay } from "./cloudConsoleLauncher";
+import { Constants } from "./Constants";
+import { escapeFile, TerminalType, TFTerminal } from "./shared";
+import { CSTerminal } from "./utilities";
 
-import { BaseShell } from './baseShell';
-import * as vscode from 'vscode';
-import { AzureAccount } from './azure-account.api';
-import { Constants } from './Constants';
-import * as path from 'path';
-//import * as opn from 'opn';
-import * as fsExtra from 'fs-extra';
-import * as ost from 'os';
-import { setInterval, clearInterval } from 'timers';
-import { Terminal, ThemeColor, MessageItem } from 'vscode';
-import { openCloudConsole } from './cloudConsole';
-import { TerminalType, TFTerminal, escapeFile} from './shared';
-import { CSTerminal } from './utilities';
-import { configure } from 'vscode/lib/testrunner';
-import * as extension from './extension';
-import { cursorTo } from 'readline';
-import { delay } from './cloudConsoleLauncher';
-import * as ws from 'ws';
-import { escape } from 'querystring';
-import { Message } from '_debugger';
+import { Message } from "_debugger";
+import { escape } from "querystring";
+import { cursorTo } from "readline";
+import { clearInterval, setInterval } from "timers";
+import { MessageItem, Terminal, ThemeColor } from "vscode";
+import { configure } from "vscode/lib/testrunner";
 
+import * as fsExtra from "fs-extra";
+import * as ost from "os";
+import * as path from "path";
+import * as vscode from "vscode";
+import * as ws from "ws";
 
-const tempFile = path.join(ost.tmpdir(), 'cloudshell' + vscode.env.sessionId + '.log');
+import * as extension from "./extension";
+
+const tempFile = path.join(ost.tmpdir(), "cloudshell" + vscode.env.sessionId + ".log");
 
 export class CloudShell extends BaseShell {
 
@@ -31,32 +31,30 @@ export class CloudShell extends BaseShell {
         Constants.TerraformTerminalName);
 
     protected runTerraformInternal(TFCommand: string) {
-        
+
         // Workaround the TLS error
         process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = "0";
 
-        // TODO: Check if logged with azure account 
+        // TODO: Check if logged with azure account
         if (this.csTerm.terminal == null) {
-            this.startCloudShell().then(terminal => {
+            this.startCloudShell().then((terminal) => {
                     this.csTerm.terminal = terminal[0];
                     this.csTerm.ws = terminal[1];
                     this.runTFCommand(TFCommand, this.csTerm.terminal);
             });
-        } 
-        else {
+        } else {
             this.runTFCommand(TFCommand, this.csTerm.terminal);
         }
 
     }
 
-    protected initShellInternal()
-    {
+    protected initShellInternal() {
         // Reacting to the deletion of the terminal window
-        if ('onDidCloseTerminal' in <any>vscode.window) {
+        if ("onDidCloseTerminal" in <any>vscode.window) {
             (<any>vscode.window).onDidCloseTerminal((terminal) => {
                 if (terminal == this.csTerm.terminal) {
-                    this.outputLine('\nTerraform CloudShell Term closed', terminal.name);
-                    console.log('CloudShell terminal was closed');
+                    this.outputLine("\nTerraform CloudShell Term closed", terminal.name);
+                    console.log("CloudShell terminal was closed");
                     fsExtra.removeSync(tempFile);
                     this.csTerm.terminal = null;
                 }
@@ -64,27 +62,26 @@ export class CloudShell extends BaseShell {
         }
 
         // Reacting to the deletion of a file in the workspace
-        if ('onDidCloseTextDocument' in <any>vscode.workspace) {
+        if ("onDidCloseTextDocument" in <any>vscode.workspace) {
             (<any>vscode.workspace).onDidCloseTextDocument((textDocument) => {
-                console.log(`Document closed ${textDocument.fileName}`)
-                //File deleted let's sync the workspace
+                console.log(`Document closed ${textDocument.fileName}`);
+                // File deleted let's sync the workspace
                 this.syncWorkspaceInternal(textDocument.fileName);
             });
         }
-        
+
     }
 
-    protected async syncWorkspaceInternal(file)
-    {
+    protected async syncWorkspaceInternal(file) {
         console.log(`Deleting ${path.basename(file)} in CloudShell`);
-        const retry_interval = 500;
-        const retry_times = 30;
+        const retryInterval = 500;
+        const retryTimes = 30;
 
         // Checking if the terminal has been created
         if ( this.csTerm.terminal != null) {
-            for (var i = 0; i < retry_times; i++ ){
-                if (this.csTerm.ws.readyState != ws.OPEN ){
-                    await delay (retry_interval);
+            for (let i = 0; i < retryTimes; i++ ) {
+                if (this.csTerm.ws.readyState !== ws.OPEN ) {
+                    await delay (retryInterval);
                 } else {
                         try {
                             this.csTerm.ws.send('rm ' + path.relative(vscode.workspace.rootPath, file) + ' \n');
@@ -93,7 +90,7 @@ export class CloudShell extends BaseShell {
                         catch (err) {
                             console.log(err)
                         }
-                    break;
+                        break;
                 }
             }
         }
@@ -116,7 +113,7 @@ export class CloudShell extends BaseShell {
         const accountAPI: AzureAccount = vscode.extensions.getExtension<AzureAccount>("ms-vscode.azure-account")!.exports;
         var iTerm;
 
-        await openCloudConsole(accountAPI, this._outputChannel, tempFile).then(terminal => {
+        await openCloudConsole(accountAPI, this._outputChannel, tempFile).then((terminal) => {
             // This is where we send the text to the terminal 
             console.log('Terminal obtained - moving on to running a command');
             // Running 'terraform version' in the newly created terminal  
@@ -165,7 +162,7 @@ export class CloudShell extends BaseShell {
                 if (this.csTerm.ws.readyState != ws.OPEN ){
                     await delay (retry_interval);
                 } else {
-                    for (let file of TFFiles.map( a => a.fsPath)) {
+                    for (let file of TFFiles.map( (a) => a.fsPath)) {
                         try {
                             if (fsExtra.existsSync(file)) { 
                                 console.log(`Uploading file ${file} to cloud shell as ${path.relative(vscode.workspace.rootPath, file)}`)
@@ -191,9 +188,9 @@ export class CloudShell extends BaseShell {
             const message = "Do you want to open CloudShell?"
             const ok : MessageItem = { title : "Yes" }
             const cancel : MessageItem = { title : "No", isCloseAffordance: true }
-            vscode.window.showWarningMessage(message, ok, cancel).then( response => {
+            vscode.window.showWarningMessage(message, ok, cancel).then( (response) => {
                 if ( response === ok ) {
-                    this.startCloudShell().then(terminal => {
+                    this.startCloudShell().then((terminal) => {
                         this.csTerm.terminal = terminal[0];
                         this.csTerm.ws = terminal[1];
                         console.log(`Obtained terminal info and ws\n`);
