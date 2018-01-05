@@ -6,25 +6,33 @@ The VSCode Terraform Azure extension is designed to increase developer productiv
 
 ## Features
 
+The features in this extension support execution in integrated terminal mode or remotely using Azure CloudShell.  The exceptions to this are:
+`Terraform Azure: visualize` and `Terraform Azure: execute test` always run locally.  `Terraform-Azure: push` only executes in cloud shell mode as this feature syncs your workspace with your cloudshell env.
+
 This extension supports the following features:
 
-### Terraform-Azure: init
+### Terraform Azure: init
 
-### Terraform-Azure: plan
+Executes `terraform init` command against project workspace.  If run with terminal set to cloudshell, will run `terraform init` in cloudshell.
+![tfinit](images/image2.png)
 
-### Terraform-Azure: apply
+### Terraform Azure: plan
 
-### Terraform-Azure: validate
+Executes `terraform plan` command against project workspace.  If run with terminal set to cloudshell, will run `terraform plan` in cloudshell.
+![tfinit](images/image3.png)
+### Terraform Azure: apply
 
-### Terraform-Azure: refresh
+### Terraform Azure: validate
 
-### Terraform-Azure: destroy
+### Terraform Azure: refresh
 
-### Terraform-Azure: visualize
+### Terraform Azure: destroy
 
-### Terraform-Azure: execute test
+### Terraform Azure: visualize
 
-### Terraform-Azure: push
+### Terraform Azure: execute test
+
+### Terraform Azure: push
 
 This command will sync workspace files that meet filter `tf-azure.files` setting in your configuration to Azure - Cloudshell.
 

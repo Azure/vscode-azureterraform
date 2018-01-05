@@ -47,47 +47,47 @@
             {
                 "command": "vscode-terraform-azure.plan",
                 "title": "plan",
-                "category": "Terraform-Azure"
+                "category": "Terraform Azure"
             },
             {
                 "command": "vscode-terraform-azure.apply",
                 "title": "apply",
-                "category": "Terraform-Azure"
+                "category": "Terraform Azure"
             },
             {
                 "command": "vscode-terraform-azure.init",
                 "title": "init",
-                "category": "Terraform-Azure"
+                "category": "Terraform Azure"
             },
             {
                 "command": "vscode-terraform-azure.validate",
                 "title": "validate",
-                "category": "Terraform-Azure"
+                "category": "Terraform Azure"
             },
             {
                 "command": "vscode-terraform-azure.refresh",
                 "title": "refresh",
-                "category": "Terraform-Azure"
+                "category": "Terraform Azure"
             },
             {
                 "command": "vscode-terraform-azure.destroy",
                 "title": "destroy",
-                "category": "Terraform-Azure"
+                "category": "Terraform Azure"
             },
             {
                 "command": "vscode-terraform-azure.visualize",
                 "title": "visualize",
-                "category": "Terraform-Azure"
+                "category": "Terraform Azure"
             },
             {
                 "command": "vscode-terraform-azure.exectest",
                 "title": "execute test",
-                "category": "Terraform-Azure"
+                "category": "Terraform Azure"
             },
             {
                 "command": "vscode-terraform-azure.push",
                 "title": "push",
-                "category": "Terraform-Azure"
+                "category": "Terraform Azure"
             }
         ]
     },
