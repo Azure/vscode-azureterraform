@@ -1,51 +1,67 @@
 # vscode-terraform-azure README
 
-This is the README for your extension "vscode-terraform-azure". After writing up a brief description, we recommend including the following sections.
+The VSCode Terraform Azure extension is designed to increase developer productivity building Terraform modules for Azure.  The extension provides, linting, terraform command support, resource graph visualization, testing and cloudshell integration inside of VSCode.
+
+![overview](images/image1.png)
 
 ## Features
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+The features in this extension support execution in integrated terminal mode or remotely using Azure CloudShell.  The exceptions to this are:
+`Terraform Azure: visualize` and `Terraform Azure: execute test` always run locally.  `Terraform-Azure: push` only executes in cloud shell mode as this feature syncs your workspace with your cloudshell env.
 
-For example if there is an image subfolder under your extension project workspace:
+This extension supports the following features:
 
-\!\[feature X\]\(images/feature-x.png\)
+### Terraform Azure: init
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+Executes `terraform init` command against project workspace.  If run with terminal set to cloudshell, will run `terraform init` in cloudshell.
+![tfinit](images/image2.png)
+
+### Terraform Azure: plan
+
+Executes `terraform plan` command against project workspace.  If run with terminal set to cloudshell, will run `terraform plan` in cloudshell.
+![tfinit](images/image3.png)
+### Terraform Azure: apply
+
+### Terraform Azure: validate
+
+### Terraform Azure: refresh
+
+### Terraform Azure: destroy
+
+### Terraform Azure: visualize
+
+### Terraform Azure: execute test
+
+### Terraform Azure: push
+
+This command will sync workspace files that meet filter `tf-azure.files` setting in your configuration to Azure - Cloudshell.
 
 ## Requirements
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+This extension requires [Docker](http://www.docker.io) if you are using the execute test feature and [GraphViz dot](http://www.graphviz.org) if you are using the visualize feature.
+
+## Supported Environments
+
+* [Microsoft Azure](https://azure.microsoft.com)
+* [Azure Stack](https://azure.microsoft.com/en-us/overview/azure-stack/)
+* [Microsoft Azure China](https://www.azure.cn/)
+* [Microsoft Azure US Government](https://azure.microsoft.com/en-us/features/gov/)
 
 ## Extension Settings
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
-
-For example:
-
-This extension contributes the following settings:
-
-* `myExtension.enable`: enable/disable this extension
-* `myExtension.thing`: set to `blah` to do something
+* `tf-azure` - Parent for Terraform-Azure related extension settings
+  * `tf-azure.terminal` - Specifies terminal used to run Terraform commands. Valid settings are `cloudshell` or `integrated`
+  * `tf-azure.files` - Indicates the files that should be synchronized to Azure cloudshell using the glob pattern string, for example `**/*.{tf,txt}`
 
 ## Known Issues
 
-Calling out known issues can help limit users opening duplicate issues against your extension.
+Windows support for dot has some unhandled exception cases.  We are working to improve this area.
 
 ## Release Notes
 
-Users appreciate release notes as you update your extension.
-
 ### 1.0.0
 
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
+Initial release of vscode-terraform-azure extension.
 
 -----------------------------------------------------------------------------------------------------------
 

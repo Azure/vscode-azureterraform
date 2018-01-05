@@ -11,9 +11,7 @@ import { BaseShell } from './baseShell';
 import { join } from 'path';
 import { TestOption, isDotInstalled } from './utilities';
 
-
 export var CSTerminal: boolean;
-
 
 function getShell(outputChannel: vscode.OutputChannel): BaseShell {
     var activeShell = null;
@@ -39,17 +37,6 @@ export function activate(ctx: vscode.ExtensionContext) {
     var outputChannel = vscode.window.createOutputChannel("VSCode extension for Azure Terraform");
     let activeShell = getShell(outputChannel);
 
-    // // Capture save events and then sycn them to cloudshell if cloudshell
-    // if ('onDidSaveTextDocument' in <any>vscode.workspace) {
-    //     (<any>vscode.workspace).onDidSaveTextDocument((textDocument) => {
-    //             // this.outputLine('\nTerraform File saved');
-    //             console.log('File was saved: '+ textDocument.uri );
-    //             activeShell.copyTerraformFiles([textDocument.uri]);
-    //     });
-    // }
-
-    // Use the console to output diagnostic information (console.log) and errors (console.error)
-    // This line of code will only be executed once when your extension is 
     const azureAccount: AzureAccount = vscode.extensions.getExtension<AzureAccount>('ms-vscode.azure-account')!.exports;
 
     ctx.subscriptions.push(vscode.commands.registerCommand('vscode-terraform-azure.init', () => {

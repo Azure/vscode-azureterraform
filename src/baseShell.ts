@@ -52,7 +52,7 @@ export abstract class BaseShell {
     // Method used to run the end to end tests 
     public async runTerraformTests(test: string): Promise<any> {
 
-        // Check the environment variables 
+        // Check the environment variables to ensure SPN exist (See )
         console.log('Checking environment variables');
 
         if (isEmpty(process.env['ARM_SUBSCRIPTION_ID'] ||
@@ -61,7 +61,7 @@ export abstract class BaseShell {
             process.env['ARM_TENANT_ID'] ||
             process.env['ARM_TEST_LOCATION'] ||
             process.env['ARM_TEST_LOCATION_ALT'])) {
-            vscode.window.showErrorMessage('Azure Service Principal is not set');
+            vscode.window.showErrorMessage('Azure Service Principal is not set (See documentation at: https://docs.microsoft.com/en-us/cli/azure/ad/sp?view=azure-cli-latest#az_ad_sp_create_for_rbac)');
             return;
         }
 
@@ -70,7 +70,6 @@ export abstract class BaseShell {
 
     }
 
-    //protected abstract runPlaybookInternal(playbook: string);
     protected abstract runTerraformInternal(TFCommand: string);
     protected abstract runTerraformAsyncInternal(TFConfiguration: string, TFCommand: string): Promise<any>;
     protected abstract initShellInternal();
