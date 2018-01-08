@@ -38,14 +38,16 @@ This command will sync workspace files that meet filter `tf-azure.files` setting
 
 ## Requirements
 
-This extension requires [Docker](http://www.docker.io) if you are using the execute test feature and [GraphViz dot](http://www.graphviz.org) if you are using the visualize feature.
+This extension requires:
+
+* [Terraform](https://www.terraform.io/downloads.html)
+* [Docker](http://www.docker.io) if you are using the execute test feature.
+* [GraphViz dot](http://www.graphviz.org) if you are using the visualize feature.  
+  * NOTE: On Windows after installing the graphViz msi/zip, you will most likely need to add your PATH env variable `(Ex. c:\Program Files(x86)\GraphViz2.38\bin)` in order to use dot from the command line.
 
 ## Supported Environments
 
 * [Microsoft Azure](https://azure.microsoft.com)
-* [Azure Stack](https://azure.microsoft.com/en-us/overview/azure-stack/)
-* [Microsoft Azure China](https://www.azure.cn/)
-* [Microsoft Azure US Government](https://azure.microsoft.com/en-us/features/gov/)
 
 ## Extension Settings
 
