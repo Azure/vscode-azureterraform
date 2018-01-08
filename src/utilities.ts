@@ -109,6 +109,10 @@ export function isDotInstalled(outputChannel: vscode.OutputChannel, cb: Function
 
 }
 
+export function getUserAgent(): string {
+    return Constants.ExtensionId + '-' + vscode.extensions.getExtension(Constants.ExtensionId).packageJSON.version;
+}
+
 export function isEmpty(param){
     if ( param==null || param.lenght==0 || param == undefined)
         return true;

@@ -1,7 +1,7 @@
 "use strict";
 import { AzureAccount } from "./azure-account.api";
 import { BaseShell } from "./baseShell";
-import { openCloudConsole } from "./cloudConsole";
+import { openCloudConsole, OSes } from "./cloudConsole";
 import { delay } from "./cloudConsoleLauncher";
 import { Constants } from "./Constants";
 import { escapeFile, TerminalType, TFTerminal } from "./shared";
@@ -112,8 +112,8 @@ export class CloudShell extends BaseShell {
     protected async startCloudShell(): Promise<Terminal> {
         const accountAPI: AzureAccount = vscode.extensions.getExtension<AzureAccount>("ms-vscode.azure-account")!.exports;
         var iTerm;
-
-        await openCloudConsole(accountAPI, this._outputChannel, tempFile).then((terminal) => {
+        var os = process.platform === 'win32' ? OSes.WIndows : OSes.Linux;
+        await openCloudConsole(accountAPI, os, this._outputChannel, tempFile).then((terminal) => {
             // This is where we send the text to the terminal 
             console.log('Terminal obtained - moving on to running a command');
             // Running 'terraform version' in the newly created terminal  
