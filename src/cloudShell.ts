@@ -1,7 +1,7 @@
 "use strict";
 import { AzureAccount, AzureSubscription } from "./azure-account.api";
 import { BaseShell } from "./baseShell";
-import { openCloudConsole } from "./cloudConsole";
+import { openCloudConsole, OSes } from "./cloudConsole";
 import { delay } from "./cloudConsoleLauncher";
 import { Constants } from "./Constants";
 import { escapeFile, TerminalType, TFTerminal, azFilePush } from "./shared";
@@ -118,7 +118,9 @@ export class CloudShell extends BaseShell {
 
         var iTerm;
 
-        await openCloudConsole(accountAPI, azureSubscription, this._outputChannel, tempFile).then((terminal) => {
+        var os = process.platform === 'win32' ? OSes.WIndows : OSes.Linux;
+        await openCloudConsole(accountAPI, azureSubscription, os, this._outputChannel, tempFile).then((terminal) => {
+
             // This is where we send the text to the terminal 
             console.log('Terminal obtained - moving on to running a command');
             // Running 'terraform version' in the newly created terminal  
