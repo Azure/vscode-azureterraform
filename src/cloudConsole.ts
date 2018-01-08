@@ -1,6 +1,5 @@
 import { AzureAccount, AzureSession, AzureSubscription } from "./azure-account.api";
 import { OutputChannel, commands, window, MessageItem, Terminal, env } from "vscode";
-import { clearInterval, setTimeout } from "timers";
 import { delay, Errors, getStorageAccountKey, getUserSettings, provisionConsole, resetConsole, runInTerminal } from './cloudConsoleLauncher'
 import { TerminalType } from "./shared";
 import { CSTerminal } from './utilities';
@@ -8,7 +7,6 @@ import { CSTerminal } from './utilities';
 import { TIMEOUT } from 'dns';
 import { PassThrough } from "stream";
 import { clearInterval, setInterval, setTimeout } from "timers";
-import { OutputChannel, commands, window, MessageItem, Terminal, env } from "vscode";
 import { configure } from "vscode/lib/testrunner";
 import { SubscriptionClient } from "azure-arm-resource";
 
