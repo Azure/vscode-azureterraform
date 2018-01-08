@@ -3,13 +3,14 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 import { extensions, commands, Disposable, window } from 'vscode';
-import { AzureAccount } from './azure-account.api';
+import { AzureAccount, AzureSession, AzureSubscription } from './azure-account.api';
 import { AzureServiceClient, BaseResource } from 'ms-rest-azure';
 import { CloudShell } from './cloudShell';
 import { IntegratedShell } from './integratedShell';
 import { BaseShell } from './baseShell';
 import { join } from 'path';
 import { TestOption, isDotInstalled } from './utilities';
+import { azFilePush } from './shared';
 
 export var CSTerminal: boolean;
 
@@ -37,7 +38,6 @@ export function activate(ctx: vscode.ExtensionContext) {
     var outputChannel = vscode.window.createOutputChannel("VSCode extension for Azure Terraform");
     let activeShell = getShell(outputChannel);
 
-    const azureAccount: AzureAccount = vscode.extensions.getExtension<AzureAccount>('ms-vscode.azure-account')!.exports;
 
     ctx.subscriptions.push(vscode.commands.registerCommand('vscode-terraform-azure.init', () => {
         activeShell.runTerraformCmd("terraform init");

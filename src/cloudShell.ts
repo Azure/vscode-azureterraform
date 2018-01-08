@@ -1,10 +1,10 @@
 "use strict";
-import { AzureAccount } from "./azure-account.api";
+import { AzureAccount, AzureSubscription } from "./azure-account.api";
 import { BaseShell } from "./baseShell";
 import { openCloudConsole, OSes } from "./cloudConsole";
 import { delay } from "./cloudConsoleLauncher";
 import { Constants } from "./Constants";
-import { escapeFile, TerminalType, TFTerminal } from "./shared";
+import { escapeFile, TerminalType, TFTerminal, azFilePush } from "./shared";
 import { CSTerminal } from "./utilities";
 
 import { Message } from "_debugger";
@@ -40,6 +40,9 @@ export class CloudShell extends BaseShell {
             this.startCloudShell().then((terminal) => {
                     this.csTerm.terminal = terminal[0];
                     this.csTerm.ws = terminal[1];
+                    this.csTerm.storageAccountName = terminal[2]
+                    this.csTerm.storageAccountKey = terminal[3];
+                    this.csTerm.fileShareName = terminal[4];
                     this.runTFCommand(TFCommand, this.csTerm.terminal);
             });
         } else {
@@ -66,7 +69,7 @@ export class CloudShell extends BaseShell {
             (<any>vscode.workspace).onDidCloseTextDocument((textDocument) => {
                 console.log(`Document closed ${textDocument.fileName}`);
                 // File deleted let's sync the workspace
-                this.syncWorkspaceInternal(textDocument.fileName);
+                // TODO: Implement logic to handle deleted files
             });
         }
 
@@ -111,9 +114,13 @@ export class CloudShell extends BaseShell {
 
     protected async startCloudShell(): Promise<Terminal> {
         const accountAPI: AzureAccount = vscode.extensions.getExtension<AzureAccount>("ms-vscode.azure-account")!.exports;
+        const azureSubscription: AzureSubscription = vscode.extensions.getExtension<AzureSubscription>("ms-vscode.azure-account")!.exports;
+
         var iTerm;
+
         var os = process.platform === 'win32' ? OSes.WIndows : OSes.Linux;
-        await openCloudConsole(accountAPI, os, this._outputChannel, tempFile).then((terminal) => {
+        await openCloudConsole(accountAPI, azureSubscription, os, this._outputChannel, tempFile).then((terminal) => {
+
             // This is where we send the text to the terminal 
             console.log('Terminal obtained - moving on to running a command');
             // Running 'terraform version' in the newly created terminal  
@@ -165,16 +172,10 @@ export class CloudShell extends BaseShell {
                     for (let file of TFFiles.map( (a) => a.fsPath)) {
                         try {
                             if (fsExtra.existsSync(file)) { 
-                                console.log(`Uploading file ${file} to cloud shell as ${path.relative(vscode.workspace.rootPath, file)}`)
-                                const data = fsExtra.readFileSync(file, { encoding: 'utf8' }).toString();
-                               // this.csTerm.ws.send('mkdir -p ' + path.relative(vscode.workspace.rootPath, path.dirname(file)) + ' \n'); 
-                                this.csTerm.ws.send('mkdir -p ' + path.relative(vscode.workspace.rootPath, path.dirname(file)) 
-                                + ' ; ' + 
-                                'echo -e "' + escapeFile(data) + '" > ./' + path.relative(vscode.workspace.rootPath, file) + ' \n', function() {
-                                        console.log(`File ${path.relative(vscode.workspace.rootPath, file)} send to CloudShell`);
-                                    });
-                                };   
-                            }
+                                console.log(`Uploading file ${file} to cloud shell`);
+                                azFilePush(this.csTerm.storageAccountName, this.csTerm.storageAccountKey, this.csTerm.fileShareName, file);
+                            };   
+                        }
                         catch (err) {
                             console.log(err)
                         }
@@ -202,6 +203,7 @@ export class CloudShell extends BaseShell {
             console.log("Terminal not opened when trying to transfer files");
         }
     }
+
 
     protected stop(interval: NodeJS.Timer): void {
         clearInterval(interval);
