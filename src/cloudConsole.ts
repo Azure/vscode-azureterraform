@@ -1,15 +1,16 @@
 
-import { AzureAccount, AzureSession } from "./azure-account.api";
+import { AzureAccount, AzureSession, AzureSubscription } from "./azure-account.api";
 import { OutputChannel, commands, window, MessageItem, Terminal, env } from "vscode";
-import { getUserSettings, provisionConsole, runInTerminal, resetConsole , Errors, delay} from './cloudConsoleLauncher'
+import { getUserSettings, provisionConsole, runInTerminal, resetConsole , Errors, delay, getStorageAccountKey} from './cloudConsoleLauncher'
 import { clearInterval, setTimeout } from "timers";
 import { CSTerminal } from './utilities';
 import { configure } from "vscode/lib/testrunner";
 import { PassThrough } from "stream";
 import * as path from 'path';
 import { TerminalType } from "./shared";
+import { SubscriptionClient } from "azure-arm-resource";
 
-export function openCloudConsole(api: AzureAccount, outputChannel: OutputChannel, tempFile: string) {
+export function openCloudConsole(api: AzureAccount, subscription: AzureSubscription, outputChannel: OutputChannel, tempFile: string) {
     return (
         async function retry(): Promise<any> {
 
@@ -32,7 +33,28 @@ export function openCloudConsole(api: AzureAccount, outputChannel: OutputChannel
                 return;
                 //TODO: ADD requiresSetup();
             }
+
             outputChannel.append('\nUsersettings obtained from Tokens - proceeding\n');
+            
+            // Finding the storage account 
+            let storageProfile = result.userSettings.storageProfile
+            let storageAccountSettings = storageProfile.storageAccountResourceId.substr(1,storageProfile.storageAccountResourceId.length).split("/")
+            let storageAccount = {
+                subscriptionId: storageAccountSettings[1],
+                resourceGroup: storageAccountSettings[3],
+                provider: storageAccountSettings[5],
+                storageAccountName: storageAccountSettings[7]
+            };
+
+            let fileShareName = result.userSettings.storageProfile.fileShareName;
+
+            // Getting the storage account key
+            let storageAccountKey : string;
+            await getStorageAccountKey(storageAccount.resourceGroup, storageAccount.subscriptionId, result.token.accessToken, storageAccount.storageAccountName).then((keys)=> {
+                console.log ('Storage key obtained ');
+                storageAccountKey = keys.body.keys[0].value;
+            });
+            
 
             // Getting the console URI
             let consoleUri: string;
@@ -62,10 +84,6 @@ export function openCloudConsole(api: AzureAccount, outputChannel: OutputChannel
 
             let response = await runInTerminal(result.token.accessToken, consoleUri, '');
 
-            //var myCSTerminal: CSTerminal = null;
-            //myCSTerminal.accessToken = result.token.accessToken;
-            //myCSTerminal.consoleURI = consoleUri;
-
             progress.cancel()
             const terminal = window.createTerminal({
             name: "Terraform in CloudShell",
@@ -84,7 +102,7 @@ export function openCloudConsole(api: AzureAccount, outputChannel: OutputChannel
             await delay(500);
 
             terminal.show();
-            return [ terminal, response ];
+            return [ terminal, response, storageAccount.storageAccountName, storageAccountKey, fileShareName];
 
         })().catch(err => {
             outputChannel.append('\nConnecting to CloudShell failed with error: \n' + err);
