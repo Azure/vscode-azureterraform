@@ -33,7 +33,7 @@
             "properties": {
                 "tf-azure.terminal": {
                     "type": "string",
-                    "default": "integrated",
+                    "default": "cloudshell",
                     "description": "Specifies terminal used to run Terraform commands. Valid settings are `cloudshell` or `integrated`"
                 },
                 "tf-azure.files": {

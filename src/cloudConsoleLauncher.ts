@@ -21,8 +21,7 @@ export interface IUserSettings {
 }
 
 export async function getUserSettings(accessToken: string, armEndpoint: string): Promise<IUserSettings | undefined> {
-	const targetUri = `${armEndpoint}/providers/Microsoft.Portal/userSettings/cloudconsole?api-version=
-		${consoleApiVersion}`;
+	const targetUri = `${armEndpoint}/providers/Microsoft.Portal/userSettings/cloudconsole?api-version=${consoleApiVersion}`;
 	const response = await request({
 		uri: targetUri,
 		method: "GET",
@@ -73,8 +72,7 @@ export async function provisionConsole(
 			break;
 		}
 	}
-	throw new Error(`Sorry, your Cloud Shell failed to provision. Please retry later. Request correlation id:
-		${response.headers["x-ms-routing-request-id"]}`);
+	throw new Error(`Sorry, your Cloud Shell failed to provision. Please retry later. Request correlation id: ${response.headers["x-ms-routing-request-id"]}`);
 }
 
 async function createTerminal(
@@ -109,8 +107,7 @@ export async function getStorageAccountKey(
 	accessToken: string,
 	storageAccountName: string) {
 	return request({
-		uri: `https://management.azure.com/subscriptions/${subscriptionId}/resourceGroups/
-			${resourceGroup}/providers/Microsoft.Storage/storageAccounts/${storageAccountName}/listKeys?api-version=2017-06-01`,
+		uri: `https://management.azure.com/subscriptions/${subscriptionId}/resourceGroups/${resourceGroup}/providers/Microsoft.Storage/storageAccounts/${storageAccountName}/listKeys?api-version=2017-06-01`,
 		method: "POST",
 		headers: {
 			"Content-Type": "application/json",

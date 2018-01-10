@@ -8,7 +8,8 @@
         "object-literal-sort-keys": false,
         "indent": [false, "spaces"],
         "no-console": [false, "log", "error"],
-        "no-string-literal": false
+        "no-string-literal": false,
+        "max-line-length": [false, 120]
     },
     "rulesDirectory": []
 }
