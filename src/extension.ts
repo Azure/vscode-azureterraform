@@ -107,8 +107,8 @@ export function activate(ctx: vscode.ExtensionContext) {
     ctx.subscriptions.push(vscode.commands.registerCommand("vscode-terraform-azure.push", () => {
         // Create a function that will sync the files to Cloudshell
         if (terminalSetToCloudshell()) {
-            vscode.workspace.findFiles(filesGlobSetting()).then((TFfiles) => {
-                getShell().pushTerraformFiles(TFfiles);
+            vscode.workspace.findFiles(filesGlobSetting()).then((tfFiles) => {
+                cs.pushFiles(tfFiles);
             });
         } else {
             vscode.window.showErrorMessage("Push function only available when using cloudshell.")

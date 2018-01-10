@@ -30,6 +30,61 @@ export class CloudShell extends BaseShell {
         TerminalType.CloudShell,
         Constants.TerraformTerminalName);
 
+    public async pushFiles(files: vscode.Uri[]) {
+        this.outputChannel.appendLine("Uploading files to CloudShell");
+        const RETRY_INTERVAL = 500;
+        const RETRY_TIMES = 30;
+
+        // Checking if the terminal has been created
+        if ( this.csTerm.terminal != null) {
+            for (let i = 0; i < RETRY_TIMES; i++ ) {
+                if (this.csTerm.ws.readyState !== ws.OPEN ) {
+                    await delay (RETRY_INTERVAL);
+                } else {
+                    for (const file of files.map( (a) => a.fsPath)) {
+                        try {
+                            if (fsExtra.existsSync(file)) {
+                                this.outputChannel.appendLine(`Uploading file ${file} to cloud shell`);
+                                azFilePush(this.csTerm.storageAccountName,
+                                    this.csTerm.storageAccountKey,
+                                    this.csTerm.fileShareName, file);
+                            }
+                        } catch (err) {
+                            this.outputChannel.appendLine(err);
+                        }
+                    }
+                    vscode.window.showInformationMessage(
+                        `Uploaded all the text files in the current workspace to CloudShell`);
+                    break;
+                }
+            }
+        } else {
+            const message = "Do you want to open CloudShell?";
+            const ok: MessageItem = { title : "Yes" };
+            const cancel: MessageItem = { title : "No", isCloseAffordance: true };
+            vscode.window.showWarningMessage(message, ok, cancel).then( (response) => {
+                if ( response === ok ) {
+                    this.startCloudShell().then((terminal) => {
+                        this.csTerm.terminal = terminal[0];
+                        this.csTerm.ws = terminal[1];
+                        this.outputChannel.appendLine(`Obtained terminal info and ws\n`);
+                        this.pushFiles(files);
+                        return;
+                    });
+                }
+            });
+            this.outputChannel.appendLine("Terminal not opened when trying to transfer files");
+        }
+    }
+
+    public async pullFiles(files: vscode.Uri[]) {
+        return;
+    }
+
+    public async deleteFiles(files: vscode.Uri[]) {
+        return;
+    }
+
     protected runTerraformInternal(TFCommand: string) {
 
         // Workaround the TLS error
@@ -155,53 +210,6 @@ export class CloudShell extends BaseShell {
             this.outputChannel.appendLine("\nConnecting to terminal failed, please retry.");
         }
 
-    }
-
-    protected async uploadTfFiles(TFFiles: vscode.Uri[]) {
-        this.outputChannel.appendLine("Uploading files to CloudShell");
-        const RETRY_INTERVAL = 500;
-        const RETRY_TIMES = 30;
-
-        // Checking if the terminal has been created
-        if ( this.csTerm.terminal != null) {
-            for (let i = 0; i < RETRY_TIMES; i++ ) {
-                if (this.csTerm.ws.readyState !== ws.OPEN ) {
-                    await delay (RETRY_INTERVAL);
-                } else {
-                    for (const file of TFFiles.map( (a) => a.fsPath)) {
-                        try {
-                            if (fsExtra.existsSync(file)) {
-                                this.outputChannel.appendLine(`Uploading file ${file} to cloud shell`);
-                                azFilePush(this.csTerm.storageAccountName,
-                                    this.csTerm.storageAccountKey,
-                                    this.csTerm.fileShareName, file);
-                            }
-                        } catch (err) {
-                            this.outputChannel.appendLine(err);
-                        }
-                    }
-                    vscode.window.showInformationMessage(
-                        `Uploaded all the text files in the current workspace to CloudShell`);
-                    break;
-                }
-            }
-        } else {
-            const message = "Do you want to open CloudShell?";
-            const ok: MessageItem = { title : "Yes" };
-            const cancel: MessageItem = { title : "No", isCloseAffordance: true };
-            vscode.window.showWarningMessage(message, ok, cancel).then( (response) => {
-                if ( response === ok ) {
-                    this.startCloudShell().then((terminal) => {
-                        this.csTerm.terminal = terminal[0];
-                        this.csTerm.ws = terminal[1];
-                        this.outputChannel.appendLine(`Obtained terminal info and ws\n`);
-                        this.uploadTfFiles(TFFiles);
-                        return;
-                    });
-                }
-            });
-            this.outputChannel.appendLine("Terminal not opened when trying to transfer files");
-        }
     }
 
     protected stop(interval: NodeJS.Timer): void {

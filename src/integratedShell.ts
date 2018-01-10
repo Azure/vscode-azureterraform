@@ -182,10 +182,6 @@ export class IntegratedShell extends BaseShell {
         return;
     }
 
-    protected async uploadTfFiles(TFFiles) {
-        return;
-    }
-
     private deletePng(): void {
         if (fs.existsSync(this.graphUri.path)) {
             fs.unlinkSync(this.graphUri.path);

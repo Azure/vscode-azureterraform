@@ -32,10 +32,6 @@ export abstract class BaseShell {
         return this.runTerraformAsyncInternal(tfActiveFile, tfCommand);
     }
 
-    public pushTerraformFiles(tfFile: vscode.Uri[]) {
-        this.uploadTfFiles(tfFile);
-    }
-
     // Method used to run the end to end tests
     public async runTerraformTests(test: string): Promise<any> {
 
@@ -76,5 +72,4 @@ export abstract class BaseShell {
     protected abstract initShellInternal();
     protected abstract syncWorkspaceInternal(fileName: string);
     protected abstract runTerraformTestsInternal(TestType: string);
-    protected abstract uploadTfFiles(TFFiles: vscode.Uri[]);
 }
