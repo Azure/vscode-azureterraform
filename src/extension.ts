@@ -88,8 +88,7 @@ export function activate(ctx: vscode.ExtensionContext) {
             if (err) {
                 outputChannel.appendLine(err);
             } else {
-                const iShell = getShell() as IntegratedShell;
-                iShell.visualize();
+                is.visualize();
             }
         });
 
@@ -98,11 +97,10 @@ export function activate(ctx: vscode.ExtensionContext) {
     ctx.subscriptions.push(vscode.commands.registerCommand("vscode-terraform-azure.exectest", () => {
         outputChannel.appendLine("Testing current module");
 
-        const iShell = getShell() as IntegratedShell;
         // TODO - asking the type of test to run e2e or lint
         vscode.window.showQuickPick([TestOption.lint, TestOption.e2enossh, TestOption.e2ewithssh, TestOption.custom],
             { placeHolder: "Select the type of test that you want to run" }).then((pick) => {
-            iShell.runTerraformTests(pick);
+            is.runTerraformTests(pick);
         });
     }));
 
