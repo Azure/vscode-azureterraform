@@ -1,115 +1,135 @@
-'use strict';
+"use strict";
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
-import * as vscode from 'vscode';
-import { extensions, commands, Disposable, window } from 'vscode';
-import { AzureAccount, AzureSession, AzureSubscription } from './azure-account.api';
-import { AzureServiceClient, BaseResource } from 'ms-rest-azure';
-import { CloudShell } from './cloudShell';
-import { IntegratedShell } from './integratedShell';
-import { BaseShell } from './baseShell';
-import { join } from 'path';
-import { TestOption, isDotInstalled } from './utilities';
-import { azFilePush } from './shared';
+import * as vscode from "vscode";
 
-export var CSTerminal: boolean;
+import { commands, Disposable, extensions, GlobPattern, window } from "vscode";
 
-function getShell(outputChannel: vscode.OutputChannel): BaseShell {
-    var activeShell = null;
-    if (CSTerminal) {
-        activeShell = new CloudShell(outputChannel);
-    }
-    else {
-        activeShell = new IntegratedShell(outputChannel);
+import { AzureServiceClient, BaseResource } from "ms-rest-azure";
+import { join } from "path";
+
+import { AzureAccount, AzureSession, AzureSubscription } from "./azure-account.api";
+import { BaseShell } from "./baseShell";
+import { CloudShell } from "./cloudShell";
+import { IntegratedShell } from "./integratedShell";
+import { azFilePush } from "./shared";
+import { isDotInstalled, TestOption } from "./utilities";
+
+let cs: CloudShell;
+let is: IntegratedShell;
+let outputChannel: vscode.OutputChannel;
+
+function getShell(): BaseShell {
+    let activeShell = null;
+    if (terminalSetToCloudshell()) {
+        activeShell = cs;
+    } else {
+        activeShell = is;
     }
 
     return activeShell;
 }
 
+function init(): void {
+    cs = new CloudShell(outputChannel);
+    is = new IntegratedShell(outputChannel);
+    outputChannel.show();
+}
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export function activate(ctx: vscode.ExtensionContext) {
 
-    console.log('Loading extension "vscode-terraform-azure"');
-    CSTerminal = (vscode.workspace.getConfiguration('tf-azure').get('terminal') == "cloudshell");
+    outputChannel = vscode.window.createOutputChannel("VSCode extension for Azure Terraform");
 
+    init();
 
-    var outputChannel = vscode.window.createOutputChannel("VSCode extension for Azure Terraform");
-    let activeShell = getShell(outputChannel);
+    outputChannel.appendLine("Loading extension");
 
+    const fileWatcher = vscode.workspace.createFileSystemWatcher(filesGlobSetting());
 
-    ctx.subscriptions.push(vscode.commands.registerCommand('vscode-terraform-azure.init', () => {
-        activeShell.runTerraformCmd("terraform init");
+    // TODO: Implement filewatcher handlers
+    fileWatcher.onDidDelete((deletedUri) => {
+        outputChannel.appendLine("Deleted: " + deletedUri.path);
+    });
+    fileWatcher.onDidCreate((createdUri) => {
+        outputChannel.appendLine("Created: " + createdUri.path);
+    });
+    fileWatcher.onDidChange((changedUri) => {
+        outputChannel.appendLine("Changed: " + changedUri.path);
+    });
+
+    ctx.subscriptions.push(vscode.commands.registerCommand("vscode-terraform-azure.init", () => {
+        getShell().runTerraformCmd("terraform init");
     }));
 
-    ctx.subscriptions.push(vscode.commands.registerCommand('vscode-terraform-azure.plan', () => {
-        activeShell.runTerraformCmd("terraform plan");
+    ctx.subscriptions.push(vscode.commands.registerCommand("vscode-terraform-azure.plan", () => {
+        getShell().runTerraformCmd("terraform plan");
     }));
 
-    ctx.subscriptions.push(vscode.commands.registerCommand('vscode-terraform-azure.apply', () => {
-        activeShell.runTerraformCmd("terraform apply");
+    ctx.subscriptions.push(vscode.commands.registerCommand("vscode-terraform-azure.apply", () => {
+        getShell().runTerraformCmd("terraform apply");
     }));
 
-    ctx.subscriptions.push(vscode.commands.registerCommand('vscode-terraform-azure.destroy', () => {
-        activeShell.runTerraformCmd("terraform destroy");
+    ctx.subscriptions.push(vscode.commands.registerCommand("vscode-terraform-azure.destroy", () => {
+        getShell().runTerraformCmd("terraform destroy");
     }));
 
-    ctx.subscriptions.push(vscode.commands.registerCommand('vscode-terraform-azure.refresh', () => {
-        activeShell.runTerraformCmd("terraform refresh");
+    ctx.subscriptions.push(vscode.commands.registerCommand("vscode-terraform-azure.refresh", () => {
+        getShell().runTerraformCmd("terraform refresh");
     }));
 
-    ctx.subscriptions.push(vscode.commands.registerCommand('vscode-terraform-azure.validate', () => {
-        activeShell.runTerraformCmd("terraform validate");
+    ctx.subscriptions.push(vscode.commands.registerCommand("vscode-terraform-azure.validate", () => {
+        getShell().runTerraformCmd("terraform validate");
     }));
 
-    ctx.subscriptions.push(vscode.commands.registerCommand('vscode-terraform-azure.visualize', () => {
-        isDotInstalled(outputChannel, function (err) {
+    ctx.subscriptions.push(vscode.commands.registerCommand("vscode-terraform-azure.visualize", () => {
+        isDotInstalled(outputChannel, (err) => {
             if (err) {
-                console.log('GraphViz - Dot not installed');
-            }
-            else{
-                var iShell = new IntegratedShell(outputChannel);
+                outputChannel.appendLine(err);
+            } else {
+                const iShell = getShell() as IntegratedShell;
                 iShell.visualize();
             }
         });
 
     }));
 
-    ctx.subscriptions.push(vscode.commands.registerCommand('vscode-terraform-azure.exectest', () => {
-        console.log('Testing current module');
+    ctx.subscriptions.push(vscode.commands.registerCommand("vscode-terraform-azure.exectest", () => {
+        outputChannel.appendLine("Testing current module");
 
-        var iShell = new IntegratedShell(outputChannel);
+        const iShell = getShell() as IntegratedShell;
         // TODO - asking the type of test to run e2e or lint
-        vscode.window.showQuickPick([TestOption.lint, TestOption.e2enossh, TestOption.e2ewithssh, TestOption.custom], { placeHolder: "Select the type of test that you want to run" }).then((pick) => {
+        vscode.window.showQuickPick([TestOption.lint, TestOption.e2enossh, TestOption.e2ewithssh, TestOption.custom],
+            { placeHolder: "Select the type of test that you want to run" }).then((pick) => {
             iShell.runTerraformTests(pick);
-        })
+        });
     }));
 
-    ctx.subscriptions.push(vscode.commands.registerCommand('vscode-terraform-azure.push', () => {
+    ctx.subscriptions.push(vscode.commands.registerCommand("vscode-terraform-azure.push", () => {
         // Create a function that will sync the files to Cloudshell
-        if(CSTerminal)
-        {
-        vscode.workspace.findFiles(vscode.workspace.getConfiguration('tf-azure').get('files')).then(TFfiles => {
-            activeShell.copyTerraformFiles(TFfiles);
-        });
-        }
-        else{
+        if (terminalSetToCloudshell()) {
+            vscode.workspace.findFiles(filesGlobSetting()).then((TFfiles) => {
+                getShell().pushTerraformFiles(TFfiles);
+            });
+        } else {
             vscode.window.showErrorMessage("Push function only available when using cloudshell.")
-            .then(() => {return;})
+                .then(() => { return; });
         }
     }));
+}
+export function terminalSetToCloudshell(): boolean {
+    return (vscode.workspace.getConfiguration("tf-azure").get("terminal") === "cloudshell") as boolean;
+}
+
+export function filesGlobSetting(): GlobPattern {
+    return vscode.workspace.getConfiguration("tf-azure").get("files") as GlobPattern;
 }
 
 export async function TFLogin(api: AzureAccount) {
-    console.log('entering TFLogin')
+    outputChannel.appendLine("Attempting - TFLogin");
     if (!(await api.waitForLogin())) {
-        return commands.executeCommand('azure-account.askForLogin');
+        return commands.executeCommand("azure-account.askForLogin");
     }
-    console.log('done TFLogin')
-}
-
-// this method is called when your extension is deactivated
-export function deactivate() {
-
+    outputChannel.appendLine("Succeeded - TFLogin");
 }

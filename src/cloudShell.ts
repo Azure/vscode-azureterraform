@@ -4,7 +4,7 @@ import { BaseShell } from "./baseShell";
 import { openCloudConsole, OSes } from "./cloudConsole";
 import { delay } from "./cloudConsoleLauncher";
 import { Constants } from "./Constants";
-import { escapeFile, TerminalType, TFTerminal, azFilePush } from "./shared";
+import { azFilePush, escapeFile, TerminalType, TFTerminal } from "./shared";
 import { CSTerminal } from "./utilities";
 
 import { Message } from "_debugger";
@@ -33,14 +33,16 @@ export class CloudShell extends BaseShell {
     protected runTerraformInternal(TFCommand: string) {
 
         // Workaround the TLS error
-        process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = "0";
+        /* tslint:disable:no-string-literal */
+        process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = "0";
+        /* tslint:enable:no-string-literal */
 
         // TODO: Check if logged with azure account
         if (this.csTerm.terminal == null) {
             this.startCloudShell().then((terminal) => {
                     this.csTerm.terminal = terminal[0];
                     this.csTerm.ws = terminal[1];
-                    this.csTerm.storageAccountName = terminal[2]
+                    this.csTerm.storageAccountName = terminal[2];
                     this.csTerm.storageAccountKey = terminal[3];
                     this.csTerm.fileShareName = terminal[4];
                     this.runTFCommand(TFCommand, this.csTerm.terminal);
@@ -53,11 +55,11 @@ export class CloudShell extends BaseShell {
 
     protected initShellInternal() {
         // Reacting to the deletion of the terminal window
-        if ("onDidCloseTerminal" in <any>vscode.window) {
-            (<any>vscode.window).onDidCloseTerminal((terminal) => {
-                if (terminal == this.csTerm.terminal) {
+        if ("onDidCloseTerminal" in vscode.window as any) {
+            (vscode.window as any).onDidCloseTerminal((terminal) => {
+                if (terminal === this.csTerm.terminal) {
                     this.outputLine("\nTerraform CloudShell Term closed", terminal.name);
-                    console.log("CloudShell terminal was closed");
+                    this.outputChannel.appendLine("CloudShell terminal was closed");
                     fsExtra.removeSync(tempFile);
                     this.csTerm.terminal = null;
                 }
@@ -65,10 +67,10 @@ export class CloudShell extends BaseShell {
         }
 
         // Reacting to the deletion of a file in the workspace
-        if ("onDidCloseTextDocument" in <any>vscode.workspace) {
-            (<any>vscode.workspace).onDidCloseTextDocument((textDocument) => {
-                console.log(`Document closed ${textDocument.fileName}`);
-                // File deleted let's sync the workspace
+        if ("onDidCloseTextDocument" in vscode.workspace as any) {
+            (vscode.workspace as any).onDidCloseTextDocument((textDocument) => {
+                this.outputChannel.appendLine(`Document closed ${textDocument.fileName}`);
+                // File deleted let"s sync the workspace
                 // TODO: Implement logic to handle deleted files
             });
         }
@@ -76,7 +78,7 @@ export class CloudShell extends BaseShell {
     }
 
     protected async syncWorkspaceInternal(file) {
-        console.log(`Deleting ${path.basename(file)} in CloudShell`);
+        this.outputChannel.appendLine(`Deleting ${path.basename(file)} in CloudShell`);
         const retryInterval = 500;
         const retryTimes = 30;
 
@@ -87,123 +89,120 @@ export class CloudShell extends BaseShell {
                     await delay (retryInterval);
                 } else {
                         try {
-                            this.csTerm.ws.send('rm ' + path.relative(vscode.workspace.rootPath, file) + ' \n');
+                            this.csTerm.ws.send("rm " + path.relative(vscode.workspace.rootPath, file) + " \n");
                             // TODO: Add directory management
-                        }
-                        catch (err) {
-                            console.log(err)
+                        } catch (err) {
+                            this.outputChannel.appendLine(err);
                         }
                         break;
                 }
             }
-        }
-        else {
+        } else {
             vscode.window.showErrorMessage ("Open a terminal first");
-            console.log("Terminal not opened when trying to transfer files");
+            this.outputChannel.appendLine("Terminal not opened when trying to transfer files");
         }
-        
     }
 
-    protected runTerraformTestsInternal(){
-        
+    protected runTerraformTestsInternal() {
+        return;
     }
 
-    protected runTerraformAsyncInternal(TFConfiguration: string, TFCommand: string) : Promise<any>{
+    protected runTerraformAsyncInternal(TFConfiguration: string, TFCommand: string): Promise<any> {
         return null;
     }
 
     protected async startCloudShell(): Promise<Terminal> {
-        const accountAPI: AzureAccount = vscode.extensions.getExtension<AzureAccount>("ms-vscode.azure-account")!.exports;
-        const azureSubscription: AzureSubscription = vscode.extensions.getExtension<AzureSubscription>("ms-vscode.azure-account")!.exports;
+        const accountAPI: AzureAccount = vscode.extensions
+            .getExtension<AzureAccount>("ms-vscode.azure-account")!.exports;
 
-        var iTerm;
+        const azureSubscription: AzureSubscription = vscode.extensions
+            .getExtension<AzureSubscription>("ms-vscode.azure-account")!.exports;
 
-        var os = process.platform === 'win32' ? OSes.WIndows : OSes.Linux;
-        await openCloudConsole(accountAPI, azureSubscription, os, this._outputChannel, tempFile).then((terminal) => {
+        let iTerm;
 
-            // This is where we send the text to the terminal 
-            console.log('Terminal obtained - moving on to running a command');
-            // Running 'terraform version' in the newly created terminal  
-            //this.runTFCommand("terraform version", terminal);
+        const os = process.platform === "win32" ? OSes.WIndows : OSes.Linux;
+        await openCloudConsole(accountAPI, azureSubscription, os, this.outputChannel, tempFile).then((terminal) => {
+
+            // This is where we send the text to the terminal
+            this.outputChannel.appendLine("Terminal obtained - moving on to running a command");
             iTerm = terminal;
             });
-        console.log("\nEnd of the startCloudShell() - iTerm returned");
+        this.outputChannel.appendLine("\nEnd of the startCloudShell() - iTerm returned");
         return iTerm;
     }
 
     protected runTFCommand(command: string, terminal: Terminal) {
-        console.log('Runing a command in an existing terminal ');
-        var count = 30;
+        this.outputChannel.appendLine("Runing a command in an existing terminal ");
+        let count = 30;
         if (terminal) {
-            var _localthis = this;
-            var interval = setInterval(function () {
+            const localThis = this;
+            const interval = setInterval (() => {
                 count--;
-                console.log(count);
+                this.outputChannel.appendLine(count.toString());
                 if (count > 0) {
                     if (fsExtra.existsSync(tempFile)) {
-                        //fsExtra.removeSync(tempFile);
-                        console.log(`\Sending command: ${command}`);
+                        this.outputChannel.appendLine(`\Sending command: ${command}`);
                         terminal.sendText(command);
                         terminal.show();
 
                         count = 0;
                     }
                 } else {
-                    _localthis.stop(interval);
+                    localThis.stop(interval);
                 }
             }, 500);
         } else {
-            this._outputChannel.appendLine('\nConnecting to terminal failed, please retry.');
+            this.outputChannel.appendLine("\nConnecting to terminal failed, please retry.");
         }
 
     }
 
-    protected async uploadTFFiles(TFFiles){
-        console.log('Uploading files to CloudShell');
-        const retry_interval = 500;
-        const retry_times = 30;
+    protected async uploadTfFiles(TFFiles: vscode.Uri[]) {
+        this.outputChannel.appendLine("Uploading files to CloudShell");
+        const RETRY_INTERVAL = 500;
+        const RETRY_TIMES = 30;
 
         // Checking if the terminal has been created
         if ( this.csTerm.terminal != null) {
-            for (var i = 0; i < retry_times; i++ ){
-                if (this.csTerm.ws.readyState != ws.OPEN ){
-                    await delay (retry_interval);
+            for (let i = 0; i < RETRY_TIMES; i++ ) {
+                if (this.csTerm.ws.readyState !== ws.OPEN ) {
+                    await delay (RETRY_INTERVAL);
                 } else {
-                    for (let file of TFFiles.map( (a) => a.fsPath)) {
+                    for (const file of TFFiles.map( (a) => a.fsPath)) {
                         try {
-                            if (fsExtra.existsSync(file)) { 
-                                console.log(`Uploading file ${file} to cloud shell`);
-                                azFilePush(this.csTerm.storageAccountName, this.csTerm.storageAccountKey, this.csTerm.fileShareName, file);
-                            };   
-                        }
-                        catch (err) {
-                            console.log(err)
+                            if (fsExtra.existsSync(file)) {
+                                this.outputChannel.appendLine(`Uploading file ${file} to cloud shell`);
+                                azFilePush(this.csTerm.storageAccountName,
+                                    this.csTerm.storageAccountKey,
+                                    this.csTerm.fileShareName, file);
+                            }
+                        } catch (err) {
+                            this.outputChannel.appendLine(err);
                         }
                     }
-                    vscode.window.showInformationMessage(`Uploaded all the text files in the current workspace to CloudShell`);
+                    vscode.window.showInformationMessage(
+                        `Uploaded all the text files in the current workspace to CloudShell`);
                     break;
                 }
             }
-        }
-        else {
-            const message = "Do you want to open CloudShell?"
-            const ok : MessageItem = { title : "Yes" }
-            const cancel : MessageItem = { title : "No", isCloseAffordance: true }
+        } else {
+            const message = "Do you want to open CloudShell?";
+            const ok: MessageItem = { title : "Yes" };
+            const cancel: MessageItem = { title : "No", isCloseAffordance: true };
             vscode.window.showWarningMessage(message, ok, cancel).then( (response) => {
                 if ( response === ok ) {
                     this.startCloudShell().then((terminal) => {
                         this.csTerm.terminal = terminal[0];
                         this.csTerm.ws = terminal[1];
-                        console.log(`Obtained terminal info and ws\n`);
-                        this.uploadTFFiles(TFFiles);
+                        this.outputChannel.appendLine(`Obtained terminal info and ws\n`);
+                        this.uploadTfFiles(TFFiles);
                         return;
                     });
                 }
             });
-            console.log("Terminal not opened when trying to transfer files");
+            this.outputChannel.appendLine("Terminal not opened when trying to transfer files");
         }
     }
-
 
     protected stop(interval: NodeJS.Timer): void {
         clearInterval(interval);

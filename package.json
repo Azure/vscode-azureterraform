@@ -108,15 +108,16 @@
     "dependencies": {
         "adal-node": "0.1.22",
         "azure-arm-resource": "^2.0.0-preview",
+        "azure-storage": "",
         "fs-extra": "^4.0.2",
-        "ms-rest-azure": "^2.2.3",
         "ms-rest": "^2.2.7",
+        "ms-rest-azure": "^2.2.3",
         "opn": "5.1.0",
         "os": "^0.1.1",
         "path": "^0.12.7",
         "request-promise": "4.2.1",
-        "azure-storage": "",
         "semver": "5.4.1",
+        "tslint": "^5.8.0",
         "vscode-nls": "2.0.2",
         "ws": "3.1.0"
     },

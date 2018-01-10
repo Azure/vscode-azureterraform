@@ -1,67 +1,89 @@
 "use strict";
 
-import * as vscode from 'vscode';
-import { AzureAccount, AzureSession, AzureLoginStatus, AzureSubscription } from './azure-account.api';
-import { WebResource } from 'ms-rest';
-import * as azure from 'azure-storage';
+import * as azure from "azure-storage";
 import * as path from "path";
+import * as vscode from "vscode";
 
-export class TFTerminal{
+import { WebResource } from "ms-rest";
+import { AzureAccount, AzureLoginStatus, AzureSession, AzureSubscription } from "./azure-account.api";
 
-    constructor(type: TerminalType, name: string){
+export class TFTerminal {
+
+    public type: TerminalType;
+    public terminal: vscode.Terminal;
+    public name: string;
+    public ws;
+    public storageAccountKey: string;
+    public storageAccountName: string;
+    public fileShareName: string;
+
+    constructor(type: TerminalType, name: string) {
         this.type = type;
         this.name = name;
     }
-    
-    public type : TerminalType;
-    public terminal : vscode.Terminal;
-    public name : string;
-    public ws;
-    public storageAccountKey: string; 
-    public storageAccountName: string;
-    public fileShareName: string; 
 }
 
-export enum TerminalType{
-    Integrated = 'integrated',
-    CloudShell = 'cloudshell'
+export enum TerminalType {
+    Integrated = "integrated",
+    CloudShell = "cloudshell",
 }
 
 export enum Option {
     docker = "docker",
     local = "local",
-    cloudshell = "cloudshell"
+    cloudshell = "cloudshell",
 }
 
 export function escapeFile(data: string): string {
     return data.replace(/"/g, '\\"');
 }
 
-export function azFilePush(storageAccountName: string, storageAccountkey: string, fileShareName: string, filename: string): void{
-    var filesService = azure.createFileService(storageAccountName,storageAccountkey);
-    var dirname = path.dirname(path.relative(vscode.workspace.workspaceFolders[0].uri.fsPath, filename));
+export function azFileDelete(
+    storageAccountName: string,
+    storageAccountKey: string,
+    fileShareName: string,
+    fileName: string): boolean {
+    return true;
+}
 
-    filesService.createShareIfNotExists(fileShareName, function(error, result, response){
+export function azFilePull(
+    storageAccountName: string,
+    storageAccountKey: string,
+    fileShareName: string,
+    fileName: string,
+    savePath: string): void {
+    const filesService = azure.createFileService(storageAccountName, storageAccountKey);
+}
+
+export function azFilePush(
+    storageAccountName: string,
+    storageAccountKey: string,
+    fileShareName: string,
+    fileName: string): void {
+    const filesService = azure.createFileService(storageAccountName, storageAccountKey);
+    const dirname = path.dirname(path.relative(vscode.workspace.workspaceFolders[0].uri.fsPath, fileName));
+
+    filesService.createShareIfNotExists(fileShareName, (error, result, response) => {
         if (!error) {
-            var dir = ""
-            for (let newdir of dirname.split(path.sep)) {
-                dir = dir + "/" + newdir; 
-                filesService.createDirectoryIfNotExists(fileShareName, dir , function(error, result, response) {
-                    if (!error) {
+            let dir = "";
+            for (const newdir of dirname.split(path.sep)) {
+                dir = dir + "/" + newdir;
+                filesService.createDirectoryIfNotExists(fileShareName, dir , (e, res, resp) => {
+                    if (!e) {
                         console.log(`Created dir ${dir}`);
                     }
                 });
             }
-            
-            filesService.createFileFromLocalFile(fileShareName, dirname, path.basename(filename), filename , function (error, result, response) {
-                if (!error) {
-                    console.log(`File ${path.basename(filename)} uploaded correctly`);
+
+            filesService.createFileFromLocalFile(fileShareName, dirname,
+                path.basename(fileName), fileName , (e, res, resp) => {
+                if (!e) {
+                    console.log(`File ${path.basename(fileName)} uploaded correctly`);
                 } else {
-                    console.log(`Error: ${error}`);
+                    console.log(`Error: ${e}`);
                 }
                 return;
-            })
-                
+            });
         }
     });
 }
