@@ -1,34 +1,34 @@
-import * as request from 'request-promise';
-import { setTimeout } from 'timers';
-import * as fsExtra from 'fs-extra';
-import * as WS from 'ws';
 
+import * as fsExtra from "fs-extra";
+import * as request from "request-promise";
+import { setTimeout } from "timers";
+import * as WS from "ws";
 
-const consoleApiVersion = '2017-08-01-preview';
+const consoleApiVersion = "2017-08-01-preview";
 
 export enum Errors {
-	DeploymentOsTypeConflict = 'DeploymentOsTypeConflict'
+	DeploymentOsTypeConflict = "DeploymentOsTypeConflict",
 }
 
 function getConsoleUri(armEndpoint: string) {
 	return `${armEndpoint}/providers/Microsoft.Portal/consoles/default?api-version=${consoleApiVersion}`;
 }
 
-export interface UserSettings {
+export interface IUserSettings {
 	preferredLocation: string;
 	preferredOsType: string; // The last OS chosen in the portal.
 	storageProfile: any;
 }
 
-export async function getUserSettings(accessToken: string, armEndpoint: string): Promise<UserSettings | undefined> {
+export async function getUserSettings(accessToken: string, armEndpoint: string): Promise<IUserSettings | undefined> {
 	const targetUri = `${armEndpoint}/providers/Microsoft.Portal/userSettings/cloudconsole?api-version=${consoleApiVersion}`;
 	const response = await request({
 		uri: targetUri,
-		method: 'GET',
+		method: "GET",
 		headers: {
-			'Accept': 'application/json',
-			'Content-Type': 'application/json',
-			'Authorization': `Bearer ${accessToken}`
+			"Accept": "application/json",
+			"Content-Type": "application/json",
+			"Authorization": `Bearer ${accessToken}`,
 		},
 		simple: false,
 		resolveWithFullResponse: true,
@@ -47,12 +47,16 @@ export async function getUserSettings(accessToken: string, armEndpoint: string):
 	return response.body && response.body.properties;
 }
 
-
-export async function provisionConsole(accessToken: string, armEndpoint: string, userSettings: UserSettings, osType: string): Promise<string> {
+export async function provisionConsole(
+	accessToken: string,
+	armEndpoint: string,
+	userSettings: IUserSettings,
+	osType: string): Promise<string> {
 	let response = await createTerminal(accessToken, armEndpoint, userSettings, osType, true);
 	for (let i = 0; i < 10; i++ , response = await createTerminal(accessToken, armEndpoint, userSettings, osType, false)) {
 		if (response.statusCode < 200 || response.statusCode > 299) {
-			if (response.statusCode === 409 && response.body && response.body.error && response.body.error.code === Errors.DeploymentOsTypeConflict) {
+			if (response.statusCode === 409 && response.body
+				&& response.body.error && response.body.error.code === Errors.DeploymentOsTypeConflict) {
 				throw new Error(Errors.DeploymentOsTypeConflict);
 			} else if (response.body && response.body.error && response.body.error.message) {
 				throw new Error(`${response.body.error.message} (${response.statusCode})`);
@@ -62,62 +66,71 @@ export async function provisionConsole(accessToken: string, armEndpoint: string,
 		}
 
 		const consoleResource = response.body;
-		if (consoleResource.properties.provisioningState === 'Succeeded') {
+		if (consoleResource.properties.provisioningState === "Succeeded") {
 			return consoleResource.properties.uri;
-		} else if (consoleResource.properties.provisioningState === 'Failed') {
+		} else if (consoleResource.properties.provisioningState === "Failed") {
 			break;
 		}
 	}
-	throw new Error(`Sorry, your Cloud Shell failed to provision. Please retry later. Request correlation id: ${response.headers['x-ms-routing-request-id']}`);
+	throw new Error(`Sorry, your Cloud Shell failed to provision. Please retry later. Request correlation id: ${response.headers["x-ms-routing-request-id"]}`);
 }
 
-async function createTerminal(accessToken: string, armEndpoint: string, userSettings: UserSettings, osType: string, initial: boolean) {
+async function createTerminal(
+	accessToken: string,
+	armEndpoint: string,
+	userSettings: IUserSettings,
+	osType: string,
+	initial: boolean) {
 	return request({
 		uri: getConsoleUri(armEndpoint),
-		method: initial ? 'PUT' : 'GET',
+		method: initial ? "PUT" : "GET",
 		headers: {
-			'Accept': 'application/json',
-			'Content-Type': 'application/json',
-			'Authorization': `Bearer ${accessToken}`,
-			'x-ms-console-preferred-location': userSettings.preferredLocation
+			"Accept": "application/json",
+			"Content-Type": "application/json",
+			"Authorization": `Bearer ${accessToken}`,
+			"x-ms-console-preferred-location": userSettings.preferredLocation,
 		},
 		simple: false,
 		resolveWithFullResponse: true,
 		json: true,
 		body: initial ? {
 			properties: {
-				osType
-			}
-		} : undefined
+				osType,
+			},
+		} : undefined,
 	});
 }
 
-export async function getStorageAccountKey(resourceGroup: string, subscriptionId: string, accessToken: string, storageAccountName: string) {
+export async function getStorageAccountKey(
+	resourceGroup: string,
+	subscriptionId: string,
+	accessToken: string,
+	storageAccountName: string) {
 	return request({
 		uri: `https://management.azure.com/subscriptions/${subscriptionId}/resourceGroups/${resourceGroup}/providers/Microsoft.Storage/storageAccounts/${storageAccountName}/listKeys?api-version=2017-06-01`,
-		method: 'POST',
+		method: "POST",
 		headers: {
-			'Content-Type': 'application/json',
-			'Authorization': `Bearer ${accessToken}`,
+			"Content-Type": "application/json",
+			"Authorization": `Bearer ${accessToken}`,
 		},
 		simple: false,
 		resolveWithFullResponse: true,
-		json: true
+		json: true,
 	});
 }
 
 export async function resetConsole(accessToken: string, armEndpoint: string) {
 	const response = await request({
 		uri: getConsoleUri(armEndpoint),
-		method: 'DELETE',
+		method: "DELETE",
 		headers: {
-			'Accept': 'application/json',
-			'Content-Type': 'application/json',
-			'Authorization': `Bearer ${accessToken}`
+			"Accept": "application/json",
+			"Content-Type": "application/json",
+			"Authorization": `Bearer ${accessToken}`,
 		},
 		simple: false,
 		resolveWithFullResponse: true,
-		json: true
+		json: true,
 	});
 
 	if (response.statusCode < 200 || response.statusCode > 299) {
@@ -129,9 +142,8 @@ export async function resetConsole(accessToken: string, armEndpoint: string) {
 	}
 }
 
-
 async function connectTerminal(accessToken: string, consoleUri: string, tempFilePath: string) {
-	console.log('Connecting terminal...');
+	console.log("Connecting terminal...");
 
 	for (let i = 0; i < 10; i++) {
 		const response = await initializeTerminal(accessToken, consoleUri);
@@ -146,7 +158,7 @@ async function connectTerminal(accessToken: string, consoleUri: string, tempFile
 				break;
 			}
 			await delay(1000 * (i + 1));
-			console.log(`\x1b[AConnecting terminal...${'.'.repeat(i + 1)}`);
+			console.log(`\x1b[AConnecting terminal...${".".repeat(i + 1)}`);
 			continue;
 		}
 
@@ -157,19 +169,19 @@ async function connectTerminal(accessToken: string, consoleUri: string, tempFile
 		const ws = connectSocket(res.socketUri);
 
 		if (tempFilePath) {
-			const retry_interval = 500;
-			const retry_times = 30;
-			for (var m = 0; m < retry_times; m++) {
-				if (ws.readyState != ws.OPEN) {
-					await delay(retry_interval);
+			const RETRY_INTERVAL = 500;
+			const RETRY_TIMES = 30;
+			for (let m = 0; m < RETRY_TIMES; m++) {
+				if (ws.readyState !== ws.OPEN) {
+					await delay(RETRY_INTERVAL);
 				} else {
-					fsExtra.writeFileSync(tempFilePath, Date.now() + ': cloud shell web socket opened.\n');
+					fsExtra.writeFileSync(tempFilePath, Date.now() + ": cloud shell web socket opened.\n");
 					break;
 				}
 			}
 		}
 
-		process.stdout.on('resize', () => {
+		process.stdout.on("resize", () => {
 			resize(accessToken, consoleUri, termId)
 				.catch(console.error);
 		});
@@ -177,29 +189,27 @@ async function connectTerminal(accessToken: string, consoleUri: string, tempFile
 		return ws;
 	}
 
-	console.log('Failed to connect to the terminal.');
+	console.log("Failed to connect to the terminal.");
 }
-
 
 async function initializeTerminal(accessToken: string, consoleUri: string) {
 	const initialGeometry = getWindowSize();
 	return request({
-		uri: consoleUri + '/terminals?cols=' + initialGeometry.cols + '&rows=' + initialGeometry.rows,
-		method: 'POST',
+		uri: consoleUri + "/terminals?cols=" + initialGeometry.cols + "&rows=" + initialGeometry.rows,
+		method: "POST",
 		headers: {
-			'Content-Type': 'application/json',
-			'Accept': 'application/json',
-			'Authorization': `Bearer ${accessToken}`
+			"Content-Type": "application/json",
+			"Accept": "application/json",
+			"Authorization": `Bearer ${accessToken}`,
 		},
 		simple: false,
 		resolveWithFullResponse: true,
 		json: true,
 		body: {
-			tokens: []
-		}
+			tokens: [],
+		},
 	});
 }
-
 
 function getWindowSize() {
 	const stdout: any = process.stdout;
@@ -222,12 +232,12 @@ async function resize(accessToken: string, consoleUri: string, termId: string) {
 
 		const { cols, rows } = getWindowSize();
 		const response = await request({
-			uri: consoleUri + '/terminals/' + termId + '/size?cols=' + cols + '&rows=' + rows,
-			method: 'POST',
+			uri: consoleUri + "/terminals/" + termId + "/size?cols=" + cols + "&rows=" + rows,
+			method: "POST",
 			headers: {
-				'Accept': 'application/json',
-				'Content-Type': 'application/json',
-				'Authorization': `Bearer ${accessToken}`
+				"Accept": "application/json",
+				"Content-Type": "application/json",
+				"Authorization": `Bearer ${accessToken}`,
 			},
 			simple: false,
 			resolveWithFullResponse: true,
@@ -250,9 +260,8 @@ async function resize(accessToken: string, consoleUri: string, termId: string) {
 		return;
 	}
 
-	console.log('Failed to resize terminal.');
+	console.log("Failed to resize terminal.");
 }
-
 
 export async function runInTerminal(accessToken: string, consoleUri: string, tempFile: string) {
 	if (tempFile) {
@@ -263,27 +272,26 @@ export async function runInTerminal(accessToken: string, consoleUri: string, tem
 	return connectTerminal(accessToken, consoleUri, tempFile);
 }
 
-
 function connectSocket(url: string) {
 
 	const ws = new WS(url);
 
-	ws.on('open', function () {
-		process.stdin.on('data', function (data) {
+	ws.on("open", () => {
+		process.stdin.on("data", (data) => {
 			ws.send(data);
 		});
 	});
 
-	ws.on('message', function (data) {
+	ws.on("message", (data) => {
 		process.stdout.write(String(data));
 	});
 
 	let error = false;
-	ws.on('error', function (event) {
+	ws.on("error", (event) => {
 		error = true;
 	});
 
-	ws.on('close', function () {
+	ws.on("close", () => {
 		if (!error) {
 			process.exit(0);
 		}
@@ -291,8 +299,8 @@ function connectSocket(url: string) {
 	return ws;
 }
 
-export async function delay(ms: number){ 
-    return new Promise<void>(resole => setTimeout(resole, ms));
+export async function delay(ms: number) {
+	return new Promise<void>((resole) => setTimeout(resole, ms));
 }
 
 export function main() {

@@ -1,73 +1,74 @@
 "use strict";
 
-import * as vscode from 'vscode';
-import { Constants } from "./constants";
 import * as path from "path";
-import { isEmpty, isDockerInstalled } from './utilities';
-import { CloudShell } from './cloudShell';
+import * as vscode from "vscode";
+import { Constants } from "./constants";
+
+import { CloudShell } from "./cloudShell";
+import { isDockerInstalled, isEmpty } from "./utilities";
 
 export abstract class BaseShell {
-    protected _outputChannel: vscode.OutputChannel;
+    protected outputChannel: vscode.OutputChannel;
 
     constructor(outputChannel: vscode.OutputChannel) {
-        this._outputChannel = outputChannel;
+        this.outputChannel = outputChannel;
         this.initShellInternal();
     }
 
-    protected output(label: string, message: string): void {
-        this._outputChannel.append(`[${label}] ${message}`);
-    }
-
-    protected outputLine(label: string, message: string): void {
-        this._outputChannel.appendLine(`[${label}] ${message}`);
-    }
-
-    protected isWindows(): boolean {
-        return process.platform === 'win32';
-    }
-
-    public runTerraformCmd(TFCommand: string): void {
+    public runTerraformCmd(tfCommand: string): void {
         // We keep the TFConfiguration for the moment - will need to be updated to sync folders
-        var TFConfiguration = vscode.window.activeTextEditor ? vscode.window.activeTextEditor.document.fileName : null;
-        this._outputChannel.append("Starting Cloudshell - Terraform \n")
+        const tfActiveFile = vscode.window.activeTextEditor ? vscode.window.activeTextEditor.document.fileName : null;
+        this.outputChannel.appendLine("Running - " + tfCommand + ", Active File: " + tfActiveFile);
 
-        // Run Terraform command 
-        this.runTerraformInternal(TFCommand);
-
+        // Run Terraform command
+        this.runTerraformInternal(tfCommand);
     }
 
-    public async runTerraformCmdAsync(TFCommand: string): Promise<any> {
-        var TFConfiguration = vscode.window.activeTextEditor ? vscode.window.activeTextEditor.document.fileName : null;
-        this._outputChannel.append("Starting Cloudshell - Terraform")
-        this._outputChannel.show();
+    public async runTerraformCmdAsync(tfCommand: string): Promise<any> {
+        const tfActiveFile = vscode.window.activeTextEditor ? vscode.window.activeTextEditor.document.fileName : null;
+        this.outputChannel.appendLine("Running - " + tfCommand);
+        this.outputChannel.show();
 
-        return this.runTerraformAsyncInternal(TFConfiguration, TFCommand);
+        return this.runTerraformAsyncInternal(tfActiveFile, tfCommand);
     }
 
-
-    public copyTerraformFiles(TFFile) {
-        this.uploadTFFiles(TFFile);
+    public pushTerraformFiles(tfFile: vscode.Uri[]) {
+        this.uploadTfFiles(tfFile);
     }
 
-    // Method used to run the end to end tests 
+    // Method used to run the end to end tests
     public async runTerraformTests(test: string): Promise<any> {
 
         // Check the environment variables to ensure SPN exist (See )
-        console.log('Checking environment variables');
+        this.outputChannel.appendLine("Checking environment variables");
 
-        if (isEmpty(process.env['ARM_SUBSCRIPTION_ID'] ||
-            process.env['ARM_CLIENT_ID'] ||
-            process.env['ARM_CLIENT_SECRET'] ||
-            process.env['ARM_TENANT_ID'] ||
-            process.env['ARM_TEST_LOCATION'] ||
-            process.env['ARM_TEST_LOCATION_ALT'])) {
-            vscode.window.showErrorMessage('Azure Service Principal is not set (See documentation at: https://docs.microsoft.com/en-us/cli/azure/ad/sp?view=azure-cli-latest#az_ad_sp_create_for_rbac)');
+        /* tslint:disable:no-string-literal */
+        if (isEmpty(process.env["ARM_SUBSCRIPTION_ID"] ||
+            process.env["ARM_CLIENT_ID"] ||
+            process.env["ARM_CLIENT_SECRET"] ||
+            process.env["ARM_TENANT_ID"] ||
+            process.env["ARM_TEST_LOCATION"] ||
+            process.env["ARM_TEST_LOCATION_ALT"])) {
+            vscode.window.showErrorMessage(
+                "Azure Service Principal is not set (See documentation at: " +
+                "https://docs.microsoft.com/en-us/cli/azure/ad/sp?view=azure-cli-latest#az_ad_sp_create_for_rbac)");
             return;
         }
+        /* tslint:enable:no-string-literal */
 
         return this.runTerraformTestsInternal(test);
+    }
 
+    protected output(label: string, message: string): void {
+        this.outputChannel.append(`[${label}] ${message}`);
+    }
 
+    protected outputLine(label: string, message: string): void {
+        this.outputChannel.appendLine(`[${label}] ${message}`);
+    }
+
+    protected isWindows(): boolean {
+        return process.platform === "win32";
     }
 
     protected abstract runTerraformInternal(TFCommand: string);
@@ -75,5 +76,5 @@ export abstract class BaseShell {
     protected abstract initShellInternal();
     protected abstract syncWorkspaceInternal(fileName: string);
     protected abstract runTerraformTestsInternal(TestType: string);
-    protected abstract uploadTFFiles(TFFiles);
+    protected abstract uploadTfFiles(TFFiles: vscode.Uri[]);
 }

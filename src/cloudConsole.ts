@@ -1,143 +1,159 @@
 import { AzureAccount, AzureSession, AzureSubscription } from "./azure-account.api";
-import { OutputChannel, commands, window, MessageItem, Terminal, env } from "vscode";
-import { delay, Errors, getStorageAccountKey, getUserSettings, provisionConsole, resetConsole, runInTerminal } from './cloudConsoleLauncher'
+import {
+    delay, Errors, getStorageAccountKey, getUserSettings,
+    provisionConsole, resetConsole, runInTerminal,
+} from "./cloudConsoleLauncher";
 import { TerminalType } from "./shared";
-import { CSTerminal } from './utilities';
+import { CSTerminal } from "./utilities";
 
-import { TIMEOUT } from 'dns';
+import { SubscriptionClient } from "azure-arm-resource";
+import { TIMEOUT } from "dns";
 import { PassThrough } from "stream";
 import { clearInterval, setInterval, setTimeout } from "timers";
+import { commands, env, MessageItem, OutputChannel, Terminal, window } from "vscode";
 import { configure } from "vscode/lib/testrunner";
-import { SubscriptionClient } from "azure-arm-resource";
 
-import * as ws from 'ws';
-import * as fsExtra from 'fs-extra';
-import * as cp from 'child_process';
-import * as semver from 'semver';
-import * as opn from 'opn';
-import * as path from 'path';
-import * as nls from 'vscode-nls';
-
+import * as cp from "child_process";
+import * as fsExtra from "fs-extra";
+import * as opn from "opn";
+import * as path from "path";
+import * as semver from "semver";
+import * as nls from "vscode-nls";
+import * as ws from "ws";
 const localize = nls.loadMessageBundle();
 
-export interface OS {
-	id: string;
-	shellName: string;
-	otherOS: OS;
+export interface IOS {
+    id: string;
+    shellName: string;
+    otherOS: IOS;
 }
 
-export const OSes: Record<string, OS> = {
-	Linux: {
-		id: 'linux',
-		shellName: localize('azure-account.bash', "Bash"),
-		get otherOS() { return OSes.Windows; },
-	},
-	Windows: {
-		id: 'windows',
-		shellName: localize('azure-account.powershell', "PowerShell"),
-		get otherOS() { return OSes.Linux; },
-	}
+export const OSes: Record<string, IOS> = {
+    Linux: {
+        id: "linux",
+        shellName: localize("azure-account.bash", "Bash"),
+        get otherOS() { return OSes.Windows; },
+    },
+    Windows: {
+        id: "windows",
+        shellName: localize("azure-account.powershell", "PowerShell"),
+        get otherOS() { return OSes.Linux; },
+    },
 };
 
-export function openCloudConsole(api: AzureAccount, subscription: AzureSubscription, os: OS, outputChannel: OutputChannel, tempFile: string) {
+export function openCloudConsole(
+    api: AzureAccount,
+    subscription: AzureSubscription,
+    os: IOS,
+    outputChannel: OutputChannel,
+    tempFile: string) {
+
     return (async function retry(): Promise<any> {
+        outputChannel.show();
+        outputChannel.appendLine("Attempting to open CloudConsole - Connecting to cloudshell");
+        /* tslint:disable:semicolon */
+        const progress = delayedInterval(() => { outputChannel.append("..")}, 500);
+        /* tslint:enable:semicolon */
 
-            console.log('Starting openCloudConsole');
-            outputChannel.append('\nConnecting to CloudShell.');
-            outputChannel.show();
-            const progress = delayedInterval(() => { outputChannel.append('..') }, 500)
-
-            const isWindows = process.platform === 'win32';
-            if (isWindows) {
-                // See below
-                try {
-                    const { stdout } = await exec('node.exe --version');
-                    const version = stdout[0] === 'v' && stdout.substr(1).trim();
-                    if (version && semver.valid(version) && !semver.gte(version, '6.0.0')) {
-                        progress.cancel();
-                        return requiresNode();
-                    }
-                } catch (err) {
+        const isWindows = process.platform === "win32";
+        if (isWindows) {
+            // See below
+            try {
+                const { stdout } = await exec("node.exe --version");
+                const version = stdout[0] === "v" && stdout.substr(1).trim();
+                if (version && semver.valid(version) && !semver.gte(version, "6.0.0")) {
                     progress.cancel();
                     return requiresNode();
                 }
-            }
-
-            // Loging in to Azure using the azure account extension
-            if (!(await api.waitForLogin())) {
+            } catch (err) {
                 progress.cancel();
-                return commands.executeCommand('azure-account.askForLogin');
+                return requiresNode();
             }
+        }
 
-            // Getting the tokens for the session
-            const tokens = await Promise.all(api.sessions.map(session => acquireToken(session)));
-            const result = await findUserSettings(tokens);
-            if (!result) {
-                progress.cancel();
-                return requiresSetUp();
-            }
+        // Loging in to Azure using the azure account extension
+        if (!(await api.waitForLogin())) {
+            progress.cancel();
+            return commands.executeCommand("azure-account.askForLogin");
+        }
 
-            outputChannel.append('\nUsersettings obtained from Tokens - proceeding\n');
-            
-            // Finding the storage account 
-            let storageProfile = result.userSettings.storageProfile
-            let storageAccountSettings = storageProfile.storageAccountResourceId.substr(1,storageProfile.storageAccountResourceId.length).split("/")
-            let storageAccount = {
-                subscriptionId: storageAccountSettings[1],
-                resourceGroup: storageAccountSettings[3],
-                provider: storageAccountSettings[5],
-                storageAccountName: storageAccountSettings[7]
-            };
+        // Getting the tokens for the session
+        const tokens = await Promise.all(api.sessions.map((session) => acquireToken(session)));
+        const result = await findUserSettings(tokens);
+        if (!result) {
+            progress.cancel();
+            return requiresSetUp();
+        }
 
-            let fileShareName = result.userSettings.storageProfile.fileShareName;
+        outputChannel.append("\nUsersettings obtained from Tokens - proceeding\n");
 
-            // Getting the storage account key
-            let storageAccountKey : string;
-            await getStorageAccountKey(storageAccount.resourceGroup, storageAccount.subscriptionId, result.token.accessToken, storageAccount.storageAccountName).then((keys)=> {
-                console.log ('Storage key obtained ');
+        // Finding the storage account
+        const storageProfile = result.userSettings.storageProfile;
+        const storageAccountSettings =
+            storageProfile.storageAccountResourceId.substr(1,
+                storageProfile.storageAccountResourceId.length).split("/");
+        const storageAccount = {
+            subscriptionId: storageAccountSettings[1],
+            resourceGroup: storageAccountSettings[3],
+            provider: storageAccountSettings[5],
+            storageAccountName: storageAccountSettings[7],
+        };
+
+        const fileShareName = result.userSettings.storageProfile.fileShareName;
+
+        // Getting the storage account key
+        let storageAccountKey: string;
+        await getStorageAccountKey(
+            storageAccount.resourceGroup,
+            storageAccount.subscriptionId,
+            result.token.accessToken,
+            storageAccount.storageAccountName).then((keys) => {
+                outputChannel.appendLine("Storage key obtained ");
                 storageAccountKey = keys.body.keys[0].value;
-            });
-            
+        });
 
-            // Getting the console URI
-            let consoleUri: string;
-            const armEndpoint = result.token.session.environment.resourceManagerEndpointUrl;
-            const inProgress = delayed(() => window.showInformationMessage(localize('azure-account.provisioningInProgress', "Provisioning {0} in Cloud Shell may take a few seconds.", os.shellName)), 2000);
-            try {
-                consoleUri = await provisionConsole(result.token.accessToken, armEndpoint, result.userSettings, "linux");
-                inProgress.cancel();
-                progress.cancel();
+        // Getting the console URI
+        let consoleUri: string;
+        const armEndpoint = result.token.session.environment.resourceManagerEndpointUrl;
+        const inProgress = delayed(() =>
+            window.showInformationMessage(localize(
+                "azure-account.provisioningInProgress",
+                "Provisioning {0} in Cloud Shell may take a few seconds.",
+                os.shellName)), 2000);
+        try {
+            consoleUri = await provisionConsole(result.token.accessToken, armEndpoint, result.userSettings, "linux");
+            inProgress.cancel();
+            progress.cancel();
+        } catch (err) {
+            inProgress.cancel();
+            progress.cancel();
+            if (err && err.message === Errors.DeploymentOsTypeConflict) {
+                return deploymentConflict(retry, result.token.accessToken, armEndpoint);
             }
-            catch (err) {
-                inProgress.cancel();
-                progress.cancel();
-                if (err && err.message === Errors.DeploymentOsTypeConflict) {
-                    return deploymentConflict(retry, result.token.accessToken, armEndpoint);
-                }
-                throw err;
-            }
+            throw err;
+        }
 
-            let shellPath = path.join(__dirname, `../bin/node.${isWindows ? 'bat' : 'sh'}`);
-            let modulePath = path.join(__dirname, 'cloudConsoleLauncher');
-            if (isWindows) {
-                modulePath = modulePath.replace(/\\/g, '\\\\');
-            }
-            let shellArgs = [
-                process.argv0,
-                '-e',
-                `require('${modulePath}').main()`,
-            ];
+        let shellPath = path.join(__dirname, `../bin/node.${isWindows ? "bat" : "sh"}`);
+        let modulePath = path.join(__dirname, "cloudConsoleLauncher");
+        if (isWindows) {
+            modulePath = modulePath.replace(/\\/g, "\\\\");
+        }
+        const shellArgs = [
+            process.argv0,
+            "-e",
+            `require("${modulePath}").main()`,
+        ];
 
-            if (isWindows) {
-                // Work around https://github.com/electron/electron/issues/4218 https://github.com/nodejs/node/issues/11656
-                shellPath = 'node.exe';
-                shellArgs.shift();
-            }
+        if (isWindows) {
+            // Work around https://github.com/electron/electron/issues/4218 https://github.com/nodejs/node/issues/11656
+            shellPath = "node.exe";
+            shellArgs.shift();
+        }
 
-            let response = await runInTerminal(result.token.accessToken, consoleUri, '');
+        const response = await runInTerminal(result.token.accessToken, consoleUri, "");
 
-            progress.cancel()
-            const terminal = window.createTerminal({
+        progress.cancel();
+        const terminal = window.createTerminal({
             name: "Terraform in CloudShell",
             shellPath,
             shellArgs,
@@ -146,62 +162,63 @@ export function openCloudConsole(api: AzureAccount, subscription: AzureSubscript
                 CLOUD_CONSOLE_URI: consoleUri,
                 CLOUDSHELL_TEMP_FILE: tempFile,
                 // to workaround tls error: https://github.com/VSChina/vscode-ansible/pull/44
-                NODE_TLS_REJECT_UNAUTHORIZED: "0"
-                }
-            });
-            
-            // Introducing arbitrary delay to allow to send the command.
-            await delay(500);
-
-            terminal.show();
-            return [ terminal, response, storageAccount.storageAccountName, storageAccountKey, fileShareName];
-
-        })().catch(err => {
-            outputChannel.append('\nConnecting to CloudShell failed with error: \n' + err);
-            outputChannel.show();
-            throw err;
+                NODE_TLS_REJECT_UNAUTHORIZED: "0",
+            },
         });
+
+        // Introducing arbitrary delay to allow to send the command.
+        await delay(500);
+
+        terminal.show();
+        return [terminal, response, storageAccount.storageAccountName, storageAccountKey, fileShareName];
+
+    })().catch((err) => {
+        outputChannel.append("\nConnecting to CloudShell failed with error: \n" + err);
+        outputChannel.show();
+        throw err;
+    });
 }
 
 async function deploymentConflict(retry: () => Promise<void>, accessToken: string, armEndpoint: string) {
-	const ok: MessageItem = { title: "OK" };
-	const cancel: MessageItem = { title: "Cancel", isCloseAffordance: true };
-	const message = "Starting a linux session will terminate all active sessions. Any running processes in active ";
-	const response = await window.showWarningMessage(message, ok, cancel);
-	if (response === ok) {
-		await resetConsole(accessToken, armEndpoint);
-		return retry();
-	}
+    const ok: MessageItem = { title: "OK" };
+    const cancel: MessageItem = { title: "Cancel", isCloseAffordance: true };
+    const message = "Starting a linux session will terminate all active sessions. Any running processes in active ";
+    const response = await window.showWarningMessage(message, ok, cancel);
+    if (response === ok) {
+        await resetConsole(accessToken, armEndpoint);
+        return retry();
+    }
 }
 
-
-interface Token {
+interface IToken {
     session: AzureSession;
     accessToken: string;
     refreshToken: string;
 }
 
 async function acquireToken(session: AzureSession) {
-    return new Promise<Token>((resolve, reject) => {
+    return new Promise<IToken>((resolve, reject) => {
         const credentials: any = session.credentials;
         const environment: any = session.environment;
-        credentials.context.acquireToken(environment.activeDirectoryResourceId, credentials.username, credentials.clientId, function (err: any, result: any) {
+        credentials.context.acquireToken(environment.activeDirectoryResourceId,
+            credentials.username, credentials.clientId, (err: any, result: any) => {
             if (err) {
                 reject(err);
             } else {
                 resolve({
                     session,
                     accessToken: result.accessToken,
-                    refreshToken: result.refreshToken
+                    refreshToken: result.refreshToken,
                 });
             }
         });
     });
 }
 
-async function findUserSettings(tokens: Token[]) {
+async function findUserSettings(tokens: IToken[]) {
     for (const token of tokens) {
-        const userSettings = await getUserSettings(token.accessToken, token.session.environment.resourceManagerEndpointUrl);
+        const userSettings =
+            await getUserSettings(token.accessToken, token.session.environment.resourceManagerEndpointUrl);
         if (userSettings && userSettings.storageProfile) {
             return { userSettings, token };
         }
@@ -209,55 +226,56 @@ async function findUserSettings(tokens: Token[]) {
 }
 
 async function requiresSetUp() {
-	const open: MessageItem = { title: "Open instruction" };
-	const close: MessageItem = { title: "Close", isCloseAffordance: true };
-	const message = "First launch of Cloud Shell requires setup in the Azure portal (https://portal.azure.com).";
-	const response = await window.showInformationMessage(message, open, close);
-	if (response === open) {
-		opn('https://docs.microsoft.com/en-us/azure/cloud-shell/overview');
-	}
+    const open: MessageItem = { title: "Open instruction" };
+    const close: MessageItem = { title: "Close", isCloseAffordance: true };
+    const message = "First launch of Cloud Shell requires setup in the Azure portal (https://portal.azure.com).";
+    const response = await window.showInformationMessage(message, open, close);
+    if (response === open) {
+        opn("https://docs.microsoft.com/en-us/azure/cloud-shell/overview");
+    }
 }
 
 async function requiresNode() {
 
-	const open: MessageItem = { title: "Open" };
-	const close: MessageItem = { title: "Close", isCloseAffordance: true };
-	const message = "Opening a Cloud Shell currently requires Node.js 6 or later being installed (https://nodejs.org).";
-	const response = await window.showInformationMessage(message, open, close);
-	if (response === open) {
-		opn('https://nodejs.org');
-	}
+    const open: MessageItem = { title: "Open" };
+    const close: MessageItem = { title: "Close", isCloseAffordance: true };
+    const message = "Opening a Cloud Shell currently requires Node.js 6 or later being installed (https://nodejs.org).";
+    const response = await window.showInformationMessage(message, open, close);
+    if (response === open) {
+        opn("https://nodejs.org");
+    }
 }
 
-function delayed(func: () => void, delay: number) {
-    const handle = setTimeout(func, delay);
+function delayed(func: () => void, timerDelay: number) {
+    const handle = setTimeout(func, timerDelay);
     return {
-        cancel: () => clearTimeout(handle)
-    }
+        cancel: () => clearTimeout(handle),
+    };
 }
 
 function delayedInterval(func: () => void, interval: number) {
     const handle = setInterval(func, interval);
     return {
-        cancel: () => clearInterval(handle)
-    }
+        cancel: () => clearInterval(handle),
+    };
 }
 
-export interface ExecResult {
-	error: Error | null;
-	stdout: string;
-	stderr: string;
+export interface IExecResult {
+    error: Error | null;
+    stdout: string;
+    stderr: string;
 }
 
 async function exec(command: string) {
-	return new Promise<ExecResult>((resolve, reject) => {
-		cp.exec(command, (error, stdout, stderr) => {
-			(error || stderr ? reject : resolve)({ error, stdout, stderr });
-		});
-	});
+    return new Promise<IExecResult>((resolve, reject) => {
+        cp.exec(command, (error, stdout, stderr) => {
+            (error || stderr ? reject : resolve)({ error, stdout, stderr });
+        });
+    });
 }
 
 function escapeFile(data: string): string {
-	return data.replace(/"/g, '\\"');
+    /* tslint:disable:no-string-literal */
+    return data.replace(/"/g, '\\"');
+    /* tslint:enable:no-string-literal */
 }
-

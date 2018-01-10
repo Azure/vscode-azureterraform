@@ -20,6 +20,7 @@ Executes `terraform init` command against project workspace.  If run with termin
 
 Executes `terraform plan` command against project workspace.  If run with terminal set to cloudshell, will run `terraform plan` in cloudshell.
 ![tfinit](images/image3.png)
+
 ### Terraform Azure: apply
 
 ### Terraform Azure: validate
@@ -42,7 +43,7 @@ This extension requires:
 
 * [Terraform](https://www.terraform.io/downloads.html)
 * [Docker](http://www.docker.io) if you are using the execute test feature.
-* [GraphViz dot](http://www.graphviz.org) if you are using the visualize feature.  
+* [GraphViz dot](http://www.graphviz.org) if you are using the visualize feature.
   * NOTE: On Windows after installing the graphViz msi/zip, you will most likely need to add your PATH env variable `(Ex. c:\Program Files(x86)\GraphViz2.38\bin)` in order to use dot from the command line.
 
 ## Supported Environments
