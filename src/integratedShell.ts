@@ -22,6 +22,26 @@ export class IntegratedShell extends BaseShell {
 
     private graphUri: Uri;
 
+    // Creates a png of terraform resource graph to visualize the resources under management.
+    public visualize(): void {
+        this.deletePng();
+
+        const cp = require("child_process");
+        const child = cp.spawnSync("terraform init && terraform graph | dot -Tpng -o graph.png", {
+            stdio: "pipe",
+            shell: true,
+            cwd: vscode.workspace.workspaceFolders[0].uri.fsPath,
+        });
+        if (child.stderr.length > 0) {
+            // some error occured, dump to output channel and exit visualize.
+            this.outputChannel.append(child.stdout);
+            return;
+        } else {
+            this.displayPng();
+            console.log(`Vizualization rendering complete in ${vscode.workspace.workspaceFolders[0].uri.fsPath}`);
+        }
+    }
+
     // init shell env and hook up close handler. Close handler ensures if user closes terminal window,
     // that extension is notified and can handle appropriately.
     protected initShellInternal() {
@@ -84,13 +104,13 @@ export class IntegratedShell extends BaseShell {
                             "build"],
                             outputChannel,
                             (e) => {
-                            if (e) {
-                                console.log("Error running the lint test: " + e);
-                            } else {
-                                console.log("Lint test ran successfully");
-                            }
-                            return;
-                        });
+                                if (e) {
+                                    console.log("Error running the lint test: " + e);
+                                } else {
+                                    console.log("Lint test ran successfully");
+                                }
+                                return;
+                            });
                         break;
                     }
                     case "e2e - no ssh": {
@@ -114,7 +134,7 @@ export class IntegratedShell extends BaseShell {
                     case "e2e - with ssh": {
                         console.log("Running e2e test in " + process.env["ARM_TEST_LOCATION"]);
                         localExecCmd("docker", ["run", "-v", "~/.ssh:/root/.ssh/", "-v",
-                        vscode.workspace.workspaceFolders[0].uri.fsPath + "/logs:/tf-test/module.kitchen",
+                            vscode.workspace.workspaceFolders[0].uri.fsPath + "/logs:/tf-test/module.kitchen",
                             "-v", vscode.workspace.workspaceFolders[0].uri.fsPath + ":/tf-test/module",
                             "-e", "ARM_CLIENT_ID", "-e", "ARM_TENANT_ID", "-e", "ARM_SUBSCRIPTION_ID",
                             "-e", "ARM_CLIENT_SECRET", "-e", "ARM_TEST_LOCATION", "-e", "ARM_TEST_LOCATION_ALT",
@@ -131,9 +151,11 @@ export class IntegratedShell extends BaseShell {
                     }
                     case "custom": {
                         console.log("Running custom test in " + process.env["ARM_TEST_LOCATION"]);
-                        console.log(vscode.window.showInputBox({ prompt: "Type your custom test command",
-                        value: "run -v " + vscode.workspace.workspaceFolders[0].uri.fsPath +
-                        ":/tf-test/module --rm microsoft/terraform-test rake -f ../Rakefile build" }).then((cmd) =>
+                        console.log(vscode.window.showInputBox({
+                            prompt: "Type your custom test command",
+                            value: "run -v " + vscode.workspace.workspaceFolders[0].uri.fsPath +
+                                ":/tf-test/module --rm microsoft/terraform-test rake -f ../Rakefile build",
+                        }).then((cmd) =>
                             localExecCmd("docker", cmd.split(" "), outputChannel, (e) => {
                                 if (e) {
                                     console.log("Error running the custom test: " + e);
@@ -141,7 +163,7 @@ export class IntegratedShell extends BaseShell {
                                     console.log("Custom test ran successfully");
                                 }
                                 return;
-                            });
+                            }),
                         ));
                         break;
                     }
@@ -155,45 +177,25 @@ export class IntegratedShell extends BaseShell {
 
     }
 
-    //Creates a png of terraform resource graph to visualize the resources under management.
-    public visualize(): void {
-        this.deletePng();
-        var output;
+    protected syncWorkspaceInternal() {
+        // not implemented for integrated terminal
+        return;
+    }
 
-        const cp = require("child_process");
-        const child = cp.spawnSync("terraform init && terraform graph | dot -Tpng -o graph.png", {
-            stdio: "pipe",
-            shell: true,
-            cwd: vscode.workspace.workspaceFolders[0].uri.fsPath
-        });
-        if (child.stderr.length > 0) {
-            //some error occured, dump to output channel and exit visualize.
-            this.outputChannel.append(child.stdout);
-            return;
-        }
-        else {
-            this.displayPng();
-            console.log(`Vizualization rendering complete in ${vscode.workspace.workspaceFolders[0].uri.fsPath}`);
-        }
+    protected async uploadTfFiles(TFFiles) {
+        return;
     }
 
     private deletePng(): void {
         if (fs.existsSync(this.graphUri.path)) {
-            fs.unlinkSync(this.graphUri.path)
+            fs.unlinkSync(this.graphUri.path);
         }
     }
 
     private displayPng(): void {
-        //add 2 second delay before opening file due to file creation latency
+        // add 2 second delay before opening file due to file creation latency
         setTimeout(() => { commands.executeCommand("vscode.open", this.graphUri, ViewColumn.Two); }
             , 2000);
-    }
-
-    protected syncWorkspaceInternal() {
-        //not implemented for integrated terminal
-    }
-
-    protected async uploadTfFiles(TFFiles) {
     }
 
     private checkCreateTerminal(): void {
@@ -203,7 +205,4 @@ export class IntegratedShell extends BaseShell {
         }
     }
 
-
-
 }
-
