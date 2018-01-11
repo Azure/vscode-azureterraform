@@ -170,7 +170,7 @@ export function openCloudConsole(
         await delay(500);
 
         terminal.show();
-        return [terminal, response, storageAccount.storageAccountName, storageAccountKey, fileShareName];
+        return [ terminal, response, storageAccount.storageAccountName, storageAccountKey, fileShareName, storageAccount.resourceGroup];
 
     })().catch((err) => {
         outputChannel.append("\nConnecting to CloudShell failed with error: \n" + err);
