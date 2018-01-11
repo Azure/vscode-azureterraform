@@ -26,13 +26,13 @@ export abstract class BaseShell {
         return process.platform === 'win32';
     }
 
-    public runTerraformCmd(TFCommand: string): void {
+    public runTerraformCmd(TFCommand: string, WorkDir: string): void {
         // We keep the TFConfiguration for the moment - will need to be updated to sync folders
         var TFConfiguration = vscode.window.activeTextEditor ? vscode.window.activeTextEditor.document.fileName : null;
         this._outputChannel.append("Starting Cloudshell - Terraform \n")
 
         // Run Terraform command 
-        this.runTerraformInternal(TFCommand);
+        this.runTerraformInternal(TFCommand, WorkDir);
 
     }
 
@@ -70,7 +70,7 @@ export abstract class BaseShell {
 
     }
 
-    protected abstract runTerraformInternal(TFCommand: string);
+    protected abstract runTerraformInternal(TFCommand: string, WorkDir: string);
     protected abstract runTerraformAsyncInternal(TFConfiguration: string, TFCommand: string): Promise<any>;
     protected abstract initShellInternal();
     protected abstract syncWorkspaceInternal(fileName: string);

@@ -3,7 +3,7 @@ import { AzureAccount, AzureSubscription } from "./azure-account.api";
 import { BaseShell } from "./baseShell";
 import { openCloudConsole, OSes } from "./cloudConsole";
 import { delay } from "./cloudConsoleLauncher";
-import { Constants } from "./Constants";
+import { Constants, aciConfig, exportTestScript } from "./Constants";
 import { escapeFile, TerminalType, TFTerminal, azFilePush } from "./shared";
 import { CSTerminal } from "./utilities";
 
@@ -11,7 +11,7 @@ import { Message } from "_debugger";
 import { escape } from "querystring";
 import { cursorTo } from "readline";
 import { clearInterval, setInterval } from "timers";
-import { MessageItem, Terminal, ThemeColor } from "vscode";
+import { MessageItem, Terminal, ThemeColor, ConfigurationTarget } from "vscode";
 import { configure } from "vscode/lib/testrunner";
 
 import * as fsExtra from "fs-extra";
@@ -21,6 +21,7 @@ import * as vscode from "vscode";
 import * as ws from "ws";
 
 import * as extension from "./extension";
+import { PassThrough } from "stream";
 
 const tempFile = path.join(ost.tmpdir(), "cloudshell" + vscode.env.sessionId + ".log");
 
@@ -30,7 +31,7 @@ export class CloudShell extends BaseShell {
         TerminalType.CloudShell,
         Constants.TerraformTerminalName);
 
-    protected runTerraformInternal(TFCommand: string) {
+    protected runTerraformInternal(TFCommand: string, WorkDir: string) {
 
         // Workaround the TLS error
         process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = "0";
@@ -43,10 +44,11 @@ export class CloudShell extends BaseShell {
                     this.csTerm.storageAccountName = terminal[2]
                     this.csTerm.storageAccountKey = terminal[3];
                     this.csTerm.fileShareName = terminal[4];
-                    this.runTFCommand(TFCommand, this.csTerm.terminal);
+                    this.csTerm.ResourceGroup = terminal[5];
+                    this.runTFCommand(TFCommand, WorkDir, this.csTerm.terminal);
             });
         } else {
-            this.runTFCommand(TFCommand, this.csTerm.terminal);
+            this.runTFCommand(TFCommand, WorkDir, this.csTerm.terminal);
         }
 
     }
@@ -104,8 +106,74 @@ export class CloudShell extends BaseShell {
         
     }
 
-    protected runTerraformTestsInternal(){
-        
+    protected async runTerraformTestsInternal(TestType: string){
+        if ( (this.csTerm.terminal != null) && (this.csTerm.storageAccountKey != null) ) {
+            let cloudDrivePath = `${vscode.workspace.name}${path.sep}.TFTesting`;
+            let localPath = vscode.workspace.workspaceFolders[0].uri.fsPath+path.sep+".TFTesting";
+            
+            let TFConfiguration = escapeFile(aciConfig('TerraformTestRG', this.csTerm.storageAccountName, this.csTerm.fileShareName, 'westus', 'microsoft/terraform-test', '/bin/bash'));
+            var testScript = cloudDrivePath + "/test.sh"
+
+            // Writing the TF Configuration file on local drive 
+            console.log('Writing TF Configuration for ACI');
+            let shellscript = exportTestScript("lint", TFConfiguration, this.csTerm.ResourceGroup, this.csTerm.storageAccountName, this.csTerm.fileShareName, cloudDrivePath);
+            await fsExtra.outputFile(localPath+path.sep+"test.sh", shellscript, function(err){
+                console.log('Write file done');
+            });
+
+            // copy the file to CloudDrive 
+            azFilePush(this.csTerm.storageAccountName, this.csTerm.storageAccountKey, this.csTerm.fileShareName, localPath+path.sep+"test.sh");
+            
+            // Run the shell script
+            this.runTFCommand(`cd ~/clouddrive/${cloudDrivePath} && terraform init && terraform apply -auto-approve`, cloudDrivePath, this.csTerm.terminal);
+
+            // run the command from CloudShell 
+            // use source myscript.sh 
+
+            
+            // this.runTFCommand(`mkdir ${testDirectory}`, testDirectory, this.csTerm.terminal);
+            
+            
+            
+            // //let test = aciConfig('TerraformTestRG', 'MyStorage', 'MyShare', 'MyLocation', 'microsoft/test', '/bin/bash');
+            
+            // await this.runTFCommand(`mkdir ${testDirectory}
+            // &&
+            // echo -e "${TFConfiguration}" > ${testDirectory}/testfile.tf 
+            // &&
+            // read -s KEY && export TF_VAR_storage_account_key=$KEY
+            // && 
+            // ${this.csTerm.storageAccountKey}\n
+            // &&
+            // cd ${testDirectory} && terraform init && terraform apply -auto-approve\n
+            // `, testDirectory ,this.csTerm.terminal);
+
+            // await this.runTFCommand(`read -s KEY && export TF_VAR_storage_account_key=$KEY`, testDirectory , this.csTerm.terminal);
+            // await this.runTFCommand(`${this.csTerm.storageAccountKey}\n`, testDirectory , this.csTerm.terminal);
+            // await this.runTFCommand(`cd ${testDirectory} && terraform init && terraform apply -auto-approve`, Constants.clouddrive, this.csTerm.terminal);
+        }
+        else {
+            const message = "A CloudShell session is needed, do you want to open CloudShell?"
+            const ok : MessageItem = { title : "Yes" }
+            const cancel : MessageItem = { title : "No", isCloseAffordance: true }
+            vscode.window.showWarningMessage(message, ok, cancel).then( (response) => {
+                if ( response === ok ) {
+                    this.startCloudShell().then((terminal) => {
+                        this.csTerm.terminal = terminal[0];
+                        this.csTerm.ws = terminal[1];
+                        this.csTerm.storageAccountName = terminal[2]
+                        this.csTerm.storageAccountKey = terminal[3];
+                        this.csTerm.fileShareName = terminal[4];
+                        this.csTerm.ResourceGroup = terminal[5];
+                        console.log(`Obtained terminal and fileshare data\n`);
+                        this.runTerraformTestsInternal(TestType);
+                        return;
+                    });
+                }
+            });
+            console.log("Terminal not opened when trying to transfer files");
+        }
+            
     }
 
     protected runTerraformAsyncInternal(TFConfiguration: string, TFCommand: string) : Promise<any>{
@@ -131,7 +199,7 @@ export class CloudShell extends BaseShell {
         return iTerm;
     }
 
-    protected runTFCommand(command: string, terminal: Terminal) {
+    protected runTFCommand(command: string, workdir: string, terminal: Terminal) {
         console.log('Runing a command in an existing terminal ');
         var count = 30;
         if (terminal) {
@@ -143,7 +211,8 @@ export class CloudShell extends BaseShell {
                     if (fsExtra.existsSync(tempFile)) {
                         //fsExtra.removeSync(tempFile);
                         console.log(`\Sending command: ${command}`);
-                        terminal.sendText(command);
+                        // terminal.sendText(`cd ${workdir} && ${command}`);
+                        terminal.sendText(`${command}`);
                         terminal.show();
 
                         count = 0;
@@ -164,7 +233,7 @@ export class CloudShell extends BaseShell {
         const retry_times = 30;
 
         // Checking if the terminal has been created
-        if ( this.csTerm.terminal != null) {
+        if ( (this.csTerm.terminal != null) && (this.csTerm.storageAccountKey != null) ) {
             for (var i = 0; i < retry_times; i++ ){
                 if (this.csTerm.ws.readyState != ws.OPEN ){
                     await delay (retry_interval);
@@ -194,7 +263,11 @@ export class CloudShell extends BaseShell {
                     this.startCloudShell().then((terminal) => {
                         this.csTerm.terminal = terminal[0];
                         this.csTerm.ws = terminal[1];
-                        console.log(`Obtained terminal info and ws\n`);
+                        this.csTerm.storageAccountName = terminal[2]
+                        this.csTerm.storageAccountKey = terminal[3];
+                        this.csTerm.fileShareName = terminal[4];
+                        this.csTerm.ResourceGroup = terminal[5];
+                        console.log(`Obtained terminal and fileshare data\n`);
                         this.uploadTFFiles(TFFiles);
                         return;
                     });

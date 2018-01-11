@@ -80,6 +80,7 @@ export function openCloudConsole(api: AzureAccount, subscription: AzureSubscript
             outputChannel.append('\nUsersettings obtained from Tokens - proceeding\n');
             
             // Finding the storage account 
+            // Location is in userSettings.preferredLocation
             let storageProfile = result.userSettings.storageProfile
             let storageAccountSettings = storageProfile.storageAccountResourceId.substr(1,storageProfile.storageAccountResourceId.length).split("/")
             let storageAccount = {
@@ -154,7 +155,7 @@ export function openCloudConsole(api: AzureAccount, subscription: AzureSubscript
             await delay(500);
 
             terminal.show();
-            return [ terminal, response, storageAccount.storageAccountName, storageAccountKey, fileShareName];
+            return [ terminal, response, storageAccount.storageAccountName, storageAccountKey, fileShareName, storageAccount.resourceGroup];
 
         })().catch(err => {
             outputChannel.append('\nConnecting to CloudShell failed with error: \n' + err);
