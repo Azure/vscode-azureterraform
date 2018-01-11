@@ -73,6 +73,7 @@ export class CloudShell extends BaseShell {
                         this.csTerm.storageAccountName = terminal[2];
                         this.csTerm.storageAccountKey = terminal[3];
                         this.csTerm.fileShareName = terminal[4];
+                        this.csTerm.ResourceGroup = terminal[5];
                         this.outputChannel.appendLine(`Obtained cloudshell terminal, retrying push files.\n`);
                         this.pushFiles(files);
                         return;
