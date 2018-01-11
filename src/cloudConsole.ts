@@ -4,7 +4,7 @@ import {
     provisionConsole, resetConsole, runInTerminal,
 } from "./cloudConsoleLauncher";
 import { TerminalType } from "./shared";
-import { CSTerminal } from "./utilities";
+import { CSTerminal, exec, IExecResult } from "./utilities";
 
 import { SubscriptionClient } from "azure-arm-resource";
 import { TIMEOUT } from "dns";
@@ -258,20 +258,6 @@ function delayedInterval(func: () => void, interval: number) {
     return {
         cancel: () => clearInterval(handle),
     };
-}
-
-export interface IExecResult {
-    error: Error | null;
-    stdout: string;
-    stderr: string;
-}
-
-async function exec(command: string) {
-    return new Promise<IExecResult>((resolve, reject) => {
-        cp.exec(command, (error, stdout, stderr) => {
-            (error || stderr ? reject : resolve)({ error, stdout, stderr });
-        });
-    });
 }
 
 function escapeFile(data: string): string {

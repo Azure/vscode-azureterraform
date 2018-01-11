@@ -31,14 +31,15 @@ export class CloudShell extends BaseShell {
         Constants.TerraformTerminalName);
 
     public async pushFiles(files: vscode.Uri[]) {
-        this.outputChannel.appendLine("Uploading files to CloudShell");
+        this.outputChannel.appendLine("Attempting to upload files to CloudShell");
         const RETRY_INTERVAL = 500;
         const RETRY_TIMES = 30;
 
         // Checking if the terminal has been created
-        if ( this.csTerm.terminal != null) {
+        if (( this.csTerm.terminal != null) && (this.csTerm.storageAccountKey != null)) {
             for (let i = 0; i < RETRY_TIMES; i++ ) {
                 if (this.csTerm.ws.readyState !== ws.OPEN ) {
+                    // wait for valid ws connection
                     await delay (RETRY_INTERVAL);
                 } else {
                     for (const file of files.map( (a) => a.fsPath)) {
@@ -67,17 +68,23 @@ export class CloudShell extends BaseShell {
                     this.startCloudShell().then((terminal) => {
                         this.csTerm.terminal = terminal[0];
                         this.csTerm.ws = terminal[1];
-                        this.outputChannel.appendLine(`Obtained terminal info and ws\n`);
+                        this.csTerm.storageAccountName = terminal[2];
+                        this.csTerm.storageAccountKey = terminal[3];
+                        this.csTerm.fileShareName = terminal[4];
+                        this.outputChannel.appendLine(`Obtained cloudshell terminal, retrying push files.\n`);
                         this.pushFiles(files);
                         return;
                     });
+                } else {
+                    console.log("Push to cloud shell cancelled by user.");
                 }
             });
-            this.outputChannel.appendLine("Terminal not opened when trying to transfer files");
+            // TODO THIS LINE SEEMS UNNECESSARY console.log("Cloudshell terminal not opened when trying to transfer files");
         }
     }
 
     public async pullFiles(files: vscode.Uri[]) {
+
         return;
     }
 
