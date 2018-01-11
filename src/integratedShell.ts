@@ -58,7 +58,7 @@ export class IntegratedShell extends BaseShell {
         }
     }
 
-    protected runTerraformInternal(TFCommand: string): void {
+    protected runTerraformInternal(TFCommand: string, WorkDir: string): void {
         this.checkCreateTerminal();
         const term = this.term.terminal;
         term.show();
@@ -179,10 +179,6 @@ export class IntegratedShell extends BaseShell {
 
     protected syncWorkspaceInternal() {
         // not implemented for integrated terminal
-        return;
-    }
-
-    protected async uploadTfFiles(TFFiles) {
         return;
     }
 

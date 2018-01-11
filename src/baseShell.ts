@@ -15,13 +15,15 @@ export abstract class BaseShell {
         this.initShellInternal();
     }
 
-    public runTerraformCmd(tfCommand: string): void {
+    public runTerraformCmd(tfCommand: string, WorkDir: string): void {
+
         // We keep the TFConfiguration for the moment - will need to be updated to sync folders
         const tfActiveFile = vscode.window.activeTextEditor ? vscode.window.activeTextEditor.document.fileName : null;
         this.outputChannel.appendLine("Running - " + tfCommand + ", Active File: " + tfActiveFile);
 
         // Run Terraform command
-        this.runTerraformInternal(tfCommand);
+        this.runTerraformInternal( tfCommand, WorkDir);
+
     }
 
     public async runTerraformCmdAsync(tfCommand: string): Promise<any> {
@@ -30,10 +32,6 @@ export abstract class BaseShell {
         this.outputChannel.show();
 
         return this.runTerraformAsyncInternal(tfActiveFile, tfCommand);
-    }
-
-    public pushTerraformFiles(tfFile: vscode.Uri[]) {
-        this.uploadTfFiles(tfFile);
     }
 
     // Method used to run the end to end tests
@@ -71,10 +69,9 @@ export abstract class BaseShell {
         return process.platform === "win32";
     }
 
-    protected abstract runTerraformInternal(TFCommand: string);
+    protected abstract runTerraformInternal(TFCommand: string, WorkDir: string);
     protected abstract runTerraformAsyncInternal(TFConfiguration: string, TFCommand: string): Promise<any>;
     protected abstract initShellInternal();
     protected abstract syncWorkspaceInternal(fileName: string);
     protected abstract runTerraformTestsInternal(TestType: string);
-    protected abstract uploadTfFiles(TFFiles: vscode.Uri[]);
 }
