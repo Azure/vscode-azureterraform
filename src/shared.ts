@@ -7,6 +7,7 @@ import * as vscode from "vscode";
 import { FileService } from "azure-storage";
 import { WebResource } from "ms-rest";
 import { AzureAccount, AzureLoginStatus, AzureSession, AzureSubscription } from "./azure-account.api";
+import { CloudFile } from "./cloudFile";
 import { IExecResult } from "./utilities";
 
 export class TFTerminal {
@@ -31,7 +32,7 @@ export enum TerminalType {
     CloudShell = "cloudshell",
 }
 
-export enum Option {
+export enum FileSystem {
     docker = "docker",
     local = "local",
     cloudshell = "cloudshell",
@@ -67,33 +68,32 @@ export async function azFilePush(
     fileName: string): Promise<void> {
 
     const filesService = azureStorage.createFileService(storageAccountName, storageAccountKey);
-    const dirName = path.dirname(path.relative(vscode.workspace.workspaceFolders[0].uri.fsPath, fileName));
-    const cloudShellDir = vscode.workspace.name + "/" + dirName;
-    const pathCount = cloudShellDir.split(path.sep).length;
+    const cloudFile = new CloudFile (vscode.workspace.name, fileShareName, fileName, FileSystem.local);
+    const pathCount = cloudFile.cloudShellDir.split(path.sep).length;
 
     // try create file share if it does not exist
     try {
-        await createShare(fileShareName, filesService);
+        await createShare(cloudFile.fileShareName, filesService);
     } catch (error) {
-        console.log(`Error creating FileShare: ${fileShareName}\n\n${error}`);
+        console.log(`Error creating FileShare: ${cloudFile.fileShareName}\n\n${error}`);
         return;
     }
 
     // try create directory path if it does not exist, dirs need to be created at each level
     try {
         for (let i = 0; i < pathCount; i++) {
-            await createDirectoryPath(fileShareName, cloudShellDir, i, filesService);
+            await createDirectoryPath(cloudFile.fileShareName, cloudFile.cloudShellDir, i, filesService);
         }
     } catch (error) {
-        console.log(`Error creating directory: ${cloudShellDir}\n\n${error}`);
+        console.log(`Error creating directory: ${cloudFile.cloudShellDir}\n\n${error}`);
         return;
     }
 
     // try create file if not exist
     try {
-        await createFile(fileShareName, cloudShellDir, fileName, filesService);
+        await createFile(cloudFile.fileShareName, cloudFile.cloudShellDir, cloudFile.localUri, filesService);
     } catch (error) {
-        console.log(`Error creating file: ${fileName}\n\n${error}`);
+        console.log(`Error creating file: ${cloudFile.localUri}\n\n${error}`);
     }
 
     return;
@@ -103,7 +103,9 @@ function createShare(fileShareName: string, fs: azureStorage.FileService): Promi
     return new Promise<void>((resolve, reject) => {
         fs.createShareIfNotExists(fileShareName, ((error, result, response) => {
             if (!error) {
-                console.log(`FileShare: ${fileShareName} created.`);
+                if (result && result.created) { // only log if created
+                    console.log(`FileShare: ${fileShareName} created.`);
+                }
                 resolve();
             } else {
                 reject(error);
@@ -122,7 +124,9 @@ function createDirectoryPath(fileShareName: string, dir: string, i: number, fs: 
         }
         fs.createDirectoryIfNotExists(fileShareName, tempDir, ((error, result, response) => {
             if (!error) {
-                console.log(`Created dir: ${tempDir}`);
+                if (result && result.created) { // only log if created TODO: This check is buggy, open issue in Azure Storage NODE SDK.
+                    console.log(`Created dir: ${tempDir}`);
+                }
                 resolve();
             } else {
                 reject(error);
@@ -136,7 +140,7 @@ function createFile(fileShareName: string, dir: string, filePath: string, fs: az
         const fileName = path.basename(filePath);
         fs.createFileFromLocalFile(fileShareName, dir, fileName, filePath, (error, result, response) => {
             if (!error) {
-                console.log(`Created file: ${fileName}`);
+                console.log(`File in sync: ${fileName}`);
                 resolve();
             } else {
                 reject(error);
