@@ -42,23 +42,36 @@ export function escapeFile(data: string): string {
     return data.replace(/"/g, '\\"').replace(/\$/g, "\\\$");
 }
 
-export function azFileDelete(
+export async function azFileDelete(
     storageAccountName: string,
     storageAccountKey: string,
     fileShareName: string,
-    fileName: string): boolean {
+    localFileUri: string): Promise<void> {
 
-    return true;
+    const fs = azureStorage.createFileService(storageAccountName, storageAccountKey);
+    const cf = new CloudFile(
+        vscode.workspace.name,
+        fileShareName,
+        localFileUri,
+        FileSystem.local);
+
+    await deleteFile(cf, fs);
 }
 
-export function azFilePull(
+export async function azFilePull(
     storageAccountName: string,
     storageAccountKey: string,
     fileShareName: string,
-    fileName: string,
-    savePath: string): void {
+    cloudShellFileName: string): Promise<void> {
 
-    const filesService = azureStorage.createFileService(storageAccountName, storageAccountKey);
+    const fs = azureStorage.createFileService(storageAccountName, storageAccountKey);
+    const cf = new CloudFile(
+        vscode.workspace.name,
+        fileShareName,
+        cloudShellFileName,
+        FileSystem.cloudshell);
+
+    await readFile(cf, fs);
 }
 
 export async function azFilePush(
@@ -67,33 +80,33 @@ export async function azFilePush(
     fileShareName: string,
     fileName: string): Promise<void> {
 
-    const filesService = azureStorage.createFileService(storageAccountName, storageAccountKey);
-    const cloudFile = new CloudFile (vscode.workspace.name, fileShareName, fileName, FileSystem.local);
-    const pathCount = cloudFile.cloudShellDir.split(path.sep).length;
+    const fs = azureStorage.createFileService(storageAccountName, storageAccountKey);
+    const cf = new CloudFile(vscode.workspace.name, fileShareName, fileName, FileSystem.local);
+    const pathCount = cf.cloudShellDir.split(path.sep).length;
 
     // try create file share if it does not exist
     try {
-        await createShare(cloudFile.fileShareName, filesService);
+        await createShare(cf.fileShareName, fs);
     } catch (error) {
-        console.log(`Error creating FileShare: ${cloudFile.fileShareName}\n\n${error}`);
+        console.log(`Error creating FileShare: ${cf.fileShareName}\n\n${error}`);
         return;
     }
 
     // try create directory path if it does not exist, dirs need to be created at each level
     try {
         for (let i = 0; i < pathCount; i++) {
-            await createDirectoryPath(cloudFile.fileShareName, cloudFile.cloudShellDir, i, filesService);
+            await createDirectoryPath(cf.fileShareName, cf.cloudShellDir, i, fs);
         }
     } catch (error) {
-        console.log(`Error creating directory: ${cloudFile.cloudShellDir}\n\n${error}`);
+        console.log(`Error creating directory: ${cf.cloudShellDir}\n\n${error}`);
         return;
     }
 
     // try create file if not exist
     try {
-        await createFile(cloudFile.fileShareName, cloudFile.cloudShellDir, cloudFile.localUri, filesService);
+        await createFile(cf.fileShareName, cf.cloudShellDir, cf.localUri, fs);
     } catch (error) {
-        console.log(`Error creating file: ${cloudFile.localUri}\n\n${error}`);
+        console.log(`Error creating file: ${cf.localUri}\n\n${error}`);
     }
 
     return;
@@ -136,11 +149,43 @@ function createDirectoryPath(fileShareName: string, dir: string, i: number, fs: 
 }
 
 function createFile(fileShareName: string, dir: string, filePath: string, fs: azureStorage.FileService): Promise<void> {
-    return new Promise<void> ((resolve, reject) => {
+    return new Promise<void>((resolve, reject) => {
         const fileName = path.basename(filePath);
         fs.createFileFromLocalFile(fileShareName, dir, fileName, filePath, (error, result, response) => {
             if (!error) {
-                console.log(`File in sync: ${fileName}`);
+                console.log(`File synced to cloud: ${fileName}`);
+                resolve();
+            } else {
+                reject(error);
+            }
+        });
+    });
+}
+
+function readFile(cf: CloudFile, fs: azureStorage.FileService): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+        const fileName = path.basename(cf.cloudShellUri);
+        fs.getFileToLocalFile(cf.fileShareName, cf.cloudShellDir, fileName, cf.localUri, (error, result, response) => {
+            if (!error) {
+                console.log(`File synced to local workspace: ${cf.localUri}`);
+                resolve();
+            } else {
+                reject(error);
+            }
+        });
+    });
+}
+
+function deleteFile(cf: CloudFile, fs: azureStorage.FileService): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+        const fileName = path.basename(cf.localUri);
+        fs.deleteFileIfExists(cf.fileShareName, cf.cloudShellDir, fileName, (error, result, response) => {
+            if (!error) {
+                if (result) {
+                    console.log(`File deleted from cloudshell: ${cf.cloudShellUri}`);
+                } else {
+                    console.log(`File does not exist in cloudshell: ${cf.cloudShellUri}`);
+                }
                 resolve();
             } else {
                 reject(error);
