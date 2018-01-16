@@ -1,4 +1,5 @@
 import { azFilePush } from "./shared";
+import * as vscode from "vscode";
 
 export class Constants {
     public static ExtensionId = "vscode-terraform-azure";
@@ -10,12 +11,9 @@ export class Constants {
     public static clouddrive = "~/clouddrive";
 }
 
-export function aciConfig(resourceGroup: string, storageAccountName: string, storageAccountShare: string, location: string, testContainer: string, projectName: string): string {
+export function aciConfig(resourceGroup: string, aciName:string, aciGroup: string, storageAccountName: string, storageAccountShare: string, location: string, testContainer: string, projectName: string): string {
     let TFConfiguration: string;
     // TODO - add a check on the location where ACI is available - if (['westus', eastus].indexOf(location) == -1) {
-    if ( location == null) {
-        location = "westus";
-    }
 
     TFConfiguration = `variable "location" {
         default = "${location}"
@@ -28,14 +26,14 @@ resource "azurerm_resource_group" "TFTest" {
     location = "${location}"
 }
 resource "azurerm_container_group" "TFTest" {
-    name = "TerraformTesting"
+    name = "${aciGroup}"
     location = "${location}"
     resource_group_name = "${resourceGroup}"
     ip_address_type = "public"
     os_type     = "linux"
 
     container {
-        name = "terraformtesting"
+        name = "${aciName}"
         image = "${testContainer}"
         cpu = "1"
         memory = "2"
