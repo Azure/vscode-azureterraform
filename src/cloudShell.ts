@@ -182,7 +182,12 @@ export class CloudShell extends BaseShell {
                 "custom": ""  //TODO: Implement the custom command in CloudShell 
             }
 
-            const TFConfiguration = escapeFile(aciConfig("TerraformTestRG", this.csTerm.storageAccountName, this.csTerm.fileShareName, "westus", vscode.workspace.getConfiguration("tf-azure").get("test-container"), `${vscode.workspace.name}`));
+            const TFConfiguration = escapeFile(aciConfig(vscode.workspace.getConfiguration("tf-azure").get("aci-ResGroup"),
+                                                         vscode.workspace.getConfiguration("tf-azure").get("aci-name"), 
+                                                         vscode.workspace.getConfiguration("tf-azure").get("aci-group"),
+                                                         this.csTerm.storageAccountName, this.csTerm.fileShareName, 
+                                                         vscode.workspace.getConfiguration("tf-azure").get("test-location"), 
+                                                         vscode.workspace.getConfiguration("tf-azure").get("test-container"), `${vscode.workspace.name}`));
 
             // Writing the TF Configuration file on local drive
             console.log("Writing TF Configuration for ACI");
