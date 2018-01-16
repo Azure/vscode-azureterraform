@@ -3,7 +3,7 @@ import { AzureAccount, AzureSubscription } from "./azure-account.api";
 import { BaseShell } from "./baseShell";
 import { openCloudConsole, OSes } from "./cloudConsole";
 import { delay } from "./cloudConsoleLauncher";
-import { aciConfig, Constants, exportTestScript, exportContainerCmd } from "./Constants";
+import { aciConfig, Constants, exportContainerCmd, exportTestScript } from "./Constants";
 import { azFilePush, escapeFile, TerminalType, TFTerminal } from "./shared";
 
 import { CSTerminal } from "./utilities";
@@ -171,7 +171,7 @@ export class CloudShell extends BaseShell {
         if ( (this.csTerm.terminal != null) && (this.csTerm.storageAccountKey != null) ) {
             const cloudDrivePath = `${vscode.workspace.name}${path.sep}.TFTesting`;
             const localPath = vscode.workspace.workspaceFolders[0].uri.fsPath + path.sep + ".TFTesting";
-            const createAciScript = "createacitest.sh"
+            const createAciScript = "createacitest.sh";
 
             // TestType: lint, e2e - no ssh, e2e - with ssh, custom
             const testCommand =  {
@@ -179,8 +179,8 @@ export class CloudShell extends BaseShell {
                 // "lint": `/bin/bash -c 'cd ${vscode.workspace.name}; ls -la'`,
                 "e2e - no ssh": `rake -f ../../Rakefile e2e`,
                 "e2e - with ssh": `rake -f ../../Rakefile e2e`,
-                "custom": ""  //TODO: Implement the custom command in CloudShell 
-            }
+                "custom": "", // TODO: Implement the custom command in CloudShell
+            };
 
             const TFConfiguration = escapeFile(aciConfig("TerraformTestRG", this.csTerm.storageAccountName, this.csTerm.fileShareName, "westus", vscode.workspace.getConfiguration("tf-azure").get("test-container"), `${vscode.workspace.name}`));
 
@@ -197,7 +197,7 @@ export class CloudShell extends BaseShell {
             // Write the container shell script
             console.log("Writing the Container command script");
             await fsExtra.outputFile(localPath + path.sep + "containercmd.sh", exportContainerCmd(`${vscode.workspace.name}`, testCommand[TestType]), (err) => {
-                console.log("Write container command script done"); 
+                console.log("Write container command script done");
             });
 
             // copye the file to CloudDrive
