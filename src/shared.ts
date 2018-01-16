@@ -81,12 +81,16 @@ export async function azFilePush(
     fileName: string): Promise<void> {
 
     const fs = azureStorage.createFileService(storageAccountName, storageAccountKey);
-    const cf = new CloudFile(vscode.workspace.name, fileShareName, fileName, FileSystem.local);
+    const cf = new CloudFile(
+        vscode.workspace.name,
+        fileShareName,
+        fileName,
+        FileSystem.local);
     const pathCount = cf.cloudShellDir.split(path.sep).length;
 
     // try create file share if it does not exist
     try {
-        await createShare(cf.fileShareName, fs);
+        await createShare(cf, fs);
     } catch (error) {
         console.log(`Error creating FileShare: ${cf.fileShareName}\n\n${error}`);
         return;
@@ -95,7 +99,7 @@ export async function azFilePush(
     // try create directory path if it does not exist, dirs need to be created at each level
     try {
         for (let i = 0; i < pathCount; i++) {
-            await createDirectoryPath(cf.fileShareName, cf.cloudShellDir, i, fs);
+            await createDirectoryPath(cf, i, fs);
         }
     } catch (error) {
         console.log(`Error creating directory: ${cf.cloudShellDir}\n\n${error}`);
@@ -104,7 +108,7 @@ export async function azFilePush(
 
     // try create file if not exist
     try {
-        await createFile(cf.fileShareName, cf.cloudShellDir, cf.localUri, fs);
+        await createFile(cf, fs);
     } catch (error) {
         console.log(`Error creating file: ${cf.localUri}\n\n${error}`);
     }
@@ -112,12 +116,12 @@ export async function azFilePush(
     return;
 }
 
-function createShare(fileShareName: string, fs: azureStorage.FileService): Promise<void> {
+function createShare(cf: CloudFile, fs: azureStorage.FileService): Promise<void> {
     return new Promise<void>((resolve, reject) => {
-        fs.createShareIfNotExists(fileShareName, ((error, result, response) => {
+        fs.createShareIfNotExists(cf.fileShareName, ((error, result, response) => {
             if (!error) {
                 if (result && result.created) { // only log if created
-                    console.log(`FileShare: ${fileShareName} created.`);
+                    console.log(`FileShare: ${cf.fileShareName} created.`);
                 }
                 resolve();
             } else {
@@ -127,15 +131,15 @@ function createShare(fileShareName: string, fs: azureStorage.FileService): Promi
     });
 }
 
-function createDirectoryPath(fileShareName: string, dir: string, i: number, fs: azureStorage.FileService): Promise<void> {
+function createDirectoryPath(cf: CloudFile, i: number, fs: azureStorage.FileService): Promise<void> {
     return new Promise<void>((resolve, reject) => {
         let tempDir = "";
-        const dirArray = dir.split(path.sep);
+        const dirArray = cf.cloudShellDir.split(path.sep);
         for (let j = 0; j < dirArray.length && j <= i; j++) {
             tempDir = tempDir + dirArray[j] + "/";
 
         }
-        fs.createDirectoryIfNotExists(fileShareName, tempDir, ((error, result, response) => {
+        fs.createDirectoryIfNotExists(cf.fileShareName, tempDir, ((error, result, response) => {
             if (!error) {
                 if (result && result.created) { // only log if created TODO: This check is buggy, open issue in Azure Storage NODE SDK.
                     console.log(`Created dir: ${tempDir}`);
@@ -148,10 +152,10 @@ function createDirectoryPath(fileShareName: string, dir: string, i: number, fs: 
     });
 }
 
-function createFile(fileShareName: string, dir: string, filePath: string, fs: azureStorage.FileService): Promise<void> {
+function createFile(cf: CloudFile, fs: azureStorage.FileService): Promise<void> {
     return new Promise<void>((resolve, reject) => {
-        const fileName = path.basename(filePath);
-        fs.createFileFromLocalFile(fileShareName, dir, fileName, filePath, (error, result, response) => {
+        const fileName = path.basename(cf.localUri);
+        fs.createFileFromLocalFile(cf.fileShareName, cf.cloudShellDir, fileName, cf.localUri, (error, result, response) => {
             if (!error) {
                 console.log(`File synced to cloud: ${fileName}`);
                 resolve();
