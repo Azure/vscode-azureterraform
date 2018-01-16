@@ -87,7 +87,6 @@ export class CloudShell extends BaseShell {
     }
 
     public async pullFiles(files: vscode.Uri[]) {
-
         return;
     }
 

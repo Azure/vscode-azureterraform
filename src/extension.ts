@@ -49,7 +49,7 @@ export function activate(ctx: vscode.ExtensionContext) {
 
     const fileWatcher = vscode.workspace.createFileSystemWatcher(filesGlobSetting());
 
-    // TODO: Implement filewatcher handlers
+    // TODO: Implement filewatcher handlers and config to automatically sync changes in workspace to cloudshell.
     fileWatcher.onDidDelete((deletedUri) => {
         outputChannel.appendLine("Deleted: " + deletedUri.path);
     });
