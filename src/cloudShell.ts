@@ -46,9 +46,9 @@ export class CloudShell extends BaseShell {
                 } else {
                     for (const file of files.map( (a) => a.fsPath)) {
                         try {
-                            if (fsExtra.existsSync(file)) {
+                            if (await fsExtra.pathExists(file)) {
                                 this.outputChannel.appendLine(`Uploading file ${file} to cloud shell`);
-                                azFilePush(this.csTerm.storageAccountName,
+                                await azFilePush(this.csTerm.storageAccountName,
                                     this.csTerm.storageAccountKey,
                                     this.csTerm.fileShareName, file);
                             }
@@ -57,7 +57,7 @@ export class CloudShell extends BaseShell {
                         }
                     }
                     vscode.window.showInformationMessage(
-                        `Uploaded all the text files in the current workspace to CloudShell`);
+                        "Uploaded all the text files in the current workspace to CloudShell");
                     break;
                 }
             }
@@ -225,7 +225,7 @@ export class CloudShell extends BaseShell {
 
         let iTerm;
 
-        const os = process.platform === "win32" ? OSes.WIndows : OSes.Linux;
+        const os = process.platform === "win32" ? OSes.Windows : OSes.Linux;
         await openCloudConsole(accountAPI, azureSubscription, os, this.outputChannel, tempFile).then((terminal) => {
 
             // This is where we send the text to the terminal
@@ -246,7 +246,7 @@ export class CloudShell extends BaseShell {
                 this.outputChannel.appendLine(count.toString());
                 if (count > 0) {
                     if (fsExtra.existsSync(tempFile)) {
-                        this.outputChannel.appendLine(`\Sending command: ${command}`);
+                        this.outputChannel.appendLine(`\nSending command: ${command}`);
                         terminal.sendText(`${command}`);
                         terminal.show();
 
@@ -283,7 +283,7 @@ export class CloudShell extends BaseShell {
                             console.log(err);
                         }
                     }
-                    vscode.window.showInformationMessage(`Uploaded all the text files in the current workspace to CloudShell`);
+                    vscode.window.showInformationMessage("Uploaded all the text files in the current workspace to CloudShell");
                     break;
                 }
             }
