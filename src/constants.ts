@@ -10,7 +10,7 @@ export class Constants {
     public static clouddrive = "~/clouddrive";
 }
 
-export function aciConfig(resourceGroup: string, storageAccountName: string, storageAccountShare: string, location: string, testContainer: string, testCommand: string): string {
+export function aciConfig(resourceGroup: string, storageAccountName: string, storageAccountShare: string, location: string, testContainer: string, projectName: string): string {
     let TFConfiguration: string;
     // TODO - add a check on the location where ACI is available - if (['westus', eastus].indexOf(location) == -1) {
     if ( location == null) {
@@ -41,7 +41,7 @@ resource "azurerm_container_group" "TFTest" {
         memory = "2"
         port = "80"
 
-        command = "${testCommand}"
+        command = "/bin/bash -c '/tf-test/module/${projectName}/.TFTesting/containercmd.sh'"
 
         volume {
             name = "module"
@@ -68,7 +68,7 @@ resource "azurerm_container_group" "TFTest" {
 
 export function exportTestScript(testType: string, TFConfiguration: string, resoureGroupName: string, storageAccountName: string, fileShareName: string, testDirectory: string): string {
     const testScript = `
-        #/bin/bash
+        #!/bin/bash
         if [ ! -d "${testDirectory}" ]; then
             mkdir -p $HOME/clouddrive/${testDirectory}
         fi
@@ -80,4 +80,17 @@ export function exportTestScript(testType: string, TFConfiguration: string, reso
     `;
 
     return testScript;
+}
+
+export function exportContainerCmd(moduleDir: string, containerCommand: string): string {
+    const containerScript = `
+        #!/bin/bash
+        
+        cd ${moduleDir}
+        ${containerCommand}
+        echo "Container test operation completed - read the logs for status"
+    `;
+
+    return containerScript;
+
 }

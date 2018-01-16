@@ -38,8 +38,13 @@
                 },
                 "tf-azure.files": {
                     "type": "string",
-                    "default": "**/*.{tf,sh,txt}",
-                    "description": "Indicates the files that should be synchronized to Azure cloudshell using the glob pattern string, for example **/*.{tf,txt}"
+                    "default": "**/*.{tf,txt,yml,tfvars,rb}",
+                    "description": "Indicates the files that should be synchronized to Azure cloudshell using the glob pattern string, for example: **/*.{tf,txt,yml,tfvars,rb}"
+                },
+                "tf-azure.test-container": {
+                    "type": "string",
+                    "default": "microsoft/terraform-test",
+                    "description": "Indicates the container that you want to use to run the tests. For example: microsoft/terraform-test"
                 }
             }
         },
