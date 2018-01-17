@@ -182,10 +182,10 @@ export class CloudShell extends BaseShell {
             };
 
             const TFConfiguration = escapeFile(aciConfig(vscode.workspace.getConfiguration("tf-azure").get("aci-ResGroup"),
-                                                         vscode.workspace.getConfiguration("tf-azure").get("aci-name"), 
+                                                         vscode.workspace.getConfiguration("tf-azure").get("aci-name"),
                                                          vscode.workspace.getConfiguration("tf-azure").get("aci-group"),
-                                                         this.csTerm.storageAccountName, this.csTerm.fileShareName, 
-                                                         vscode.workspace.getConfiguration("tf-azure").get("test-location"), 
+                                                         this.csTerm.storageAccountName, this.csTerm.fileShareName,
+                                                         vscode.workspace.getConfiguration("tf-azure").get("test-location"),
                                                          vscode.workspace.getConfiguration("tf-azure").get("test-container"), `${vscode.workspace.name}`));
 
             // Writing the TF Configuration file on local drive
