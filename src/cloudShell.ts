@@ -176,7 +176,6 @@ export class CloudShell extends BaseShell {
             // TestType: lint, e2e - no ssh, e2e - with ssh, custom
             const testCommand =  {
                 "lint": `rake -f ../../Rakefile build`,
-                // "lint": `/bin/bash -c 'cd ${vscode.workspace.name}; ls -la'`,
                 "e2e - no ssh": `rake -f ../../Rakefile e2e`,
                 "e2e - with ssh": `rake -f ../../Rakefile e2e`,
                 "custom": "", // TODO: Implement the custom command in CloudShell
@@ -210,6 +209,8 @@ export class CloudShell extends BaseShell {
 
             // Run the shell script
             this.runTFCommand(`cd ~/clouddrive/${cloudDrivePath} && source ${createAciScript} && terraform fmt && terraform init && terraform apply -auto-approve && terraform taint azurerm_container_group.TFTest`, cloudDrivePath, this.csTerm.terminal);
+            vscode.window.showInformationMessage(`An Azure Container Instance has been created in the Resource Group - ${vscode.workspace.getConfiguration("tf-azure").get("aci-ResGroup")}\nDelete this resource to stop the associated costs`);
+
         } else {
             const message = "A CloudShell session is needed, do you want to open CloudShell?";
             const ok: MessageItem = { title : "Yes" };
