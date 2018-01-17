@@ -8,7 +8,7 @@ import { commands, Disposable, extensions, Uri, ViewColumn, window, workspace, W
 import { BaseShell } from "./baseShell";
 import { Constants } from "./constants";
 import { TerminalType, TFTerminal } from "./shared";
-import { isDockerInstalled, localExecCmd } from "./utilities";
+import { isDockerInstalled, localExecCmd, isEmpty } from "./utilities";
 
 import fs = require("fs-extra");
 
@@ -35,6 +35,7 @@ export class IntegratedShell extends BaseShell {
         if (child.stderr.length > 0) {
             // some error occured, dump to output channel and exit visualize.
             this.outputChannel.append(child.stdout);
+            vscode.window.showErrorMessage("An error has occured, the visualization file could not be generated");
             return;
         } else {
             this.displayPng();
@@ -79,9 +80,25 @@ export class IntegratedShell extends BaseShell {
     }
 
     protected async runTerraformTestsInternal(TestType: string) {
-        // The environment variables have been checked before
-        // We need to check if Docker is installed before we run the command
+        const containerName : string = vscode.workspace.getConfiguration("tf-azure").get("test-container");
 
+        // Check if the environment variables are set locally
+        this.outputChannel.appendLine("Checking SPN environment variables\n");
+        /* tslint:disable:no-string-literal */
+        if (isEmpty(process.env["ARM_SUBSCRIPTION_ID"] ||
+            process.env["ARM_CLIENT_ID"] ||
+            process.env["ARM_CLIENT_SECRET"] ||
+            process.env["ARM_TENANT_ID"] ||
+            process.env["ARM_TEST_LOCATION"] ||
+            process.env["ARM_TEST_LOCATION_ALT"])) {
+            vscode.window.showErrorMessage(
+                "Azure Service Principal is not set (See documentation at: " +
+                "https://docs.microsoft.com/en-us/cli/azure/ad/sp?view=azure-cli-latest#az_ad_sp_create_for_rbac)");
+            return;
+        }
+        /* tslint:enable:no-string-literal */
+
+        // We need to check if Docker is installed before we run the command
         const outputChannel = this.outputChannel;
         isDockerInstalled(outputChannel, (err) => {
             if (err) {
@@ -97,7 +114,7 @@ export class IntegratedShell extends BaseShell {
                             "-v",
                             vscode.workspace.workspaceFolders[0].uri.fsPath + ":/tf-test/module",
                             "--rm",
-                            "microsoft/terraform-test",
+                            containerName,
                             "rake",
                             "-f",
                             "../Rakefile",
@@ -120,7 +137,7 @@ export class IntegratedShell extends BaseShell {
                             "-v", vscode.workspace.workspaceFolders[0].uri.fsPath + ":/tf-test/module",
                             "-e", "ARM_CLIENT_ID", "-e", "ARM_TENANT_ID", "-e", "ARM_SUBSCRIPTION_ID", "-e",
                             "ARM_CLIENT_SECRET", "-e", "ARM_TEST_LOCATION", "-e", "ARM_TEST_LOCATION_ALT",
-                            "--rm", "microsoft/terraform-test", "rake", "-f", "../Rakefile",
+                            "--rm", containerName, "rake", "-f", "../Rakefile",
                             "e2e"], outputChannel, (e) => {
                                 if (e) {
                                     console.log("Error running the end to end test: " + e);
@@ -138,7 +155,7 @@ export class IntegratedShell extends BaseShell {
                             "-v", vscode.workspace.workspaceFolders[0].uri.fsPath + ":/tf-test/module",
                             "-e", "ARM_CLIENT_ID", "-e", "ARM_TENANT_ID", "-e", "ARM_SUBSCRIPTION_ID",
                             "-e", "ARM_CLIENT_SECRET", "-e", "ARM_TEST_LOCATION", "-e", "ARM_TEST_LOCATION_ALT",
-                            "--rm", "microsoft/terraform-test", "rake", "-f", "../Rakefile", "e2e"],
+                            "--rm", containerName, "rake", "-f", "../Rakefile", "e2e"],
                             outputChannel, (e) => {
                                 if (e) {
                                     console.log("Error running the end to end test: " + e);
@@ -154,7 +171,7 @@ export class IntegratedShell extends BaseShell {
                         console.log(vscode.window.showInputBox({
                             prompt: "Type your custom test command",
                             value: "run -v " + vscode.workspace.workspaceFolders[0].uri.fsPath +
-                                ":/tf-test/module --rm microsoft/terraform-test rake -f ../Rakefile build",
+                                ":/tf-test/module --rm " + containerName + " rake -f ../Rakefile build",
                         }).then((cmd) =>
                             localExecCmd("docker", cmd.split(" "), outputChannel, (e) => {
                                 if (e) {
@@ -168,7 +185,7 @@ export class IntegratedShell extends BaseShell {
                         break;
                     }
                     default: {
-                        console.log("default step in test");
+                        console.log("Default step in test for Integrated Terminal");
                         break;
                     }
                 }
