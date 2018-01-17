@@ -19,16 +19,16 @@ export abstract class BaseShell {
 
         // We keep the TFConfiguration for the moment - will need to be updated to sync folders
         const tfActiveFile = vscode.window.activeTextEditor ? vscode.window.activeTextEditor.document.fileName : null;
-        this.outputChannel.appendLine("Running - " + tfCommand + ", Active File: " + tfActiveFile);
+        this.outputChannel.appendLine(`Running - ${tfCommand}, Active File: ${tfActiveFile}`);
 
         // Run Terraform command
-        this.runTerraformInternal( tfCommand, workingDir);
+        this.runTerraformInternal(tfCommand, workingDir);
 
     }
 
     public async runTerraformCmdAsync(tfCommand: string): Promise<any> {
         const tfActiveFile = vscode.window.activeTextEditor ? vscode.window.activeTextEditor.document.fileName : null;
-        this.outputChannel.appendLine("Running - " + tfCommand);
+        this.outputChannel.appendLine(`Running - ${tfCommand}`);
         this.outputChannel.show();
 
         return this.runTerraformAsyncInternal(tfActiveFile, tfCommand);

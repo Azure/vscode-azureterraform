@@ -8,7 +8,7 @@ import { commands, Disposable, extensions, Uri, ViewColumn, window, workspace, W
 import { BaseShell } from "./baseShell";
 import { Constants } from "./constants";
 import { TerminalType, TFTerminal } from "./shared";
-import { isDockerInstalled, localExecCmd, isEmpty } from "./utilities";
+import { isDockerInstalled, isEmpty, localExecCmd } from "./utilities";
 
 import fs = require("fs-extra");
 
@@ -80,7 +80,7 @@ export class IntegratedShell extends BaseShell {
     }
 
     protected async runTerraformTestsInternal(TestType: string) {
-        const containerName : string = vscode.workspace.getConfiguration("tf-azure").get("test-container");
+        const containerName: string = vscode.workspace.getConfiguration("tf-azure").get("test-container");
 
         // Check if the environment variables are set locally
         this.outputChannel.appendLine("Checking SPN environment variables\n");

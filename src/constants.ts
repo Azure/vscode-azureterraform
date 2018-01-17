@@ -1,5 +1,5 @@
-import { azFilePush } from "./shared";
 import * as vscode from "vscode";
+import { azFilePush } from "./shared";
 
 export class Constants {
     public static ExtensionId = "vscode-terraform-azure";
@@ -11,7 +11,7 @@ export class Constants {
     public static clouddrive = "~/clouddrive";
 }
 
-export function aciConfig(resourceGroup: string, aciName:string, aciGroup: string, storageAccountName: string, storageAccountShare: string, location: string, testContainer: string, projectName: string): string {
+export function aciConfig(resourceGroup: string, aciName: string, aciGroup: string, storageAccountName: string, storageAccountShare: string, location: string, testContainer: string, projectName: string): string {
     let TFConfiguration: string;
     // TODO - add a check on the location where ACI is available - if (['westus', eastus].indexOf(location) == -1) {
 
@@ -83,7 +83,7 @@ export function exportTestScript(testType: string, TFConfiguration: string, reso
 export function exportContainerCmd(moduleDir: string, containerCommand: string): string {
     const containerScript = `
         #!/bin/bash
-        
+
         cd ${moduleDir}
         ${containerCommand}
         echo "Container test operation completed - read the logs for status"
