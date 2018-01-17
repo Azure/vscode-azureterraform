@@ -41,6 +41,11 @@
                     "default": "**/*.{tf,txt,yml,tfvars,rb}",
                     "description": "Indicates the files that should be synchronized to Azure cloudshell using the glob pattern string, for example: **/*.{tf,txt,yml,tfvars,rb}"
                 },
+                "tf-azure.syncEnabled": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "When terminal is set to `cloudshell`, indicates whether changes to files that match tf-azure.files setting glob pattern should automatically sync to cloudshell."
+                },
                 "tf-azure.test-container": {
                     "type": "string",
                     "default": "microsoft/terraform-test",

@@ -19,6 +19,7 @@ import { isDotInstalled, TestOption } from "./utilities";
 let cs: CloudShell;
 let is: IntegratedShell;
 let outputChannel: vscode.OutputChannel;
+let fileWatcher: vscode.FileSystemWatcher;
 
 function getShell(): BaseShell {
     let activeShell = null;
@@ -47,18 +48,9 @@ export function activate(ctx: vscode.ExtensionContext) {
 
     outputChannel.appendLine("Loading extension");
 
-    const fileWatcher = vscode.workspace.createFileSystemWatcher(filesGlobSetting());
+    checkEnableFileWatcher();
 
-    // TODO: Implement filewatcher handlers and config to automatically sync changes in workspace to cloudshell.
-    fileWatcher.onDidDelete((deletedUri) => {
-        outputChannel.appendLine("Deleted: " + deletedUri.path);
-    });
-    fileWatcher.onDidCreate((createdUri) => {
-        outputChannel.appendLine("Created: " + createdUri.path);
-    });
-    fileWatcher.onDidChange((changedUri) => {
-        outputChannel.appendLine("Changed: " + changedUri.path);
-    });
+    ctx.subscriptions.push(vscode.workspace.onDidChangeConfiguration((e) => this.updateFileSystemWatcher()));
 
     ctx.subscriptions.push(vscode.commands.registerCommand("vscode-terraform-azure.init", () => {
         getShell().runTerraformCmd("terraform init", Constants.clouddrive);
@@ -124,10 +116,50 @@ export function filesGlobSetting(): GlobPattern {
     return vscode.workspace.getConfiguration("tf-azure").get("files") as GlobPattern;
 }
 
+export function workspaceSyncEnabled(): boolean {
+    return vscode.workspace.getConfiguration("tf-azure").get("syncEnabled") as boolean;
+}
+
 export async function TFLogin(api: AzureAccount) {
     outputChannel.appendLine("Attempting - TFLogin");
     if (!(await api.waitForLogin())) {
         return commands.executeCommand("azure-account.askForLogin");
     }
     outputChannel.appendLine("Succeeded - TFLogin");
+}
+
+function checkEnableFileWatcher(): void {
+    // TODO: Implement filewatcher handlers and config to automatically sync changes in workspace to cloudshell.
+    if (terminalSetToCloudshell() && workspaceSyncEnabled()) {
+
+        fileWatcher = vscode.workspace.createFileSystemWatcher(filesGlobSetting());
+
+        // do initial sync of workspace before enabling file watcher.
+        vscode.workspace.findFiles(filesGlobSetting()).then((tfFiles) => {
+            cs.pushFiles(tfFiles);
+        });
+
+        // enable file watcher to detect file changes.
+        fileWatcher.onDidDelete((deletedUri) => {
+            const files = new Array<vscode.Uri>(1);
+            files[0] = deletedUri;
+            cs.deleteFiles(files);
+        });
+        fileWatcher.onDidCreate((createdUri) => {
+            const files = new Array<vscode.Uri>(1);
+            files[0] = createdUri;
+            cs.pushFiles(files);
+        });
+        fileWatcher.onDidChange((changedUri) => {
+            const files = new Array<vscode.Uri>(1);
+            files[0] = changedUri;
+            cs.pushFiles(files);
+        });
+    }
+}
+
+function updateFileSystemWatcher(): void {
+    // TODO this can't be the right way to do this.  Need to refactor
+    fileWatcher = null;
+    checkEnableFileWatcher();
 }

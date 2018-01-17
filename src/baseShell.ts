@@ -40,7 +40,7 @@ export abstract class BaseShell {
         // Check the environment variables to ensure SPN exist (See )
         this.outputChannel.appendLine("Checking environment variables");
 
-        // TODO This test is only usefull in the Integrated terminal  
+        // TODO This test is only usefull in the Integrated terminal
         /* tslint:disable:no-string-literal */
         if (isEmpty(process.env["ARM_SUBSCRIPTION_ID"] ||
             process.env["ARM_CLIENT_ID"] ||

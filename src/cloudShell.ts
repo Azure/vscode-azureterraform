@@ -4,7 +4,7 @@ import { BaseShell } from "./baseShell";
 import { openCloudConsole, OSes } from "./cloudConsole";
 import { delay } from "./cloudConsoleLauncher";
 import { aciConfig, Constants, exportContainerCmd, exportTestScript } from "./Constants";
-import { azFilePush, escapeFile, TerminalType, TFTerminal } from "./shared";
+import { azFileDelete, azFilePush, escapeFile, TerminalType, TFTerminal } from "./shared";
 
 import { CSTerminal } from "./utilities";
 
@@ -82,7 +82,6 @@ export class CloudShell extends BaseShell {
                     console.log("Push to cloud shell cancelled by user.");
                 }
             });
-            // TODO THIS LINE SEEMS UNNECESSARY console.log("Cloudshell terminal not opened when trying to transfer files");
         }
     }
 
@@ -91,7 +90,18 @@ export class CloudShell extends BaseShell {
     }
 
     public async deleteFiles(files: vscode.Uri[]) {
-        return;
+        for (const file of files.map( (a) => a.fsPath)) {
+            try {
+                if (await fsExtra.pathExists(file)) {
+                    this.outputChannel.appendLine(`Deleting file ${file} from cloud shell`);
+                    await azFileDelete(this.csTerm.storageAccountName,
+                        this.csTerm.storageAccountKey,
+                        this.csTerm.fileShareName, file);
+                }
+            } catch (err) {
+                this.outputChannel.appendLine(err);
+            }
+        }
     }
 
     protected runTerraformInternal(TFCommand: string, WorkDir: string) {
@@ -183,11 +193,13 @@ export class CloudShell extends BaseShell {
             };
 
             const TFConfiguration = escapeFile(aciConfig(vscode.workspace.getConfiguration("tf-azure").get("aci-ResGroup"),
-                                                         vscode.workspace.getConfiguration("tf-azure").get("aci-name"), 
+                                                         vscode.workspace.getConfiguration("tf-azure").get("aci-name"),
                                                          vscode.workspace.getConfiguration("tf-azure").get("aci-group"),
-                                                         this.csTerm.storageAccountName, this.csTerm.fileShareName, 
-                                                         vscode.workspace.getConfiguration("tf-azure").get("test-location"), 
-                                                         vscode.workspace.getConfiguration("tf-azure").get("test-container"), `${vscode.workspace.name}`));
+                                                         this.csTerm.storageAccountName,
+                                                         this.csTerm.fileShareName,
+                                                         vscode.workspace.getConfiguration("tf-azure").get("test-location"),
+                                                         vscode.workspace.getConfiguration("tf-azure").get("test-container"),
+                                                         `${vscode.workspace.name}`));
 
             // Writing the TF Configuration file on local drive
             console.log("Writing TF Configuration for ACI");
