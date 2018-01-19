@@ -32,56 +32,38 @@ export class CloudShell extends BaseShell {
         TerminalType.CloudShell,
         Constants.TerraformTerminalName);
 
-    public async pushFiles(files: vscode.Uri[]) {
+    public async pushFiles(files: vscode.Uri[], syncAllFiles: boolean) {
         this.outputChannel.appendLine("Attempting to upload files to CloudShell");
         const RETRY_INTERVAL = 500;
         const RETRY_TIMES = 30;
 
-        // Checking if the terminal has been created
-        if (( this.csTerm.terminal != null) && (this.csTerm.storageAccountKey != null)) {
-            for (let i = 0; i < RETRY_TIMES; i++ ) {
-                if (this.csTerm.ws.readyState !== ws.OPEN ) {
-                    // wait for valid ws connection
-                    await delay (RETRY_INTERVAL);
-                } else {
-                    for (const file of files.map( (a) => a.fsPath)) {
-                        try {
-                            if (await fsExtra.pathExists(file)) {
-                                this.outputChannel.appendLine(`Uploading file ${file} to cloud shell`);
-                                await azFilePush(this.csTerm.storageAccountName,
-                                    this.csTerm.storageAccountKey,
-                                    this.csTerm.fileShareName, file);
-                            }
-                        } catch (err) {
-                            this.outputChannel.appendLine(err);
+        // Checking if the terminal has been created and user is logged in.
+        await this.checkInitTerm();
+
+        for (let i = 0; i < RETRY_TIMES; i++) {
+            if (this.csTerm.ws.readyState !== ws.OPEN) {
+                // wait for valid ws connection
+                await delay(RETRY_INTERVAL);
+            } else {
+                for (const file of files.map((a) => a.fsPath)) {
+                    try {
+                        if (await fsExtra.pathExists(file)) {
+                            this.outputChannel.appendLine(`Uploading file ${file} to cloud shell`);
+                            await azFilePush(this.csTerm.storageAccountName,
+                                this.csTerm.storageAccountKey,
+                                this.csTerm.fileShareName, file);
                         }
+                    } catch (err) {
+                        this.outputChannel.appendLine(err);
                     }
+                }
+
+                if (syncAllFiles) {
                     vscode.window.showInformationMessage(
-                        "Uploaded all the text files in the current workspace to CloudShell");
-                    break;
+                        "Synced all matched files in the current workspace to CloudShell");
                 }
+                break;
             }
-        } else {
-            const message = "Do you want to open CloudShell?";
-            const ok: MessageItem = { title : "Yes" };
-            const cancel: MessageItem = { title : "No", isCloseAffordance: true };
-            vscode.window.showWarningMessage(message, ok, cancel).then( (response) => {
-                if ( response === ok ) {
-                    this.startCloudShell().then((terminal) => {
-                        this.csTerm.terminal = terminal[0];
-                        this.csTerm.ws = terminal[1];
-                        this.csTerm.storageAccountName = terminal[2];
-                        this.csTerm.storageAccountKey = terminal[3];
-                        this.csTerm.fileShareName = terminal[4];
-                        this.csTerm.ResourceGroup = terminal[5];
-                        this.outputChannel.appendLine(`Obtained cloudshell terminal, retrying push files.\n`);
-                        this.pushFiles(files);
-                        return;
-                    });
-                } else {
-                    console.log("Push to cloud shell cancelled by user.");
-                }
-            });
         }
     }
 
@@ -90,16 +72,27 @@ export class CloudShell extends BaseShell {
     }
 
     public async deleteFiles(files: vscode.Uri[]) {
-        for (const file of files.map( (a) => a.fsPath)) {
-            try {
-                if (await fsExtra.pathExists(file)) {
-                    this.outputChannel.appendLine(`Deleting file ${file} from cloud shell`);
-                    await azFileDelete(this.csTerm.storageAccountName,
-                        this.csTerm.storageAccountKey,
-                        this.csTerm.fileShareName, file);
+        const RETRY_INTERVAL = 500;
+        const RETRY_TIMES = 3;
+
+        // Checking if the terminal has been created and user is logged in.
+        await this.checkInitTerm();
+
+        for (let i = 0; i < RETRY_TIMES; i++) {
+            if (this.csTerm.ws.readyState !== ws.OPEN) {
+                // wait for valid ws connection
+                await delay(RETRY_INTERVAL);
+            } else {
+                for (const file of files.map((a) => a.fsPath)) {
+                    try {
+                        this.outputChannel.appendLine(`Deleting file ${file} from cloud shell`);
+                        await azFileDelete(this.csTerm.storageAccountName,
+                            this.csTerm.storageAccountKey,
+                            this.csTerm.fileShareName, file);
+                    } catch (err) {
+                        this.outputChannel.appendLine(err);
+                    }
                 }
-            } catch (err) {
-                this.outputChannel.appendLine(err);
             }
         }
     }
@@ -301,46 +294,26 @@ export class CloudShell extends BaseShell {
         const RETRY_INTERVAL = 500;
         const RETRY_TIMES = 30;
 
-        // Checking if the terminal has been created
-        if ( (this.csTerm.terminal != null) && (this.csTerm.storageAccountKey != null) ) {
-            for (let i = 0; i < RETRY_TIMES; i++ ) {
-                if (this.csTerm.ws.readyState !== ws.OPEN ) {
-                    await delay (RETRY_INTERVAL);
-                } else {
-                    for (const file of TFFiles.map( (a) => a.fsPath)) {
-                        try {
-                            if (fsExtra.existsSync(file)) {
-                                console.log(`Uploading file ${file} to cloud shell`);
-                                azFilePush(this.csTerm.storageAccountName, this.csTerm.storageAccountKey, this.csTerm.fileShareName, file);
-                            }
-                        } catch (err) {
-                            console.log(err);
+        // Checking if the terminal has been created and user is logged in.
+        await this.checkInitTerm();
+
+        for (let i = 0; i < RETRY_TIMES; i++) {
+            if (this.csTerm.ws.readyState !== ws.OPEN) {
+                await delay(RETRY_INTERVAL);
+            } else {
+                for (const file of TFFiles.map((a) => a.fsPath)) {
+                    try {
+                        if (fsExtra.existsSync(file)) {
+                            console.log(`Uploading file ${file} to cloud shell`);
+                            azFilePush(this.csTerm.storageAccountName, this.csTerm.storageAccountKey, this.csTerm.fileShareName, file);
                         }
+                    } catch (err) {
+                        console.log(err);
                     }
-                    vscode.window.showInformationMessage("Uploaded all the text files in the current workspace to CloudShell");
-                    break;
                 }
+                vscode.window.showInformationMessage("Uploaded all the text files in the current workspace to CloudShell");
+                break;
             }
-        } else {
-            const message = "Do you want to open CloudShell?";
-            const ok: MessageItem = { title : "Yes" };
-            const cancel: MessageItem = { title : "No", isCloseAffordance: true };
-            vscode.window.showWarningMessage(message, ok, cancel).then( (response) => {
-                if ( response === ok ) {
-                    this.startCloudShell().then((terminal) => {
-                        this.csTerm.terminal = terminal[0];
-                        this.csTerm.ws = terminal[1];
-                        this.csTerm.storageAccountName = terminal[2];
-                        this.csTerm.storageAccountKey = terminal[3];
-                        this.csTerm.fileShareName = terminal[4];
-                        this.csTerm.ResourceGroup = terminal[5];
-                        console.log(`Obtained terminal and fileshare data\n`);
-                        this.uploadTFFiles(TFFiles);
-                        return;
-                    });
-                }
-            });
-            console.log("Terminal not opened when trying to transfer files");
         }
     }
 
@@ -348,4 +321,41 @@ export class CloudShell extends BaseShell {
         clearInterval(interval);
     }
 
+    private delayed(func: () => void, timerDelay: number) {
+        const handle = setTimeout(func, timerDelay);
+        return {
+            cancel: () => clearTimeout(handle),
+        };
+    }
+
+    private checkInitTerm(): Promise<void> {
+        return new Promise<void> ((resolve, reject) => {
+            if ((this.csTerm.terminal !== null) && (this.csTerm.storageAccountKey !== undefined)) {
+                resolve();
+            } else {
+                const message = "Do you want to open CloudShell?";
+                const ok: MessageItem = { title: "Yes" };
+                const cancel: MessageItem = { title: "No", isCloseAffordance: true };
+                vscode.window.showWarningMessage(message, ok, cancel).then((response) => {
+                    if (response === ok) {
+                        this.startCloudShell().then((terminal) => {
+                            this.csTerm.terminal = terminal[0];
+                            this.csTerm.ws = terminal[1];
+                            this.csTerm.storageAccountName = terminal[2];
+                            this.csTerm.storageAccountKey = terminal[3];
+                            this.csTerm.fileShareName = terminal[4];
+                            this.csTerm.ResourceGroup = terminal[5];
+                            this.outputChannel.appendLine(`Obtained cloudshell terminal, retrying push files.\n`);
+                            this.delayed(() => { return; }, 500);
+                            resolve();
+                        }).catch((error) => {
+                            reject(error);
+                        });
+                    } else {
+                        console.log("Push to cloud shell cancelled by user.");
+                    }
+                });
+            }
+        });
+    }
 }

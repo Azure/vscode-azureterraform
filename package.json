@@ -16,6 +16,7 @@
         "Other"
     ],
     "activationEvents": [
+        "workspaceContains:**/*.tf",
         "onCommand:vscode-terraform-azure.init",
         "onCommand:vscode-terraform-azure.plan",
         "onCommand:vscode-terraform-azure.apply",
