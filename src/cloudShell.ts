@@ -179,7 +179,6 @@ export class CloudShell extends BaseShell {
             // TestType: lint, e2e - no ssh, e2e - with ssh, custom
             const testCommand =  {
                 "lint": `rake -f ../../Rakefile build`,
-                // "lint": `/bin/bash -c 'cd ${vscode.workspace.name}; ls -la'`,
                 "e2e - no ssh": `rake -f ../../Rakefile e2e`,
                 "e2e - with ssh": `rake -f ../../Rakefile e2e`,
                 "custom": "", // TODO: Implement the custom command in CloudShell
@@ -188,11 +187,9 @@ export class CloudShell extends BaseShell {
             const TFConfiguration = escapeFile(aciConfig(vscode.workspace.getConfiguration("tf-azure").get("aci-ResGroup"),
                                                          vscode.workspace.getConfiguration("tf-azure").get("aci-name"),
                                                          vscode.workspace.getConfiguration("tf-azure").get("aci-group"),
-                                                         this.csTerm.storageAccountName,
-                                                         this.csTerm.fileShareName,
+                                                         this.csTerm.storageAccountName, this.csTerm.fileShareName,
                                                          vscode.workspace.getConfiguration("tf-azure").get("test-location"),
-                                                         vscode.workspace.getConfiguration("tf-azure").get("test-container"),
-                                                         `${vscode.workspace.name}`));
+                                                         vscode.workspace.getConfiguration("tf-azure").get("test-container"), `${vscode.workspace.name}`));
 
             // Writing the TF Configuration file on local drive
             console.log("Writing TF Configuration for ACI");
@@ -210,11 +207,14 @@ export class CloudShell extends BaseShell {
                 console.log("Write container command script done");
             });
 
-            // copye the file to CloudDrive
+            // copy the file to CloudDrive
             azFilePush(this.csTerm.storageAccountName, this.csTerm.storageAccountKey, this.csTerm.fileShareName, localPath + path.sep + "containercmd.sh");
 
             // Run the shell script
-            this.runTFCommand(`cd ~/clouddrive/${cloudDrivePath} && source ${createAciScript} && terraform fmt && terraform init && terraform apply -auto-approve && terraform taint azurerm_container_group.TFTest`, cloudDrivePath, this.csTerm.terminal);
+            this.runTFCommand(`cd ~/clouddrive/${cloudDrivePath} && source ${createAciScript} && terraform fmt && terraform init && terraform apply -auto-approve && terraform taint azurerm_container_group.TFTest && \
+                               echo "\nRun the following command to get the logs from the ACI container: az container logs -g ${vscode.workspace.getConfiguration("tf-azure").get("aci-ResGroup")} -n ${vscode.workspace.getConfiguration("tf-azure").get("aci-name")}\n"`, cloudDrivePath, this.csTerm.terminal);
+            vscode.window.showInformationMessage(`An Azure Container Instance has been created in the Resource Group - ${vscode.workspace.getConfiguration("tf-azure").get("aci-ResGroup")}\nDelete this resource to stop the associated costs`);
+
         } else {
             const message = "A CloudShell session is needed, do you want to open CloudShell?";
             const ok: MessageItem = { title : "Yes" };

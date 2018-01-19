@@ -5,7 +5,7 @@ import * as vscode from "vscode";
 import { Constants } from "./constants";
 
 import { CloudShell } from "./cloudShell";
-import { isDockerInstalled, isEmpty } from "./utilities";
+import { isDockerInstalled } from "./utilities";
 
 export abstract class BaseShell {
     protected outputChannel: vscode.OutputChannel;
@@ -19,16 +19,16 @@ export abstract class BaseShell {
 
         // We keep the TFConfiguration for the moment - will need to be updated to sync folders
         const tfActiveFile = vscode.window.activeTextEditor ? vscode.window.activeTextEditor.document.fileName : null;
-        this.outputChannel.appendLine("Running - " + tfCommand + ", Active File: " + tfActiveFile);
+        this.outputChannel.appendLine(`Running - ${tfCommand}, Active File: ${tfActiveFile}`);
 
         // Run Terraform command
-        this.runTerraformInternal( tfCommand, workingDir);
+        this.runTerraformInternal(tfCommand, workingDir);
 
     }
 
     public async runTerraformCmdAsync(tfCommand: string): Promise<any> {
         const tfActiveFile = vscode.window.activeTextEditor ? vscode.window.activeTextEditor.document.fileName : null;
-        this.outputChannel.appendLine("Running - " + tfCommand);
+        this.outputChannel.appendLine(`Running - ${tfCommand}`);
         this.outputChannel.show();
 
         return this.runTerraformAsyncInternal(tfActiveFile, tfCommand);
@@ -38,23 +38,6 @@ export abstract class BaseShell {
     public async runTerraformTests(testType: string): Promise<any> {
 
         // Check the environment variables to ensure SPN exist (See )
-        this.outputChannel.appendLine("Checking environment variables");
-
-        // TODO This test is only usefull in the Integrated terminal
-        /* tslint:disable:no-string-literal */
-        if (isEmpty(process.env["ARM_SUBSCRIPTION_ID"] ||
-            process.env["ARM_CLIENT_ID"] ||
-            process.env["ARM_CLIENT_SECRET"] ||
-            process.env["ARM_TENANT_ID"] ||
-            process.env["ARM_TEST_LOCATION"] ||
-            process.env["ARM_TEST_LOCATION_ALT"])) {
-            vscode.window.showErrorMessage(
-                "Azure Service Principal is not set (See documentation at: " +
-                "https://docs.microsoft.com/en-us/cli/azure/ad/sp?view=azure-cli-latest#az_ad_sp_create_for_rbac)");
-            return;
-        }
-        /* tslint:enable:no-string-literal */
-
         return this.runTerraformTestsInternal(testType);
     }
 

@@ -61,7 +61,7 @@ export function openCloudConsole(
             try {
                 const { stdout } = await exec("node.exe --version");
                 const version = stdout[0] === "v" && stdout.substr(1).trim();
-                if (version && semver.valid(version) && !semver.gte(version, "6.0.0")) {
+                if (version && semver.valid(version) && semver.lt(version, "6.0.0")) {
                     progress.cancel();
                     return requiresNode();
                 }
@@ -261,7 +261,5 @@ function delayedInterval(func: () => void, interval: number) {
 }
 
 function escapeFile(data: string): string {
-    /* tslint:disable:no-string-literal */
     return data.replace(/"/g, '\\"');
-    /* tslint:enable:no-string-literal */
 }
