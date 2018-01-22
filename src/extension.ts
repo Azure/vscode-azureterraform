@@ -21,6 +21,7 @@ let is: IntegratedShell;
 let outputChannel: vscode.OutputChannel;
 let fileWatcher: vscode.FileSystemWatcher;
 let isFirstPush = true;
+let _disposable: Disposable;
 
 function getShell(): BaseShell {
     let activeShell = null;
@@ -136,23 +137,25 @@ export async function TFLogin(api: AzureAccount) {
 
 function initFileWatcher(): void {
     // TODO: Implement filewatcher handlers and config to automatically sync changes in workspace to cloudshell.
+        const subscriptions: Disposable[] = [];
 
         fileWatcher = vscode.workspace.createFileSystemWatcher(filesGlobSetting());
 
         // enable file watcher to detect file changes.
         fileWatcher.onDidDelete((deletedUri) => {
             if (terminalSetToCloudshell() && workspaceSyncEnabled()) {
-                const files = new Array<vscode.Uri>(1);
-                files[0] = deletedUri;
-                cs.deleteFiles(files);
+
+                cs.deleteFiles([deletedUri]);
             }
-        });
+        }, this, subscriptions);
         fileWatcher.onDidCreate((createdUri) => {
             pushHelper(createdUri);
-        });
+        }, this, subscriptions);
         fileWatcher.onDidChange((changedUri) => {
             pushHelper(changedUri);
-        });
+        }, this, subscriptions);
+
+        this._disposable = Disposable.from(...subscriptions);
 }
 
 function pushHelper(uri: vscode.Uri) {
@@ -165,8 +168,13 @@ function pushHelper(uri: vscode.Uri) {
             isFirstPush = false;
             return;
         }
-        const files = new Array<vscode.Uri>(1);
-        files[0] = uri;
-        cs.pushFiles(files, false);
+        cs.pushFiles([uri], false);
+    }
+}
+
+export function deactivate(): void {
+    this._disposable.dispose();
+    if (fileWatcher) {
+		fileWatcher.dispose();
     }
 }

@@ -289,43 +289,12 @@ export class CloudShell extends BaseShell {
 
     }
 
-    protected async uploadTFFiles(TFFiles) {
-        console.log("Uploading files to CloudShell");
-        const RETRY_INTERVAL = 500;
-        const RETRY_TIMES = 30;
-
-        // Checking if the terminal has been created and user is logged in.
-        await this.checkInitTerm();
-
-        for (let i = 0; i < RETRY_TIMES; i++) {
-            if (this.csTerm.ws.readyState !== ws.OPEN) {
-                await delay(RETRY_INTERVAL);
-            } else {
-                for (const file of TFFiles.map((a) => a.fsPath)) {
-                    try {
-                        if (fsExtra.existsSync(file)) {
-                            console.log(`Uploading file ${file} to cloud shell`);
-                            azFilePush(this.csTerm.storageAccountName, this.csTerm.storageAccountKey, this.csTerm.fileShareName, file);
-                        }
-                    } catch (err) {
-                        console.log(err);
-                    }
-                }
-                vscode.window.showInformationMessage("Uploaded all the text files in the current workspace to CloudShell");
-                break;
-            }
-        }
-    }
-
     protected stop(interval: NodeJS.Timer): void {
         clearInterval(interval);
     }
 
-    private delayed(func: () => void, timerDelay: number) {
-        const handle = setTimeout(func, timerDelay);
-        return {
-            cancel: () => clearTimeout(handle),
-        };
+    private async delayWrap(ms: number) {
+        await delay(500);
     }
 
     private checkInitTerm(): Promise<void> {
@@ -346,7 +315,7 @@ export class CloudShell extends BaseShell {
                             this.csTerm.fileShareName = terminal[4];
                             this.csTerm.ResourceGroup = terminal[5];
                             this.outputChannel.appendLine(`Obtained cloudshell terminal, retrying push files.\n`);
-                            this.delayed(() => { return; }, 500);
+                            this.delayWrap(500);
                             resolve();
                         }).catch((error) => {
                             reject(error);
