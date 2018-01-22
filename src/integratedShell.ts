@@ -11,6 +11,7 @@ import { TerminalType, TFTerminal } from "./shared";
 import { isEmpty } from "./utilities";
 import { executeCommand } from "./utils/cpUtils";
 import { runE2EInDocker, runLintInDocker, validateDockerInstalled } from "./utils/dockerUtils";
+import { drawGraph } from "./utils/dotUtils";
 
 export class IntegratedShell extends BaseShell {
     private static readonly GRAPH_FILE_NAME = "./graph.png";
@@ -46,15 +47,7 @@ export class IntegratedShell extends BaseShell {
         );
         const tmpFile: string = path.join(os.tmpdir(), "terraformgraph.output");
         await fse.writeFile(tmpFile, output);
-        await executeCommand(
-            outputChannel,
-            { shell: true },
-            "dot",
-            "-Tpng",
-            "-o",
-            "graph.png",
-            tmpFile,
-        );
+        await drawGraph(outputChannel, vscode.workspace.workspaceFolders[0].uri.fsPath, tmpFile);
         await commands.executeCommand("vscode.open", this.graphUri, ViewColumn.Two);
     }
 
