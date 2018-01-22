@@ -26,6 +26,7 @@ resource "azurerm_resource_group" "TFTest" {
     location = "${location}"
 }
 resource "azurerm_container_group" "TFTest" {
+    depends_on = ["azurerm_resource_group.TFTest"]
     name = "${aciGroup}"
     location = "${location}"
     resource_group_name = "${resourceGroup}"
