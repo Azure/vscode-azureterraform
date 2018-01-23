@@ -14,7 +14,8 @@ import { CloudShell } from "./cloudShell";
 import { Constants } from "./constants";
 import { IntegratedShell } from "./integratedShell";
 import { azFilePush } from "./shared";
-import { isDotInstalled, TestOption } from "./utilities";
+import { TestOption } from "./utilities";
+import { isDotInstalled } from "./utils/dotUtils";
 
 let cs: CloudShell;
 let is: IntegratedShell;
@@ -84,24 +85,21 @@ export function activate(ctx: vscode.ExtensionContext) {
         getShell().runTerraformCmd("terraform validate", Constants.clouddrive);
     }));
 
-    ctx.subscriptions.push(vscode.commands.registerCommand("vscode-terraform-azure.visualize", () => {
-        isDotInstalled(outputChannel, (err) => {
-            if (err) {
-                outputChannel.appendLine(err);
-            } else {
-                is.visualize();
-            }
-        });
-
+    ctx.subscriptions.push(vscode.commands.registerCommand("vscode-terraform-azure.visualize", async () => {
+        if (await isDotInstalled()) {
+            await is.visualize(outputChannel);
+        }
     }));
 
-    ctx.subscriptions.push(vscode.commands.registerCommand("vscode-terraform-azure.exectest", () => {
+    ctx.subscriptions.push(vscode.commands.registerCommand("vscode-terraform-azure.exectest", async () => {
         console.log("Testing current module");
-        // var iShell = new IntegratedShell(outputChannel);
-        // // TODO - asking the type of test to run e2e or lint
-        vscode.window.showQuickPick([TestOption.lint, TestOption.e2enossh, TestOption.e2ewithssh, TestOption.custom], { placeHolder: "Select the type of test that you want to run" }).then((pick) => {
-            getShell().runTerraformTests(pick);
-        });
+        const pick: string = await vscode.window.showQuickPick(
+            [ TestOption.lint, TestOption.e2enossh, TestOption.e2ewithssh, TestOption.custom ],
+            { placeHolder: "Select the type of test that you want to run" },
+        );
+        if (pick) {
+            await getShell().runTerraformTests(pick);
+        }
     }));
 
     ctx.subscriptions.push(vscode.commands.registerCommand("vscode-terraform-azure.push", () => {

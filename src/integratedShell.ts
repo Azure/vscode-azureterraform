@@ -1,16 +1,18 @@
 "use strict";
 
+import * as fse from "fs-extra";
+import * as os from "os";
+import * as path from "path";
 import * as vscode from "vscode";
-
-import { join } from "path";
-import { commands, Disposable, extensions, Uri, ViewColumn, window, workspace, WorkspaceEdit } from "vscode";
-
+import { commands, Uri, ViewColumn, workspace } from "vscode";
 import { BaseShell } from "./baseShell";
 import { Constants } from "./constants";
 import { TerminalType, TFTerminal } from "./shared";
-import { isDockerInstalled, isEmpty, localExecCmd } from "./utilities";
-
-import fs = require("fs-extra");
+import { isEmpty } from "./utilities";
+import { TestOption } from "./utilities";
+import { executeCommand } from "./utils/cpUtils";
+import { isDockerInstalled, runE2EInDocker, runLintInDocker } from "./utils/dockerUtils";
+import { drawGraph } from "./utils/dotUtils";
 
 export class IntegratedShell extends BaseShell {
     private static readonly GRAPH_FILE_NAME = "./graph.png";
@@ -23,31 +25,38 @@ export class IntegratedShell extends BaseShell {
     private graphUri: Uri;
 
     // Creates a png of terraform resource graph to visualize the resources under management.
-    public visualize(): void {
-        this.deletePng();
+    public async visualize(outputChannel: vscode.OutputChannel): Promise<void> {
+        await this.deletePng();
 
-        const cp = require("child_process");
-        const child = cp.spawnSync("terraform init && terraform graph | dot -Tpng -o graph.png", {
-            stdio: "pipe",
-            shell: true,
-            cwd: vscode.workspace.workspaceFolders[0].uri.fsPath,
-        });
-        if (child.stderr.length > 0) {
-            // some error occured, dump to output channel and exit visualize.
-            this.outputChannel.append(child.stdout);
-            vscode.window.showErrorMessage("An error has occured, the visualization file could not be generated");
-            return;
-        } else {
-            this.displayPng();
-            console.log(`Vizualization rendering complete in ${vscode.workspace.workspaceFolders[0].uri.fsPath}`);
-        }
+        await executeCommand(
+            "terraform",
+            ["init"],
+            {
+                shell: true,
+                cwd: vscode.workspace.workspaceFolders[0].uri.fsPath,
+            },
+            outputChannel,
+        );
+        const output: string = await executeCommand(
+            "terraform",
+            ["graph"],
+            {
+                shell: true,
+                cwd: vscode.workspace.workspaceFolders[0].uri.fsPath,
+            },
+            outputChannel,
+        );
+        const tmpFile: string = path.join(os.tmpdir(), "terraformgraph.output");
+        await fse.writeFile(tmpFile, output);
+        await drawGraph(outputChannel, vscode.workspace.workspaceFolders[0].uri.fsPath, tmpFile);
+        await commands.executeCommand("vscode.open", this.graphUri, ViewColumn.Two);
     }
 
     // init shell env and hook up close handler. Close handler ensures if user closes terminal window,
     // that extension is notified and can handle appropriately.
     protected initShellInternal() {
         // set path for
-        this.graphUri = Uri.file(join(workspace.rootPath || "", IntegratedShell.GRAPH_FILE_NAME));
+        this.graphUri = Uri.file(path.join(workspace.rootPath || "", IntegratedShell.GRAPH_FILE_NAME));
 
         if ("onDidCloseTerminal" in vscode.window as any) {
             (vscode.window as any).onDidCloseTerminal((terminal) => {
@@ -80,6 +89,9 @@ export class IntegratedShell extends BaseShell {
     }
 
     protected async runTerraformTestsInternal(TestType: string) {
+        if (!await isDockerInstalled()) {
+            return;
+        }
         const containerName: string = vscode.workspace.getConfiguration("tf-azure").get("test-container");
 
         // Check if the environment variables are set locally
@@ -98,100 +110,61 @@ export class IntegratedShell extends BaseShell {
         }
         /* tslint:enable:no-string-literal */
 
-        // We need to check if Docker is installed before we run the command
-        const outputChannel = this.outputChannel;
-        isDockerInstalled(outputChannel, (err) => {
-            if (err) {
-                console.log("Docker not installed");
-            } else {
-                console.log("Docker is installed - running the test");
-
-                // Let"s run the test, it will pull the container is not already there.
-                switch (TestType) {
-                    case "lint": {
-                        localExecCmd("docker", [
-                            "run",
-                            "-v",
-                            vscode.workspace.workspaceFolders[0].uri.fsPath + ":/tf-test/module",
-                            "--rm",
-                            containerName,
-                            "rake",
-                            "-f",
-                            "../Rakefile",
-                            "build"],
-                            outputChannel,
-                            (e) => {
-                                if (e) {
-                                    console.log("Error running the lint test: " + e);
-                                } else {
-                                    console.log("Lint test ran successfully");
-                                }
-                                return;
-                            });
-                        break;
-                    }
-                    case "e2e - no ssh": {
-                        console.log("Running e2e test in " + process.env["ARM_TEST_LOCATION"]);
-                        localExecCmd("docker", ["run", "-v",
-                            vscode.workspace.workspaceFolders[0].uri.fsPath + "/logs:/tf-test/module.kitchen",
-                            "-v", vscode.workspace.workspaceFolders[0].uri.fsPath + ":/tf-test/module",
-                            "-e", "ARM_CLIENT_ID", "-e", "ARM_TENANT_ID", "-e", "ARM_SUBSCRIPTION_ID", "-e",
-                            "ARM_CLIENT_SECRET", "-e", "ARM_TEST_LOCATION", "-e", "ARM_TEST_LOCATION_ALT",
-                            "--rm", containerName, "rake", "-f", "../Rakefile",
-                            "e2e"], outputChannel, (e) => {
-                                if (e) {
-                                    console.log("Error running the end to end test: " + e);
-                                } else {
-                                    console.log("End to end test ran successfully");
-                                }
-                                return;
-                            });
-                        break;
-                    }
-                    case "e2e - with ssh": {
-                        console.log("Running e2e test in " + process.env["ARM_TEST_LOCATION"]);
-                        localExecCmd("docker", ["run", "-v", "~/.ssh:/root/.ssh/", "-v",
-                            vscode.workspace.workspaceFolders[0].uri.fsPath + "/logs:/tf-test/module.kitchen",
-                            "-v", vscode.workspace.workspaceFolders[0].uri.fsPath + ":/tf-test/module",
-                            "-e", "ARM_CLIENT_ID", "-e", "ARM_TENANT_ID", "-e", "ARM_SUBSCRIPTION_ID",
-                            "-e", "ARM_CLIENT_SECRET", "-e", "ARM_TEST_LOCATION", "-e", "ARM_TEST_LOCATION_ALT",
-                            "--rm", containerName, "rake", "-f", "../Rakefile", "e2e"],
-                            outputChannel, (e) => {
-                                if (e) {
-                                    console.log("Error running the end to end test: " + e);
-                                } else {
-                                    console.log("End to end test ran successfully");
-                                }
-                                return;
-                            });
-                        break;
-                    }
-                    case "custom": {
-                        console.log("Running custom test in " + process.env["ARM_TEST_LOCATION"]);
-                        console.log(vscode.window.showInputBox({
-                            prompt: "Type your custom test command",
-                            value: "run -v " + vscode.workspace.workspaceFolders[0].uri.fsPath +
-                                ":/tf-test/module --rm " + containerName + " rake -f ../Rakefile build",
-                        }).then((cmd) =>
-                            localExecCmd("docker", cmd.split(" "), outputChannel, (e) => {
-                                if (e) {
-                                    console.log("Error running the custom test: " + e);
-                                } else {
-                                    console.log("Custom test ran successfully");
-                                }
-                                return;
-                            }),
-                        ));
-                        break;
-                    }
-                    default: {
-                        console.log("Default step in test for Integrated Terminal");
-                        break;
-                    }
-                }
+        switch (TestType) {
+            case TestOption.lint: {
+                await runLintInDocker(
+                    this.outputChannel,
+                    vscode.workspace.workspaceFolders[0].uri.fsPath + ":/tf-test/module",
+                    containerName,
+                );
+                break;
             }
-        });
-
+            case TestOption.e2enossh: {
+                console.log("Running e2e test in " + process.env["ARM_TEST_LOCATION"]);
+                await runE2EInDocker(
+                    this.outputChannel,
+                    [
+                        vscode.workspace.workspaceFolders[0].uri.fsPath + "/logs:/tf-test/module.kitchen",
+                        vscode.workspace.workspaceFolders[0].uri.fsPath + ":/tf-test/module",
+                    ],
+                    containerName,
+                );
+                break;
+            }
+            case TestOption.e2ewithssh: {
+                console.log("Running e2e test in " + process.env["ARM_TEST_LOCATION"]);
+                await runE2EInDocker(
+                    this.outputChannel,
+                    [
+                        `${path.join(os.homedir(), ".ssh")}:/root/.ssh/`,
+                        vscode.workspace.workspaceFolders[0].uri.fsPath + "/logs:/tf-test/module.kitchen",
+                        vscode.workspace.workspaceFolders[0].uri.fsPath + ":/tf-test/module",
+                    ],
+                    containerName,
+                );
+                break;
+            }
+            case TestOption.custom: {
+                console.log("Running custom test in " + process.env["ARM_TEST_LOCATION"]);
+                const cmd: string = await vscode.window.showInputBox({
+                    prompt: "Type your custom test command",
+                    value: `run -v ${vscode.workspace.workspaceFolders[0].uri.fsPath}:/tf-test/module --rm ${containerName} rake -f ../Rakefile build`,
+                });
+                if (cmd) {
+                    await executeCommand(
+                        "docker",
+                        cmd.split(" "),
+                        {shell: true},
+                        this.outputChannel,
+                    );
+                }
+                break;
+            }
+            default: {
+                console.log("Default step in test for Integrated Terminal");
+                break;
+            }
+        }
     }
 
     protected syncWorkspaceInternal() {
@@ -199,16 +172,10 @@ export class IntegratedShell extends BaseShell {
         return;
     }
 
-    private deletePng(): void {
-        if (fs.existsSync(this.graphUri.path)) {
-            fs.unlinkSync(this.graphUri.path);
+    private async deletePng(): Promise<void> {
+        if (await fse.pathExists(this.graphUri.path)) {
+            await fse.remove(this.graphUri.path);
         }
-    }
-
-    private displayPng(): void {
-        // add 2 second delay before opening file due to file creation latency
-        setTimeout(() => { commands.executeCommand("vscode.open", this.graphUri, ViewColumn.Two); }
-            , 2000);
     }
 
     private checkCreateTerminal(): void {
