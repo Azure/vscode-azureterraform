@@ -8,8 +8,8 @@ import { commands, Uri, ViewColumn, workspace } from "vscode";
 import { BaseShell } from "./baseShell";
 import { Constants } from "./constants";
 import { TerminalType, TFTerminal } from "./shared";
-import { isEmpty } from "./utilities";
 import { TestOption } from "./utilities";
+import { isServicePrincipalSetInEnv } from "./utils/azureUtils";
 import { executeCommand } from "./utils/cpUtils";
 import { isDockerInstalled, runE2EInDocker, runLintInDocker } from "./utils/dockerUtils";
 import { drawGraph } from "./utils/dotUtils";
@@ -94,21 +94,10 @@ export class IntegratedShell extends BaseShell {
         }
         const containerName: string = vscode.workspace.getConfiguration("tf-azure").get("test-container");
 
-        // Check if the environment variables are set locally
-        this.outputChannel.appendLine("Checking SPN environment variables\n");
-        /* tslint:disable:no-string-literal */
-        if (isEmpty(process.env["ARM_SUBSCRIPTION_ID"] ||
-            process.env["ARM_CLIENT_ID"] ||
-            process.env["ARM_CLIENT_SECRET"] ||
-            process.env["ARM_TENANT_ID"] ||
-            process.env["ARM_TEST_LOCATION"] ||
-            process.env["ARM_TEST_LOCATION_ALT"])) {
-            vscode.window.showErrorMessage(
-                "Azure Service Principal is not set (See documentation at: " +
-                "https://docs.microsoft.com/en-us/cli/azure/ad/sp?view=azure-cli-latest#az_ad_sp_create_for_rbac)");
+        this.outputChannel.appendLine("Checking Azure Service Principal environment variables...");
+        if (!isServicePrincipalSetInEnv()) {
             return;
         }
-        /* tslint:enable:no-string-literal */
 
         switch (TestType) {
             case TestOption.lint: {
@@ -154,7 +143,7 @@ export class IntegratedShell extends BaseShell {
                     await executeCommand(
                         "docker",
                         cmd.split(" "),
-                        {shell: true},
+                        { shell: true },
                         this.outputChannel,
                     );
                 }
