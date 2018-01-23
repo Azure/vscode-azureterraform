@@ -1,3 +1,4 @@
+"use strict";
 
 import * as fsExtra from "fs-extra";
 import * as request from "request-promise";

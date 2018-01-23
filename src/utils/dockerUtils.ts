@@ -2,12 +2,14 @@
 
 import * as vscode from "vscode";
 import { executeCommand } from "./cpUtils";
+import { openUrlHint } from "./uiUtils";
 
 export async function isDockerInstalled(): Promise<boolean> {
     try {
         await executeCommand("docker", ["-v"], { shell: true });
         return true;
     } catch (error) {
+        openUrlHint("Docker is not installed, please install Docker to continue.", "https://www.docker.com");
         return false;
     }
 }

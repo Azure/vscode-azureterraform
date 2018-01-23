@@ -1,25 +1,17 @@
+"use strict";
+
+import * as path from "path";
+import { clearInterval, setInterval, setTimeout } from "timers";
+import { commands, MessageItem, OutputChannel, window } from "vscode";
+import * as nls from "vscode-nls";
 import { AzureAccount, AzureSession, AzureSubscription } from "./azure-account.api";
 import {
     delay, Errors, getStorageAccountKey, getUserSettings,
     provisionConsole, resetConsole, runInTerminal,
 } from "./cloudConsoleLauncher";
-import { TerminalType } from "./shared";
-import { CSTerminal, exec, IExecResult } from "./utilities";
+import { isNodeVersionValid } from "./utils/nodeUtils";
+import { openUrlHint } from "./utils/uiUtils";
 
-import { SubscriptionClient } from "azure-arm-resource";
-import { TIMEOUT } from "dns";
-import { PassThrough } from "stream";
-import { clearInterval, setInterval, setTimeout } from "timers";
-import { commands, env, MessageItem, OutputChannel, Terminal, window } from "vscode";
-import { configure } from "vscode/lib/testrunner";
-
-import * as cp from "child_process";
-import * as fsExtra from "fs-extra";
-import * as opn from "opn";
-import * as path from "path";
-import * as semver from "semver";
-import * as nls from "vscode-nls";
-import * as ws from "ws";
 const localize = nls.loadMessageBundle();
 
 export interface IOS {
@@ -52,23 +44,14 @@ export function openCloudConsole(
         outputChannel.show();
         outputChannel.appendLine("Attempting to open CloudConsole - Connecting to cloudshell");
         /* tslint:disable:semicolon */
-        const progress = delayedInterval(() => { outputChannel.append("..")}, 500);
+        const progress = delayedInterval(() => { outputChannel.append("..") }, 500);
         /* tslint:enable:semicolon */
 
         const isWindows = process.platform === "win32";
-        if (isWindows) {
-            // See below
-            try {
-                const { stdout } = await exec("node.exe --version");
-                const version = stdout[0] === "v" && stdout.substr(1).trim();
-                if (version && semver.valid(version) && semver.lt(version, "6.0.0")) {
-                    progress.cancel();
-                    return requiresNode();
-                }
-            } catch (err) {
-                progress.cancel();
-                return requiresNode();
-            }
+        if (isWindows && !await isNodeVersionValid()) {
+            progress.cancel();
+            openUrlHint("Opening a Cloud Shell currently requires Node.js 6 or later being installed.", "https://nodejs.org");
+            return;
         }
 
         // Loging in to Azure using the azure account extension
@@ -82,7 +65,8 @@ export function openCloudConsole(
         const result = await findUserSettings(tokens);
         if (!result) {
             progress.cancel();
-            return requiresSetUp();
+            openUrlHint("First launch of Cloud Shell requires setup in the Azure portal.", "https://portal.azure.com");
+            return;
         }
 
         outputChannel.append("\nUsersettings obtained from Tokens - proceeding\n");
@@ -110,7 +94,7 @@ export function openCloudConsole(
             storageAccount.storageAccountName).then((keys) => {
                 outputChannel.appendLine("Storage key obtained ");
                 storageAccountKey = keys.body.keys[0].value;
-        });
+            });
 
         // Getting the console URI
         let consoleUri: string;
@@ -170,7 +154,7 @@ export function openCloudConsole(
         await delay(500);
 
         terminal.show();
-        return [ terminal, response, storageAccount.storageAccountName, storageAccountKey, fileShareName, storageAccount.resourceGroup];
+        return [terminal, response, storageAccount.storageAccountName, storageAccountKey, fileShareName, storageAccount.resourceGroup];
 
     })().catch((err) => {
         outputChannel.append("\nConnecting to CloudShell failed with error: \n" + err);
@@ -202,16 +186,16 @@ async function acquireToken(session: AzureSession) {
         const environment: any = session.environment;
         credentials.context.acquireToken(environment.activeDirectoryResourceId,
             credentials.username, credentials.clientId, (err: any, result: any) => {
-            if (err) {
-                reject(err);
-            } else {
-                resolve({
-                    session,
-                    accessToken: result.accessToken,
-                    refreshToken: result.refreshToken,
-                });
-            }
-        });
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve({
+                        session,
+                        accessToken: result.accessToken,
+                        refreshToken: result.refreshToken,
+                    });
+                }
+            });
     });
 }
 
@@ -222,27 +206,6 @@ async function findUserSettings(tokens: IToken[]) {
         if (userSettings && userSettings.storageProfile) {
             return { userSettings, token };
         }
-    }
-}
-
-async function requiresSetUp() {
-    const open: MessageItem = { title: "Open instruction" };
-    const close: MessageItem = { title: "Close", isCloseAffordance: true };
-    const message = "First launch of Cloud Shell requires setup in the Azure portal (https://portal.azure.com).";
-    const response = await window.showInformationMessage(message, open, close);
-    if (response === open) {
-        opn("https://docs.microsoft.com/en-us/azure/cloud-shell/overview");
-    }
-}
-
-async function requiresNode() {
-
-    const open: MessageItem = { title: "Open" };
-    const close: MessageItem = { title: "Close", isCloseAffordance: true };
-    const message = "Opening a Cloud Shell currently requires Node.js 6 or later being installed (https://nodejs.org).";
-    const response = await window.showInformationMessage(message, open, close);
-    if (response === open) {
-        opn("https://nodejs.org");
     }
 }
 
@@ -258,8 +221,4 @@ function delayedInterval(func: () => void, interval: number) {
     return {
         cancel: () => clearInterval(handle),
     };
-}
-
-function escapeFile(data: string): string {
-    return data.replace(/"/g, '\\"');
 }

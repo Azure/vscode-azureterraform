@@ -3,15 +3,9 @@
 import * as azureStorage from "azure-storage";
 import * as path from "path";
 import * as vscode from "vscode";
-
-import { FileService } from "azure-storage";
-import { WebResource } from "ms-rest";
-import { AzureAccount, AzureLoginStatus, AzureSession, AzureSubscription } from "./azure-account.api";
 import { CloudFile } from "./cloudFile";
-import { IExecResult } from "./utilities";
 
 export class TFTerminal {
-
     public type: TerminalType;
     public terminal: vscode.Terminal;
     public name: string;
@@ -27,6 +21,13 @@ export class TFTerminal {
     }
 }
 
+// tslint:disable-next-line:max-classes-per-file
+export class CSTerminal {
+    public accessToken: string;
+    public consoleURI: string;
+    public terminal: vscode.Terminal;
+}
+
 export enum TerminalType {
     Integrated = "integrated",
     CloudShell = "cloudshell",
@@ -36,6 +37,13 @@ export enum FileSystem {
     docker = "docker",
     local = "local",
     cloudshell = "cloudshell",
+}
+
+export enum TestOption {
+    lint = "lint",
+    e2enossh = "e2e - no ssh",
+    e2ewithssh = "e2e - with ssh",
+    custom = "custom",
 }
 
 export function escapeFile(data: string): string {

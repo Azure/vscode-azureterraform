@@ -2,13 +2,14 @@
 
 import * as vscode from "vscode";
 import { executeCommand } from "./cpUtils";
+import { openUrlHint } from "./uiUtils";
 
 export async function isDotInstalled(): Promise<boolean> {
     try {
         await executeCommand("dot", ["-V"], { shell: true });
         return true;
     } catch (error) {
-        vscode.window.showErrorMessage("GraphViz - Dot is not installed, please install GraphViz to continue (https://www.graphviz.org).");
+        openUrlHint("GraphViz - Dot is not installed, please install GraphViz to continue.", "https://www.graphviz.org");
         return false;
     }
 }
