@@ -8,9 +8,17 @@ export async function isDockerInstalled(): Promise<boolean> {
         await executeCommand("docker", ["-v"], { shell: true });
         return true;
     } catch (error) {
-        vscode.window.showErrorMessage("Docker isn't installed, please install Docker to continue (https://www.docker.com/)");
         return false;
     }
+}
+
+export function isServicePrincipalSetInEnv(): boolean {
+    if (!(process.env.ARM_SUBSCRIPTION_ID && process.env.ARM_CLIENT_ID && process.env.ARM_CLIENT_SECRET &&
+        process.env.ARM_TENANT_ID && process.env.ARM_TEST_LOCATION)) {
+        vscode.window.showErrorMessage("Azure Service Principal is not set. (See documentation at: https://www.terraform.io/docs/providers/azurerm/authenticating_via_azure_cli.html)");
+        return false;
+    }
+    return true;
 }
 
 export async function runLintInDocker(outputChannel: vscode.OutputChannel, volumn: string, containerName: string): Promise<void> {

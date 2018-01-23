@@ -17,14 +17,6 @@ export class CSTerminal {
     public terminal: vscode.Terminal;
 }
 
-export function isEmpty(param) {
-    if ( param === null || param.lenght === 0 || param === undefined) {
-        return true;
-    } else {
-        return false;
-    }
-}
-
 export interface IExecResult {
     error: Error | null;
     stdout: string;
