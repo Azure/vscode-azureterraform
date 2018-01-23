@@ -9,8 +9,9 @@ import { BaseShell } from "./baseShell";
 import { Constants } from "./constants";
 import { TerminalType, TFTerminal } from "./shared";
 import { isEmpty } from "./utilities";
+import { TestOption } from "./utilities";
 import { executeCommand } from "./utils/cpUtils";
-import { runE2EInDocker, runLintInDocker, validateDockerInstalled } from "./utils/dockerUtils";
+import { isDockerInstalled, runE2EInDocker, runLintInDocker } from "./utils/dockerUtils";
 import { drawGraph } from "./utils/dotUtils";
 
 export class IntegratedShell extends BaseShell {
@@ -28,22 +29,22 @@ export class IntegratedShell extends BaseShell {
         await this.deletePng();
 
         await executeCommand(
-            outputChannel,
+            "terraform",
+            ["init"],
             {
                 shell: true,
                 cwd: vscode.workspace.workspaceFolders[0].uri.fsPath,
             },
-            "terraform",
-            "init",
+            outputChannel,
         );
         const output: string = await executeCommand(
-            outputChannel,
+            "terraform",
+            ["graph"],
             {
                 shell: true,
                 cwd: vscode.workspace.workspaceFolders[0].uri.fsPath,
             },
-            "terraform",
-            "graph",
+            outputChannel,
         );
         const tmpFile: string = path.join(os.tmpdir(), "terraformgraph.output");
         await fse.writeFile(tmpFile, output);
@@ -88,6 +89,9 @@ export class IntegratedShell extends BaseShell {
     }
 
     protected async runTerraformTestsInternal(TestType: string) {
+        if (!await isDockerInstalled()) {
+            return;
+        }
         const containerName: string = vscode.workspace.getConfiguration("tf-azure").get("test-container");
 
         // Check if the environment variables are set locally
@@ -106,22 +110,19 @@ export class IntegratedShell extends BaseShell {
         }
         /* tslint:enable:no-string-literal */
 
-        // We need to check if Docker is installed before we run the command
-        const outputChannel = this.outputChannel;
-        await validateDockerInstalled();
         switch (TestType) {
-            case "lint": {
+            case TestOption.lint: {
                 await runLintInDocker(
-                    outputChannel,
+                    this.outputChannel,
                     vscode.workspace.workspaceFolders[0].uri.fsPath + ":/tf-test/module",
                     containerName,
                 );
                 break;
             }
-            case "e2e - no ssh": {
+            case TestOption.e2enossh: {
                 console.log("Running e2e test in " + process.env["ARM_TEST_LOCATION"]);
                 await runE2EInDocker(
-                    outputChannel,
+                    this.outputChannel,
                     [
                         vscode.workspace.workspaceFolders[0].uri.fsPath + "/logs:/tf-test/module.kitchen",
                         vscode.workspace.workspaceFolders[0].uri.fsPath + ":/tf-test/module",
@@ -130,10 +131,10 @@ export class IntegratedShell extends BaseShell {
                 );
                 break;
             }
-            case "e2e - with ssh": {
+            case TestOption.e2ewithssh: {
                 console.log("Running e2e test in " + process.env["ARM_TEST_LOCATION"]);
                 await runE2EInDocker(
-                    outputChannel,
+                    this.outputChannel,
                     [
                         `${path.join(os.homedir(), ".ssh")}:/root/.ssh/`,
                         vscode.workspace.workspaceFolders[0].uri.fsPath + "/logs:/tf-test/module.kitchen",
@@ -143,7 +144,7 @@ export class IntegratedShell extends BaseShell {
                 );
                 break;
             }
-            case "custom": {
+            case TestOption.custom: {
                 console.log("Running custom test in " + process.env["ARM_TEST_LOCATION"]);
                 const cmd: string = await vscode.window.showInputBox({
                     prompt: "Type your custom test command",
@@ -151,10 +152,10 @@ export class IntegratedShell extends BaseShell {
                 });
                 if (cmd) {
                     await executeCommand(
-                        outputChannel,
-                        {shell: true},
                         "docker",
-                        ...cmd.split(" "),
+                        cmd.split(" "),
+                        {shell: true},
+                        this.outputChannel,
                     );
                 }
                 break;

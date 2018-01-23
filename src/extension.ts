@@ -15,7 +15,7 @@ import { Constants } from "./constants";
 import { IntegratedShell } from "./integratedShell";
 import { azFilePush } from "./shared";
 import { TestOption } from "./utilities";
-import { validateDotInstalled } from "./utils/dotUtils";
+import { isDotInstalled } from "./utils/dotUtils";
 
 let cs: CloudShell;
 let is: IntegratedShell;
@@ -86,8 +86,9 @@ export function activate(ctx: vscode.ExtensionContext) {
     }));
 
     ctx.subscriptions.push(vscode.commands.registerCommand("vscode-terraform-azure.visualize", async () => {
-        await validateDotInstalled();
-        await is.visualize(outputChannel);
+        if (await isDotInstalled()) {
+            await is.visualize(outputChannel);
+        }
     }));
 
     ctx.subscriptions.push(vscode.commands.registerCommand("vscode-terraform-azure.exectest", async () => {

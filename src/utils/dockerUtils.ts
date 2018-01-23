@@ -3,29 +3,33 @@
 import * as vscode from "vscode";
 import { executeCommand } from "./cpUtils";
 
-export async function validateDockerInstalled(): Promise<void> {
+export async function isDockerInstalled(): Promise<boolean> {
     try {
-        await executeCommand(undefined, {shell: true}, "docker", "-v");
+        await executeCommand("docker", ["-v"], { shell: true }, undefined);
+        return true;
     } catch (error) {
-        throw new Error("Docker isn't installed, please install Docker to continue (https://www.docker.com/)");
+        vscode.window.showErrorMessage("Docker isn't installed, please install Docker to continue (https://www.docker.com/)");
+        return false;
     }
 }
 
 export async function runLintInDocker(outputChannel: vscode.OutputChannel, volumn: string, containerName: string): Promise<void> {
     try {
         await executeCommand(
-            outputChannel,
-            {shell: true},
             "docker",
-            "run",
-            "-v",
-            volumn,
-            "--rm",
-            containerName,
-            "rake",
-            "-f",
-            "../Rakefile",
-            "build",
+            [
+                "run",
+                "-v",
+                volumn,
+                "--rm",
+                containerName,
+                "rake",
+                "-f",
+                "../Rakefile",
+                "build",
+            ],
+            { shell: true },
+            outputChannel,
         );
     } catch (error) {
         throw new Error("Run lint task in Docker failed, Please switch to output channel for more details.");
@@ -35,23 +39,31 @@ export async function runLintInDocker(outputChannel: vscode.OutputChannel, volum
 export async function runE2EInDocker(outputChannel: vscode.OutputChannel, volumn: string[], containerName: string): Promise<void> {
     try {
         await executeCommand(
-            outputChannel,
-            {shell: true},
             "docker",
-            "run",
-            ...insertElementIntoArray(volumn, "-v"),
-            "-e", "ARM_CLIENT_ID",
-            "-e", "ARM_TENANT_ID",
-            "-e", "ARM_SUBSCRIPTION_ID",
-            "-e", "ARM_CLIENT_SECRET",
-            "-e", "ARM_TEST_LOCATION",
-            "-e", "ARM_TEST_LOCATION_ALT",
-            "--rm",
-            containerName,
-            "rake",
-            "-f",
-            "../Rakefile",
-            "e2e",
+            [
+                "run",
+                ...insertElementIntoArray(volumn, "-v"),
+                "-e",
+                "ARM_CLIENT_ID",
+                "-e",
+                "ARM_TENANT_ID",
+                "-e",
+                "ARM_SUBSCRIPTION_ID",
+                "-e",
+                "ARM_CLIENT_SECRET",
+                "-e",
+                "ARM_TEST_LOCATION",
+                "-e",
+                "ARM_TEST_LOCATION_ALT",
+                "--rm",
+                containerName,
+                "rake",
+                "-f",
+                "../Rakefile",
+                "e2e",
+            ],
+            { shell: true },
+            outputChannel,
         );
     } catch (error) {
         throw new Error("Run E2E test in Docker failed, Please switch to output channel for more details.");
