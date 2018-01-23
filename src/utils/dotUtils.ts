@@ -5,7 +5,7 @@ import { executeCommand } from "./cpUtils";
 
 export async function isDotInstalled(): Promise<boolean> {
     try {
-        await executeCommand("dot", ["-V"], { shell: true }, undefined);
+        await executeCommand("dot", ["-V"], { shell: true });
         return true;
     } catch (error) {
         vscode.window.showErrorMessage("GraphViz - Dot is not installed, please install GraphViz to continue (https://www.graphviz.org).");

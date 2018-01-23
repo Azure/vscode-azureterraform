@@ -3,7 +3,7 @@
 import * as cp from "child_process";
 import * as vscode from "vscode";
 
-export async function executeCommand(command: string, args: string[], options: cp.SpawnOptions, outputChannel: vscode.OutputChannel | undefined): Promise<string> {
+export async function executeCommand(command: string, args: string[], options: cp.SpawnOptions, outputChannel?: vscode.OutputChannel): Promise<string> {
     return new Promise((resolve: (res: string) => void, reject: (e: Error) => void): void => {
         let result: string = "";
         const childProc: cp.ChildProcess = cp.spawn(command, args, options);

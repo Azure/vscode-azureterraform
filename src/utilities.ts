@@ -17,19 +17,6 @@ export class CSTerminal {
     public terminal: vscode.Terminal;
 }
 
-export function getUserAgent(): string {
-    return `${Constants.ExtensionId}-${getExtensionVersion()}`;
-}
-
-function getExtensionVersion(): string {
-    const extension = vscode.extensions.getExtension(`microsoft.${Constants.ExtensionId}`);
-    if (extension) {
-        return extension.packageJSON.version;
-    } else {
-        return "";
-    }
-}
-
 export function isEmpty(param) {
     if ( param === null || param.lenght === 0 || param === undefined) {
         return true;

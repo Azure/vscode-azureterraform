@@ -5,7 +5,7 @@ import { executeCommand } from "./cpUtils";
 
 export async function isDockerInstalled(): Promise<boolean> {
     try {
-        await executeCommand("docker", ["-v"], { shell: true }, undefined);
+        await executeCommand("docker", ["-v"], { shell: true });
         return true;
     } catch (error) {
         vscode.window.showErrorMessage("Docker isn't installed, please install Docker to continue (https://www.docker.com/)");
