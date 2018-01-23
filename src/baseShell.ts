@@ -1,11 +1,6 @@
 "use strict";
 
-import * as path from "path";
 import * as vscode from "vscode";
-import { Constants } from "./constants";
-
-import { CloudShell } from "./cloudShell";
-import { isDockerInstalled } from "./utilities";
 
 export abstract class BaseShell {
     protected outputChannel: vscode.OutputChannel;
@@ -38,7 +33,7 @@ export abstract class BaseShell {
     public async runTerraformTests(testType: string): Promise<any> {
 
         // Check the environment variables to ensure SPN exist (See )
-        return this.runTerraformTestsInternal(testType);
+        return await this.runTerraformTestsInternal(testType);
     }
 
     protected output(label: string, message: string): void {
