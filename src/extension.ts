@@ -89,8 +89,7 @@ export function activate(ctx: vscode.ExtensionContext) {
                 cs.pushFiles(tfFiles, true);
             });
         } else {
-            vscode.window.showErrorMessage("Push function only available when using cloudshell.")
-                .then(() => { return; });
+            vscode.window.showErrorMessage("Push function only available when using cloudshell.");
         }
     }));
 }
