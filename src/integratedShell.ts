@@ -9,8 +9,9 @@ import { BaseShell } from "./baseShell";
 import { Constants } from "./constants";
 import { TerminalType, TFTerminal } from "./shared";
 import { TestOption } from "./utilities";
+import { isServicePrincipalSetInEnv } from "./utils/azureUtils";
 import { executeCommand } from "./utils/cpUtils";
-import { isDockerInstalled, isServicePrincipalSetInEnv, runE2EInDocker, runLintInDocker } from "./utils/dockerUtils";
+import { isDockerInstalled, runE2EInDocker, runLintInDocker } from "./utils/dockerUtils";
 import { drawGraph } from "./utils/dotUtils";
 
 export class IntegratedShell extends BaseShell {
