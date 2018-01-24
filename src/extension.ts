@@ -3,7 +3,7 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from "vscode";
 
-import { commands, Disposable, extensions, GlobPattern, window } from "vscode";
+import { commands, Disposable, extensions, GlobPattern, MessageItem, window } from "vscode";
 
 import { AzureServiceClient, BaseResource } from "ms-rest-azure";
 import { join } from "path";
@@ -20,6 +20,9 @@ import { isDotInstalled } from "./utils/dotUtils";
 let cs: CloudShell;
 let is: IntegratedShell;
 let outputChannel: vscode.OutputChannel;
+let fileWatcher: vscode.FileSystemWatcher;
+let isFirstPush = true;
+let _disposable: Disposable;
 
 function getShell(): BaseShell {
     let activeShell = null;
@@ -35,6 +38,7 @@ function getShell(): BaseShell {
 function init(): void {
     cs = new CloudShell(outputChannel);
     is = new IntegratedShell(outputChannel);
+    initFileWatcher();
     outputChannel.show();
 }
 
@@ -48,18 +52,13 @@ export function activate(ctx: vscode.ExtensionContext) {
 
     outputChannel.appendLine("Loading extension");
 
-    const fileWatcher = vscode.workspace.createFileSystemWatcher(filesGlobSetting());
-
-    // TODO: Implement filewatcher handlers and config to automatically sync changes in workspace to cloudshell.
-    fileWatcher.onDidDelete((deletedUri) => {
-        outputChannel.appendLine("Deleted: " + deletedUri.path);
-    });
-    fileWatcher.onDidCreate((createdUri) => {
-        outputChannel.appendLine("Created: " + createdUri.path);
-    });
-    fileWatcher.onDidChange((changedUri) => {
-        outputChannel.appendLine("Changed: " + changedUri.path);
-    });
+    ctx.subscriptions.push(vscode.workspace.onDidChangeConfiguration((e) => {
+        if (e.affectsConfiguration("tf-azure.files")) {
+            // dispose of current file watcher and re-init
+            fileWatcher.dispose();
+            initFileWatcher();
+        }
+    }));
 
     ctx.subscriptions.push(vscode.commands.registerCommand("vscode-terraform-azure.init", () => {
         getShell().runTerraformCmd("terraform init", Constants.clouddrive);
@@ -106,7 +105,7 @@ export function activate(ctx: vscode.ExtensionContext) {
         // Create a function that will sync the files to Cloudshell
         if (terminalSetToCloudshell()) {
             vscode.workspace.findFiles(filesGlobSetting()).then((tfFiles) => {
-                cs.pushFiles(tfFiles);
+                cs.pushFiles(tfFiles, true);
             });
         } else {
             vscode.window.showErrorMessage("Push function only available when using cloudshell.")
@@ -122,10 +121,58 @@ export function filesGlobSetting(): GlobPattern {
     return vscode.workspace.getConfiguration("tf-azure").get("files") as GlobPattern;
 }
 
+export function workspaceSyncEnabled(): boolean {
+    return vscode.workspace.getConfiguration("tf-azure").get("syncEnabled") as boolean;
+}
+
 export async function TFLogin(api: AzureAccount) {
     outputChannel.appendLine("Attempting - TFLogin");
     if (!(await api.waitForLogin())) {
         return commands.executeCommand("azure-account.askForLogin");
     }
     outputChannel.appendLine("Succeeded - TFLogin");
+}
+
+function initFileWatcher(): void {
+    // TODO: Implement filewatcher handlers and config to automatically sync changes in workspace to cloudshell.
+        const subscriptions: Disposable[] = [];
+
+        fileWatcher = vscode.workspace.createFileSystemWatcher(filesGlobSetting());
+
+        // enable file watcher to detect file changes.
+        fileWatcher.onDidDelete((deletedUri) => {
+            if (terminalSetToCloudshell() && workspaceSyncEnabled()) {
+
+                cs.deleteFiles([deletedUri]);
+            }
+        }, this, subscriptions);
+        fileWatcher.onDidCreate((createdUri) => {
+            pushHelper(createdUri);
+        }, this, subscriptions);
+        fileWatcher.onDidChange((changedUri) => {
+            pushHelper(changedUri);
+        }, this, subscriptions);
+
+        this._disposable = Disposable.from(...subscriptions);
+}
+
+function pushHelper(uri: vscode.Uri) {
+    if (terminalSetToCloudshell() && workspaceSyncEnabled()) {
+        if (isFirstPush) {
+            // do initial sync of workspace before enabling file watcher.
+            vscode.workspace.findFiles(filesGlobSetting()).then((tfFiles) => {
+                cs.pushFiles(tfFiles, false);
+            });
+            isFirstPush = false;
+            return;
+        }
+        cs.pushFiles([uri], false);
+    }
+}
+
+export function deactivate(): void {
+    this._disposable.dispose();
+    if (fileWatcher) {
+		fileWatcher.dispose();
+    }
 }
