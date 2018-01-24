@@ -11,7 +11,7 @@ import { AzureAccount, AzureSubscription } from "./azure-account.api";
 import { BaseShell } from "./baseShell";
 import { openCloudConsole, OSes } from "./cloudConsole";
 import { delay } from "./cloudConsoleLauncher";
-import { aciConfig, Constants, exportContainerCmd, exportTestScript } from "./Constants";
+import { aciConfig, Constants, exportContainerCmd, exportTestScript } from "./constants";
 import { azFileDelete, azFilePush, escapeFile, TerminalType, TFTerminal } from "./shared";
 
 const tempFile = path.join(ost.tmpdir(), "cloudshell" + vscode.env.sessionId + ".log");
