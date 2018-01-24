@@ -22,6 +22,7 @@ let is: IntegratedShell;
 let outputChannel: vscode.OutputChannel;
 let fileWatcher: vscode.FileSystemWatcher;
 let isFirstPush = true;
+// tslint:disable-next-line:variable-name prefer-const
 let _disposable: Disposable;
 
 function getShell(): BaseShell {

@@ -3,7 +3,7 @@ import { AzureAccount, AzureSubscription } from "./azure-account.api";
 import { BaseShell } from "./baseShell";
 import { openCloudConsole, OSes } from "./cloudConsole";
 import { delay } from "./cloudConsoleLauncher";
-import { aciConfig, Constants, exportContainerCmd, exportTestScript } from "./Constants";
+import { aciConfig, Constants, exportContainerCmd, exportTestScript } from "./constants";
 import { azFileDelete, azFilePush, escapeFile, TerminalType, TFTerminal } from "./shared";
 
 import { CSTerminal } from "./utilities";
