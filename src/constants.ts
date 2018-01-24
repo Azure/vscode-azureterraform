@@ -1,5 +1,4 @@
-import * as vscode from "vscode";
-import { azFilePush } from "./shared";
+"use strict";
 
 export class Constants {
     public static ExtensionId = "vscode-terraform-azure";

@@ -1,29 +1,17 @@
 "use strict";
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
+
 import * as vscode from "vscode";
-
-import { commands, Disposable, extensions, GlobPattern, MessageItem, window } from "vscode";
-
-import { AzureServiceClient, BaseResource } from "ms-rest-azure";
-import { join } from "path";
-
-import { AzureAccount, AzureSession, AzureSubscription } from "./azure-account.api";
 import { BaseShell } from "./baseShell";
 import { CloudShell } from "./cloudShell";
 import { Constants } from "./constants";
 import { IntegratedShell } from "./integratedShell";
-import { azFilePush } from "./shared";
-import { TestOption } from "./utilities";
+import { TestOption } from "./shared";
 import { isDotInstalled } from "./utils/dotUtils";
 
 let cs: CloudShell;
 let is: IntegratedShell;
-let outputChannel: vscode.OutputChannel;
 let fileWatcher: vscode.FileSystemWatcher;
 let isFirstPush = true;
-// tslint:disable-next-line:variable-name prefer-const
-let _disposable: Disposable;
 
 function getShell(): BaseShell {
     let activeShell = null;
@@ -36,28 +24,20 @@ function getShell(): BaseShell {
     return activeShell;
 }
 
-function init(): void {
-    cs = new CloudShell(outputChannel);
-    is = new IntegratedShell(outputChannel);
-    initFileWatcher();
-    outputChannel.show();
-}
-
-// this method is called when your extension is activated
-// your extension is activated the very first time the command is executed
 export function activate(ctx: vscode.ExtensionContext) {
 
-    outputChannel = vscode.window.createOutputChannel("VSCode extension for Azure Terraform");
-
-    init();
-
+    const outputChannel: vscode.OutputChannel = vscode.window.createOutputChannel("VSCode extension for Azure Terraform");
     outputChannel.appendLine("Loading extension");
+
+    cs = new CloudShell(outputChannel);
+    is = new IntegratedShell(outputChannel);
+    initFileWatcher(ctx);
 
     ctx.subscriptions.push(vscode.workspace.onDidChangeConfiguration((e) => {
         if (e.affectsConfiguration("tf-azure.files")) {
             // dispose of current file watcher and re-init
             fileWatcher.dispose();
-            initFileWatcher();
+            initFileWatcher(ctx);
         }
     }));
 
@@ -94,7 +74,7 @@ export function activate(ctx: vscode.ExtensionContext) {
     ctx.subscriptions.push(vscode.commands.registerCommand("vscode-terraform-azure.exectest", async () => {
         console.log("Testing current module");
         const pick: string = await vscode.window.showQuickPick(
-            [ TestOption.lint, TestOption.e2enossh, TestOption.e2ewithssh, TestOption.custom ],
+            [TestOption.lint, TestOption.e2enossh, TestOption.e2ewithssh, TestOption.custom],
             { placeHolder: "Select the type of test that you want to run" },
         );
         if (pick) {
@@ -109,8 +89,7 @@ export function activate(ctx: vscode.ExtensionContext) {
                 cs.pushFiles(tfFiles, true);
             });
         } else {
-            vscode.window.showErrorMessage("Push function only available when using cloudshell.")
-                .then(() => { return; });
+            vscode.window.showErrorMessage("Push function only available when using cloudshell.");
         }
     }));
 }
@@ -118,43 +97,25 @@ export function terminalSetToCloudshell(): boolean {
     return (vscode.workspace.getConfiguration("tf-azure").get("terminal") === "cloudshell") as boolean;
 }
 
-export function filesGlobSetting(): GlobPattern {
-    return vscode.workspace.getConfiguration("tf-azure").get("files") as GlobPattern;
+export function filesGlobSetting(): vscode.GlobPattern {
+    return vscode.workspace.getConfiguration("tf-azure").get("files") as vscode.GlobPattern;
 }
 
 export function workspaceSyncEnabled(): boolean {
     return vscode.workspace.getConfiguration("tf-azure").get("syncEnabled") as boolean;
 }
 
-export async function TFLogin(api: AzureAccount) {
-    outputChannel.appendLine("Attempting - TFLogin");
-    if (!(await api.waitForLogin())) {
-        return commands.executeCommand("azure-account.askForLogin");
-    }
-    outputChannel.appendLine("Succeeded - TFLogin");
-}
-
-function initFileWatcher(): void {
-    // TODO: Implement filewatcher handlers and config to automatically sync changes in workspace to cloudshell.
-        const subscriptions: Disposable[] = [];
-
-        fileWatcher = vscode.workspace.createFileSystemWatcher(filesGlobSetting());
-
-        // enable file watcher to detect file changes.
+function initFileWatcher(ctx: vscode.ExtensionContext): void {
+    fileWatcher = vscode.workspace.createFileSystemWatcher(filesGlobSetting());
+    ctx.subscriptions.push(
         fileWatcher.onDidDelete((deletedUri) => {
             if (terminalSetToCloudshell() && workspaceSyncEnabled()) {
-
                 cs.deleteFiles([deletedUri]);
             }
-        }, this, subscriptions);
-        fileWatcher.onDidCreate((createdUri) => {
-            pushHelper(createdUri);
-        }, this, subscriptions);
-        fileWatcher.onDidChange((changedUri) => {
-            pushHelper(changedUri);
-        }, this, subscriptions);
-
-        this._disposable = Disposable.from(...subscriptions);
+        }),
+        fileWatcher.onDidCreate((createdUri) => pushHelper(createdUri)),
+        fileWatcher.onDidChange((changedUri) => pushHelper(changedUri)),
+    );
 }
 
 function pushHelper(uri: vscode.Uri) {
@@ -172,8 +133,7 @@ function pushHelper(uri: vscode.Uri) {
 }
 
 export function deactivate(): void {
-    this._disposable.dispose();
     if (fileWatcher) {
-		fileWatcher.dispose();
+        fileWatcher.dispose();
     }
 }

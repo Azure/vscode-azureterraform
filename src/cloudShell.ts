@@ -1,28 +1,18 @@
 "use strict";
+
+import * as fsExtra from "fs-extra";
+import * as ost from "os";
+import * as path from "path";
+import { clearInterval, setInterval } from "timers";
+import * as vscode from "vscode";
+import { MessageItem, Terminal} from "vscode";
+import * as ws from "ws";
 import { AzureAccount, AzureSubscription } from "./azure-account.api";
 import { BaseShell } from "./baseShell";
 import { openCloudConsole, OSes } from "./cloudConsole";
 import { delay } from "./cloudConsoleLauncher";
 import { aciConfig, Constants, exportContainerCmd, exportTestScript } from "./constants";
 import { azFileDelete, azFilePush, escapeFile, TerminalType, TFTerminal } from "./shared";
-
-import { CSTerminal } from "./utilities";
-
-import { Message } from "_debugger";
-import { escape } from "querystring";
-import { cursorTo } from "readline";
-import { PassThrough } from "stream";
-import { clearInterval, setInterval } from "timers";
-import { ConfigurationTarget, MessageItem, Terminal, ThemeColor  } from "vscode";
-import { configure } from "vscode/lib/testrunner";
-
-import * as fsExtra from "fs-extra";
-import * as ost from "os";
-import * as path from "path";
-import * as vscode from "vscode";
-import * as ws from "ws";
-
-import * as extension from "./extension";
 
 const tempFile = path.join(ost.tmpdir(), "cloudshell" + vscode.env.sessionId + ".log");
 

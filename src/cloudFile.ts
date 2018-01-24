@@ -1,4 +1,5 @@
-import * as azureStorage from "azure-storage";
+"use strict";
+
 import * as path from "path";
 import * as vscode from "vscode";
 import { FileSystem } from "./shared";
