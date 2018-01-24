@@ -9,8 +9,7 @@
         "sourceMap": true,
         "rootDir": "src",
         "noUnusedLocals": true,
-        "noImplicitThis": true,
-        "noUnusedParameters": true
+        "noImplicitThis": true
     },
     "exclude": [
         "node_modules",
