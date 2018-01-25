@@ -1,9 +1,8 @@
 "use strict";
 
 import * as fsExtra from "fs-extra";
-import * as ost from "os";
+import * as os from "os";
 import * as path from "path";
-import { clearInterval, setInterval } from "timers";
 import * as vscode from "vscode";
 import { MessageItem, Terminal } from "vscode";
 import * as ws from "ws";
@@ -12,9 +11,9 @@ import { BaseShell } from "./baseShell";
 import { openCloudConsole, OSes } from "./cloudConsole";
 import { delay } from "./cloudConsoleLauncher";
 import { aciConfig, Constants, exportContainerCmd, exportTestScript } from "./constants";
-import { azFileDelete, azFilePush, escapeFile, TerminalType, TFTerminal } from "./shared";
+import { azFileDelete, azFilePush, escapeFile, TerminalType, TestOption, TFTerminal } from "./shared";
 
-const tempFile = path.join(ost.tmpdir(), "cloudshell" + vscode.env.sessionId + ".log");
+const tempFile = path.join(os.tmpdir(), "cloudshell" + vscode.env.sessionId + ".log");
 
 export class CloudShell extends BaseShell {
 
@@ -22,7 +21,7 @@ export class CloudShell extends BaseShell {
         TerminalType.CloudShell,
         Constants.TerraformTerminalName);
 
-    public async pushFiles(files: vscode.Uri[], syncAllFiles: boolean) {
+    public async pushFiles(files: vscode.Uri[], syncAllFiles: boolean): Promise<void> {
         this.outputChannel.appendLine("Attempting to upload files to CloudShell");
         const RETRY_INTERVAL = 500;
         const RETRY_TIMES = 30;
@@ -59,11 +58,7 @@ export class CloudShell extends BaseShell {
         }
     }
 
-    public async pullFiles(files: vscode.Uri[]) {
-        return;
-    }
-
-    public async deleteFiles(files: vscode.Uri[]) {
+    public async deleteFiles(files: vscode.Uri[]): Promise<void> {
         const RETRY_INTERVAL = 500;
         const RETRY_TIMES = 3;
 
@@ -91,54 +86,36 @@ export class CloudShell extends BaseShell {
         }
     }
 
-    protected runTerraformInternal(TFCommand: string, WorkDir: string) {
+    protected async runTerraformInternal(TFCommand: string, WorkDir: string): Promise<void> {
         // Workaround the TLS error
-        /* tslint:disable:no-string-literal */
-        process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = "0";
-        /* tslint:enable:no-string-literal */
-
+        process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
         // TODO: Check if logged with azure account
         if (this.csTerm.terminal == null) {
-            this.startCloudShell().then((terminal) => {
-                this.csTerm.terminal = terminal[0];
-                this.csTerm.ws = terminal[1];
-                this.csTerm.storageAccountName = terminal[2];
-                this.csTerm.storageAccountKey = terminal[3];
-                this.csTerm.fileShareName = terminal[4];
-                this.csTerm.ResourceGroup = terminal[5];
-                this.runTFCommand(TFCommand, WorkDir, this.csTerm.terminal);
-            });
+            const terminal: Terminal = await this.startCloudShell();
+            this.csTerm.terminal = terminal[0];
+            this.csTerm.ws = terminal[1];
+            this.csTerm.storageAccountName = terminal[2];
+            this.csTerm.storageAccountKey = terminal[3];
+            this.csTerm.fileShareName = terminal[4];
+            this.csTerm.ResourceGroup = terminal[5];
+            await this.runTFCommand(TFCommand, WorkDir, this.csTerm.terminal);
         } else {
-            this.runTFCommand(TFCommand, WorkDir, this.csTerm.terminal);
+            await this.runTFCommand(TFCommand, WorkDir, this.csTerm.terminal);
         }
 
     }
 
     protected initShellInternal() {
-        // Reacting to the deletion of the terminal window
-        if ("onDidCloseTerminal" in vscode.window as any) {
-            (vscode.window as any).onDidCloseTerminal((terminal) => {
-                if (terminal === this.csTerm.terminal) {
-                    this.outputLine("\nTerraform CloudShell Term closed", terminal.name);
-                    this.outputChannel.appendLine("CloudShell terminal was closed");
-                    fsExtra.removeSync(tempFile);
-                    this.csTerm.terminal = null;
-                }
-            });
-        }
-
-        // Reacting to the deletion of a file in the workspace
-        if ("onDidCloseTextDocument" in vscode.workspace as any) {
-            (vscode.workspace as any).onDidCloseTextDocument((textDocument) => {
-                this.outputChannel.appendLine(`Document closed ${textDocument.fileName}`);
-                // File deleted let"s sync the workspace
-                // TODO: Implement logic to handle deleted files
-            });
-        }
-
+        vscode.window.onDidCloseTerminal(async (terminal) => {
+            if (terminal === this.csTerm.terminal) {
+                this.outputChannel.appendLine("CloudShell terminal was closed");
+                await fsExtra.remove(tempFile);
+                this.csTerm.terminal = null;
+            }
+        });
     }
 
-    protected async syncWorkspaceInternal(file) {
+    protected async syncWorkspaceInternal(file): Promise<void> {
         this.outputChannel.appendLine(`Deleting ${path.basename(file)} in CloudShell`);
         const retryInterval = 500;
         const retryTimes = 30;
@@ -164,19 +141,11 @@ export class CloudShell extends BaseShell {
         }
     }
 
-    protected async runTerraformTestsInternal(TestType: string) {
+    protected async runTerraformTestsInternal(testType: string) {
         if ((this.csTerm.terminal != null) && (this.csTerm.storageAccountKey != null)) {
-            const cloudDrivePath = `${vscode.workspace.name}${path.sep}.TFTesting`;
+            const cloudDrivePath = `${vscode.workspace.name}/.TFTesting`;
             const localPath = vscode.workspace.workspaceFolders[0].uri.fsPath + path.sep + ".TFTesting";
             const createAciScript = "createacitest.sh";
-
-            // TestType: lint, e2e - no ssh, e2e - with ssh, custom
-            const testCommand = {
-                "lint": `rake -f ../../Rakefile build`,
-                "e2e - no ssh": `rake -f ../../Rakefile e2e`,
-                "e2e - with ssh": `rake -f ../../Rakefile e2e`,
-                "custom": "", // TODO: Implement the custom command in CloudShell
-            };
 
             const TFConfiguration = escapeFile(aciConfig(vscode.workspace.getConfiguration("tf-azure").get("aci-ResGroup"),
                 vscode.workspace.getConfiguration("tf-azure").get("aci-name"),
@@ -185,49 +154,36 @@ export class CloudShell extends BaseShell {
                 vscode.workspace.getConfiguration("tf-azure").get("test-location"),
                 vscode.workspace.getConfiguration("tf-azure").get("test-container"), `${vscode.workspace.name}`));
 
-            // Writing the TF Configuration file on local drive
             console.log("Writing TF Configuration for ACI");
             const shellscript = exportTestScript("lint", TFConfiguration, this.csTerm.ResourceGroup, this.csTerm.storageAccountName, this.csTerm.fileShareName, cloudDrivePath);
-            await fsExtra.outputFile(localPath + path.sep + "createacitest.sh", shellscript, (err) => {
-                console.log("Write ACI TF Configuration file done");
-            });
+            await fsExtra.outputFile(localPath + path.sep + "createacitest.sh", shellscript);
+            await azFilePush(this.csTerm.storageAccountName, this.csTerm.storageAccountKey, this.csTerm.fileShareName, localPath + path.sep + createAciScript);
 
-            // copy the file to CloudDrive
-            azFilePush(this.csTerm.storageAccountName, this.csTerm.storageAccountKey, this.csTerm.fileShareName, localPath + path.sep + createAciScript);
-
-            // Write the container shell script
             console.log("Writing the Container command script");
-            await fsExtra.outputFile(localPath + path.sep + "containercmd.sh", exportContainerCmd(`${vscode.workspace.name}`, testCommand[TestType]), (err) => {
-                console.log("Write container command script done");
-            });
+            await fsExtra.outputFile(localPath + path.sep + "containercmd.sh", exportContainerCmd(`${vscode.workspace.name}`, await this.resolveContainerCmd(testType)));
+            await azFilePush(this.csTerm.storageAccountName, this.csTerm.storageAccountKey, this.csTerm.fileShareName, localPath + path.sep + "containercmd.sh");
 
-            // copy the file to CloudDrive
-            azFilePush(this.csTerm.storageAccountName, this.csTerm.storageAccountKey, this.csTerm.fileShareName, localPath + path.sep + "containercmd.sh");
-
-            // Run the shell script
-            this.runTFCommand(`cd ~/clouddrive/${cloudDrivePath} && source ${createAciScript} && terraform fmt && terraform init && terraform apply -auto-approve && terraform taint azurerm_container_group.TFTest && \
+            await this.runTFCommand(`cd ~/clouddrive/${cloudDrivePath} && source ${createAciScript} && terraform fmt && terraform init && terraform apply -auto-approve && terraform taint azurerm_container_group.TFTest && \
                                echo "\nRun the following command to get the logs from the ACI container: az container logs -g ${vscode.workspace.getConfiguration("tf-azure").get("aci-ResGroup")} -n ${vscode.workspace.getConfiguration("tf-azure").get("aci-name")}\n"`, cloudDrivePath, this.csTerm.terminal);
-            vscode.window.showInformationMessage(`An Azure Container Instance has been created in the Resource Group - ${vscode.workspace.getConfiguration("tf-azure").get("aci-ResGroup")}\nDelete this resource to stop the associated costs`);
+            vscode.window.showInformationMessage(`An Azure Container Instance will be created in the Resource Group '${vscode.workspace.getConfiguration("tf-azure").get("aci-ResGroup")}' if the command executes successfully.`);
 
         } else {
             const message = "A CloudShell session is needed, do you want to open CloudShell?";
             const ok: MessageItem = { title: "Yes" };
             const cancel: MessageItem = { title: "No", isCloseAffordance: true };
-            vscode.window.showWarningMessage(message, ok, cancel).then((response) => {
-                if (response === ok) {
-                    this.startCloudShell().then((terminal) => {
-                        this.csTerm.terminal = terminal[0];
-                        this.csTerm.ws = terminal[1];
-                        this.csTerm.storageAccountName = terminal[2];
-                        this.csTerm.storageAccountKey = terminal[3];
-                        this.csTerm.fileShareName = terminal[4];
-                        this.csTerm.ResourceGroup = terminal[5];
-                        console.log(`Obtained terminal and fileshare data\n`);
-                        this.runTerraformTestsInternal(TestType);
-                        return;
-                    });
-                }
-            });
+            const response: MessageItem = await vscode.window.showWarningMessage(message, ok, cancel);
+            if (response === ok) {
+                const terminal: Terminal = await this.startCloudShell();
+                this.csTerm.terminal = terminal[0];
+                this.csTerm.ws = terminal[1];
+                this.csTerm.storageAccountName = terminal[2];
+                this.csTerm.storageAccountKey = terminal[3];
+                this.csTerm.fileShareName = terminal[4];
+                this.csTerm.ResourceGroup = terminal[5];
+                console.log(`Obtained terminal and fileshare data\n`);
+                await this.runTerraformTestsInternal(testType);
+            }
+
             console.log("Terminal not opened when trying to transfer files");
         }
 
@@ -244,47 +200,25 @@ export class CloudShell extends BaseShell {
         const azureSubscription: AzureSubscription = vscode.extensions
             .getExtension<AzureSubscription>("ms-vscode.azure-account")!.exports;
 
-        let iTerm;
-
-        const os = process.platform === "win32" ? OSes.Windows : OSes.Linux;
-        await openCloudConsole(accountAPI, azureSubscription, os, this.outputChannel, tempFile).then((terminal) => {
-
-            // This is where we send the text to the terminal
-            this.outputChannel.appendLine("Terminal obtained - moving on to running a command");
-            iTerm = terminal;
-        });
-        this.outputChannel.appendLine("\nEnd of the startCloudShell() - iTerm returned");
-        return iTerm;
+        const operationSystem = process.platform === "win32" ? OSes.Windows : OSes.Linux;
+        return await openCloudConsole(accountAPI, azureSubscription, operationSystem, this.outputChannel, tempFile);
     }
 
-    protected runTFCommand(command: string, workdir: string, terminal: Terminal) {
-        this.outputChannel.appendLine("Runing a command in an existing terminal ");
-        let count = 30;
-        if (terminal) {
-            const localThis = this;
-            const interval = setInterval(() => {
-                count--;
-                this.outputChannel.appendLine(count.toString());
-                if (count > 0) {
-                    if (fsExtra.existsSync(tempFile)) {
-                        this.outputChannel.appendLine(`\nSending command: ${command}`);
+    protected async runTFCommand(command: string, workdir: string, terminal: Terminal): Promise<void> {
+        return new Promise<void>(async (resolve, reject) => {
+            let count: number = 30;
+            while (count--) {
+                if (await fsExtra.pathExists(tempFile)) {
+                    if (terminal) {
                         terminal.sendText(`${command}`);
                         terminal.show();
-
-                        count = 0;
+                        return resolve();
                     }
-                } else {
-                    localThis.stop(interval);
                 }
-            }, 500);
-        } else {
-            this.outputChannel.appendLine("\nConnecting to terminal failed, please retry.");
-        }
-
-    }
-
-    protected stop(interval: NodeJS.Timer): void {
-        clearInterval(interval);
+                await delay(500);
+            }
+            reject("Connecting to terminal failed, please retry.");
+        });
     }
 
     private terminalInitialized(): Promise<boolean> {
@@ -312,5 +246,23 @@ export class CloudShell extends BaseShell {
                 }
             }
         });
+    }
+
+    private async resolveContainerCmd(TestType: string): Promise<string> {
+        switch (TestType) {
+            case TestOption.lint:
+                return "rake -f ../../Rakefile build";
+            case TestOption.e2enossh:
+            case TestOption.e2ewithssh:
+                return "rake -f ../../Rakefile e2e";
+            case TestOption.custom:
+                const cmd: string = await vscode.window.showInputBox({
+                    prompt: "Type your custom test command",
+                    value: "rake -f ../Rakefile build",
+                });
+                return cmd ? cmd : "";
+            default:
+                return "";
+        }
     }
 }
