@@ -12,6 +12,7 @@ import { openCloudConsole, OSes } from "./cloudConsole";
 import { delay } from "./cloudConsoleLauncher";
 import { aciConfig, Constants, exportContainerCmd, exportTestScript } from "./constants";
 import { azFileDelete, azFilePush, escapeFile, TerminalType, TestOption, TFTerminal } from "./shared";
+import { DialogOption } from "./utils/uiUtils";
 
 const tempFile = path.join(os.tmpdir(), "cloudshell" + vscode.env.sessionId + ".log");
 
@@ -169,10 +170,8 @@ export class CloudShell extends BaseShell {
 
         } else {
             const message = "A CloudShell session is needed, do you want to open CloudShell?";
-            const ok: MessageItem = { title: "Yes" };
-            const cancel: MessageItem = { title: "No", isCloseAffordance: true };
-            const response: MessageItem = await vscode.window.showWarningMessage(message, ok, cancel);
-            if (response === ok) {
+            const response: MessageItem = await vscode.window.showWarningMessage(message, DialogOption.OK, DialogOption.CANCEL);
+            if (response === DialogOption.OK) {
                 const terminal: Terminal = await this.startCloudShell();
                 this.csTerm.terminal = terminal[0];
                 this.csTerm.ws = terminal[1];
@@ -227,10 +226,8 @@ export class CloudShell extends BaseShell {
                 resolve(true);
             } else {
                 const message = "Do you want to open CloudShell?";
-                const ok: MessageItem = { title: "Yes" };
-                const cancel: MessageItem = { title: "No", isCloseAffordance: true };
-                const response: MessageItem = await vscode.window.showWarningMessage(message, ok, cancel);
-                if (response === ok) {
+                const response: MessageItem = await vscode.window.showWarningMessage(message, DialogOption.OK, DialogOption.CANCEL);
+                if (response === DialogOption.OK) {
                     const terminal: Terminal = await this.startCloudShell();
                     this.csTerm.terminal = terminal[0];
                     this.csTerm.ws = terminal[1];
