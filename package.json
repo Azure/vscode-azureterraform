@@ -136,6 +136,7 @@
         "@types/mocha": "^2.2.42",
         "@types/node": "^7.0.43",
         "@types/semver": "^5.4.0",
+        "tslint": "^5.8.0",
         "typescript": "^2.6.1",
         "vscode": "^1.1.6"
     },
@@ -147,11 +148,8 @@
         "ms-rest": "^2.2.7",
         "ms-rest-azure": "^2.2.3",
         "opn": "5.1.0",
-        "os": "^0.1.1",
-        "path": "^0.12.7",
         "request-promise": "4.2.1",
         "semver": "5.4.1",
-        "tslint": "^5.8.0",
         "vscode-nls": "2.0.2",
         "ws": "3.1.0"
     },
