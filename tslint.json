@@ -9,6 +9,7 @@
         "indent": [false, "spaces"],
         "no-console": [false, "log", "error"],
         "no-string-literal": false,
+        "no-namespace": false,
         "max-line-length": [false, 120]
     },
     "rulesDirectory": []

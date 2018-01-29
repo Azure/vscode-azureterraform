@@ -2,7 +2,7 @@
 
 import * as path from "path";
 import { clearInterval, setInterval, setTimeout } from "timers";
-import { commands, MessageItem, OutputChannel, window } from "vscode";
+import { commands, OutputChannel, window } from "vscode";
 import * as nls from "vscode-nls";
 import { AzureAccount, AzureSession, AzureSubscription } from "./azure-account.api";
 import {
@@ -10,7 +10,7 @@ import {
     provisionConsole, resetConsole, runInTerminal,
 } from "./cloudConsoleLauncher";
 import { isNodeVersionValid } from "./utils/nodeUtils";
-import { openUrlHint } from "./utils/uiUtils";
+import { DialogOption, openUrlHint } from "./utils/uiUtils";
 
 const localize = nls.loadMessageBundle();
 
@@ -164,11 +164,9 @@ export function openCloudConsole(
 }
 
 async function deploymentConflict(retry: () => Promise<void>, accessToken: string, armEndpoint: string) {
-    const ok: MessageItem = { title: "OK" };
-    const cancel: MessageItem = { title: "Cancel", isCloseAffordance: true };
-    const message = "Starting a linux session will terminate all active sessions. Any running processes in active ";
-    const response = await window.showWarningMessage(message, ok, cancel);
-    if (response === ok) {
+    const message = "Starting a linux session will terminate all active sessions. Any running processes in active sessions will be terminated.";
+    const response = await window.showWarningMessage(message, DialogOption.OK, DialogOption.CANCEL);
+    if (response === DialogOption.OK) {
         await resetConsole(accessToken, armEndpoint);
         return retry();
     }
