@@ -8,6 +8,7 @@ import { commands, Uri, ViewColumn, workspace } from "vscode";
 import { BaseShell } from "./baseShell";
 import { Constants } from "./constants";
 import { TerminalType, TestOption, TFTerminal } from "./shared";
+import { terraformChannel } from "./terraformChannel";
 import { isServicePrincipalSetInEnv } from "./utils/azureUtils";
 import { executeCommand } from "./utils/cpUtils";
 import { isDockerInstalled, runE2EInDocker, runLintInDocker } from "./utils/dockerUtils";
@@ -24,7 +25,7 @@ export class IntegratedShell extends BaseShell {
     private graphUri: Uri;
 
     // Creates a png of terraform resource graph to visualize the resources under management.
-    public async visualize(outputChannel: vscode.OutputChannel): Promise<void> {
+    public async visualize(): Promise<void> {
         await this.deletePng();
 
         await executeCommand(
@@ -34,7 +35,6 @@ export class IntegratedShell extends BaseShell {
                 shell: true,
                 cwd: vscode.workspace.workspaceFolders[0].uri.fsPath,
             },
-            outputChannel,
         );
         const output: string = await executeCommand(
             "terraform",
@@ -43,11 +43,10 @@ export class IntegratedShell extends BaseShell {
                 shell: true,
                 cwd: vscode.workspace.workspaceFolders[0].uri.fsPath,
             },
-            outputChannel,
         );
         const tmpFile: string = path.join(os.tmpdir(), "terraformgraph.output");
         await fse.writeFile(tmpFile, output);
-        await drawGraph(outputChannel, vscode.workspace.workspaceFolders[0].uri.fsPath, tmpFile);
+        await drawGraph(vscode.workspace.workspaceFolders[0].uri.fsPath, tmpFile);
         await commands.executeCommand("vscode.open", this.graphUri, ViewColumn.Two);
     }
 
@@ -93,7 +92,7 @@ export class IntegratedShell extends BaseShell {
         }
         const containerName: string = vscode.workspace.getConfiguration("tf-azure").get("test-container");
 
-        this.outputChannel.appendLine("Checking Azure Service Principal environment variables...");
+        terraformChannel.appendLine("Checking Azure Service Principal environment variables...");
         if (!isServicePrincipalSetInEnv()) {
             return;
         }
@@ -101,7 +100,6 @@ export class IntegratedShell extends BaseShell {
         switch (TestType) {
             case TestOption.lint: {
                 await runLintInDocker(
-                    this.outputChannel,
                     vscode.workspace.workspaceFolders[0].uri.fsPath + ":/tf-test/module",
                     containerName,
                 );
@@ -110,7 +108,6 @@ export class IntegratedShell extends BaseShell {
             case TestOption.e2enossh: {
                 console.log("Running e2e test in " + process.env["ARM_TEST_LOCATION"]);
                 await runE2EInDocker(
-                    this.outputChannel,
                     [
                         vscode.workspace.workspaceFolders[0].uri.fsPath + "/logs:/tf-test/module.kitchen",
                         vscode.workspace.workspaceFolders[0].uri.fsPath + ":/tf-test/module",
@@ -122,7 +119,6 @@ export class IntegratedShell extends BaseShell {
             case TestOption.e2ewithssh: {
                 console.log("Running e2e test in " + process.env["ARM_TEST_LOCATION"]);
                 await runE2EInDocker(
-                    this.outputChannel,
                     [
                         `${path.join(os.homedir(), ".ssh")}:/root/.ssh/`,
                         vscode.workspace.workspaceFolders[0].uri.fsPath + "/logs:/tf-test/module.kitchen",
@@ -143,7 +139,6 @@ export class IntegratedShell extends BaseShell {
                         "docker",
                         cmd.split(" "),
                         { shell: true },
-                        this.outputChannel,
                     );
                 }
                 break;
