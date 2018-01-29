@@ -2,13 +2,14 @@
 
 import * as path from "path";
 import { clearInterval, setInterval, setTimeout } from "timers";
-import { commands, OutputChannel, window } from "vscode";
+import { commands, window } from "vscode";
 import * as nls from "vscode-nls";
 import { AzureAccount, AzureSession, AzureSubscription } from "./azure-account.api";
 import {
     delay, Errors, getStorageAccountKey, getUserSettings,
     provisionConsole, resetConsole, runInTerminal,
 } from "./cloudConsoleLauncher";
+import { terraformChannel } from "./terraformChannel";
 import { isNodeVersionValid } from "./utils/nodeUtils";
 import { DialogOption, openUrlHint } from "./utils/uiUtils";
 
@@ -37,14 +38,13 @@ export function openCloudConsole(
     api: AzureAccount,
     subscription: AzureSubscription,
     os: IOS,
-    outputChannel: OutputChannel,
     tempFile: string) {
 
     return (async function retry(): Promise<any> {
-        outputChannel.show();
-        outputChannel.appendLine("Attempting to open CloudConsole - Connecting to cloudshell");
+        terraformChannel.show();
+        terraformChannel.appendLine("Attempting to open CloudConsole - Connecting to cloudshell");
         /* tslint:disable:semicolon */
-        const progress = delayedInterval(() => { outputChannel.append("..") }, 500);
+        const progress = delayedInterval(() => { terraformChannel.append("..") }, 500);
         /* tslint:enable:semicolon */
 
         const isWindows = process.platform === "win32";
@@ -69,7 +69,7 @@ export function openCloudConsole(
             return;
         }
 
-        outputChannel.append("\nUsersettings obtained from Tokens - proceeding\n");
+        terraformChannel.appendLine("Usersettings obtained from Tokens - proceeding");
 
         // Finding the storage account
         const storageProfile = result.userSettings.storageProfile;
@@ -92,7 +92,7 @@ export function openCloudConsole(
             storageAccount.subscriptionId,
             result.token.accessToken,
             storageAccount.storageAccountName).then((keys) => {
-                outputChannel.appendLine("Storage key obtained ");
+                terraformChannel.appendLine("Storage key obtained ");
                 storageAccountKey = keys.body.keys[0].value;
             });
 
@@ -157,8 +157,8 @@ export function openCloudConsole(
         return [terminal, response, storageAccount.storageAccountName, storageAccountKey, fileShareName, storageAccount.resourceGroup];
 
     })().catch((err) => {
-        outputChannel.append("\nConnecting to CloudShell failed with error: \n" + err);
-        outputChannel.show();
+        terraformChannel.appendLine("Connecting to CloudShell failed with error: " + err);
+        terraformChannel.show();
         throw err;
     });
 }

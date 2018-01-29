@@ -25,12 +25,8 @@ function getShell(): BaseShell {
 }
 
 export function activate(ctx: vscode.ExtensionContext) {
-
-    const outputChannel: vscode.OutputChannel = vscode.window.createOutputChannel("VSCode extension for Azure Terraform");
-    outputChannel.appendLine("Loading extension");
-
-    cs = new CloudShell(outputChannel);
-    is = new IntegratedShell(outputChannel);
+    cs = new CloudShell();
+    is = new IntegratedShell();
     initFileWatcher(ctx);
 
     ctx.subscriptions.push(vscode.workspace.onDidChangeConfiguration((e) => {
@@ -67,7 +63,7 @@ export function activate(ctx: vscode.ExtensionContext) {
 
     ctx.subscriptions.push(vscode.commands.registerCommand("vscode-terraform-azure.visualize", async () => {
         if (await isDotInstalled()) {
-            await is.visualize(outputChannel);
+            await is.visualize();
         }
     }));
 
