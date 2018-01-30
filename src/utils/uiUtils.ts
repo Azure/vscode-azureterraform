@@ -22,9 +22,8 @@ export async function showFolderDialog(): Promise<vscode.Uri | undefined> {
     const result: vscode.Uri[] | undefined = await vscode.window.showOpenDialog(options);
     if (!result || result.length === 0) {
         return undefined;
-    } else {
-        return result[0];
     }
+    return result[0];
 }
 
 export namespace DialogOption {

@@ -24,29 +24,30 @@ export class IntegratedShell extends BaseShell {
     // Creates a png of terraform resource graph to visualize the resources under management.
     public async visualize(): Promise<void> {
         const cwd: string = await selectWorkspaceFolder();
-        if (cwd) {
-            await this.deletePng(cwd);
-            await executeCommand(
-                "terraform",
-                ["init"],
-                {
-                    shell: true,
-                    cwd,
-                },
-            );
-            const output: string = await executeCommand(
-                "terraform",
-                ["graph"],
-                {
-                    shell: true,
-                    cwd,
-                },
-            );
-            const tmpFile: string = path.join(os.tmpdir(), "terraformgraph.output");
-            await fse.writeFile(tmpFile, output);
-            await drawGraph(cwd, tmpFile);
-            await commands.executeCommand("vscode.open", Uri.file(path.join(cwd, IntegratedShell.GRAPH_FILE_NAME)), ViewColumn.Two);
+        if (!cwd) {
+            return;
         }
+        await this.deletePng(cwd);
+        await executeCommand(
+            "terraform",
+            ["init"],
+            {
+                shell: true,
+                cwd,
+            },
+        );
+        const output: string = await executeCommand(
+            "terraform",
+            ["graph"],
+            {
+                shell: true,
+                cwd,
+            },
+        );
+        const tmpFile: string = path.join(os.tmpdir(), "terraformgraph.output");
+        await fse.writeFile(tmpFile, output);
+        await drawGraph(cwd, tmpFile);
+        await commands.executeCommand("vscode.open", Uri.file(path.join(cwd, IntegratedShell.GRAPH_FILE_NAME)), ViewColumn.Two);
     }
 
     // init shell env and hook up close handler. Close handler ensures if user closes terminal window,
