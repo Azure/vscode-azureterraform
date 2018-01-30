@@ -1,12 +1,11 @@
 "use strict";
 
 import * as vscode from "vscode";
+import { terraformChannel } from "./terraformChannel";
 
 export abstract class BaseShell {
-    protected outputChannel: vscode.OutputChannel;
 
-    constructor(outputChannel: vscode.OutputChannel) {
-        this.outputChannel = outputChannel;
+    constructor() {
         this.initShellInternal();
     }
 
@@ -14,7 +13,7 @@ export abstract class BaseShell {
 
         // We keep the TFConfiguration for the moment - will need to be updated to sync folders
         const tfActiveFile = vscode.window.activeTextEditor ? vscode.window.activeTextEditor.document.fileName : null;
-        this.outputChannel.appendLine(`Running - ${tfCommand}, Active File: ${tfActiveFile}`);
+        terraformChannel.appendLine(`Running - ${tfCommand}, Active File: ${tfActiveFile}`);
 
         // Run Terraform command
         this.runTerraformInternal(tfCommand, workingDir);
@@ -23,8 +22,8 @@ export abstract class BaseShell {
 
     public async runTerraformCmdAsync(tfCommand: string): Promise<any> {
         const tfActiveFile = vscode.window.activeTextEditor ? vscode.window.activeTextEditor.document.fileName : null;
-        this.outputChannel.appendLine(`Running - ${tfCommand}`);
-        this.outputChannel.show();
+        terraformChannel.appendLine(`Running - ${tfCommand}`);
+        terraformChannel.show();
 
         return this.runTerraformAsyncInternal(tfActiveFile, tfCommand);
     }
@@ -37,11 +36,11 @@ export abstract class BaseShell {
     }
 
     protected output(label: string, message: string): void {
-        this.outputChannel.append(`[${label}] ${message}`);
+        terraformChannel.appendLine(`[${label}] ${message}`);
     }
 
     protected outputLine(label: string, message: string): void {
-        this.outputChannel.appendLine(`[${label}] ${message}`);
+        terraformChannel.appendLine(`[${label}] ${message}`);
     }
 
     protected isWindows(): boolean {

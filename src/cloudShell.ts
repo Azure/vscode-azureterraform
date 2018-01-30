@@ -12,6 +12,7 @@ import { openCloudConsole, OSes } from "./cloudConsole";
 import { delay } from "./cloudConsoleLauncher";
 import { aciConfig, Constants, exportContainerCmd, exportTestScript } from "./constants";
 import { azFileDelete, azFilePush, escapeFile, TerminalType, TestOption, TFTerminal } from "./shared";
+import { terraformChannel } from "./terraformChannel";
 import { DialogOption } from "./utils/uiUtils";
 
 const tempFile = path.join(os.tmpdir(), "cloudshell" + vscode.env.sessionId + ".log");
@@ -23,7 +24,7 @@ export class CloudShell extends BaseShell {
         Constants.TerraformTerminalName);
 
     public async pushFiles(files: vscode.Uri[], syncAllFiles: boolean): Promise<void> {
-        this.outputChannel.appendLine("Attempting to upload files to CloudShell");
+        terraformChannel.appendLine("Attempting to upload files to CloudShell");
         const RETRY_INTERVAL = 500;
         const RETRY_TIMES = 30;
 
@@ -40,13 +41,13 @@ export class CloudShell extends BaseShell {
                 for (const file of files.map((a) => a.fsPath)) {
                     try {
                         if (await fsExtra.pathExists(file)) {
-                            this.outputChannel.appendLine(`Uploading file ${file} to cloud shell`);
+                            terraformChannel.appendLine(`Uploading file ${file} to cloud shell`);
                             await azFilePush(this.csTerm.storageAccountName,
                                 this.csTerm.storageAccountKey,
                                 this.csTerm.fileShareName, file);
                         }
                     } catch (err) {
-                        this.outputChannel.appendLine(err);
+                        terraformChannel.appendLine(err);
                     }
                 }
 
@@ -75,12 +76,12 @@ export class CloudShell extends BaseShell {
             } else {
                 for (const file of files.map((a) => a.fsPath)) {
                     try {
-                        this.outputChannel.appendLine(`Deleting file ${file} from cloud shell`);
+                        terraformChannel.appendLine(`Deleting file ${file} from cloud shell`);
                         await azFileDelete(this.csTerm.storageAccountName,
                             this.csTerm.storageAccountKey,
                             this.csTerm.fileShareName, file);
                     } catch (err) {
-                        this.outputChannel.appendLine(err);
+                        terraformChannel.appendLine(err);
                     }
                 }
             }
@@ -109,7 +110,7 @@ export class CloudShell extends BaseShell {
     protected initShellInternal() {
         vscode.window.onDidCloseTerminal(async (terminal) => {
             if (terminal === this.csTerm.terminal) {
-                this.outputChannel.appendLine("CloudShell terminal was closed");
+                terraformChannel.appendLine("CloudShell terminal was closed");
                 await fsExtra.remove(tempFile);
                 this.csTerm.terminal = null;
             }
@@ -117,7 +118,7 @@ export class CloudShell extends BaseShell {
     }
 
     protected async syncWorkspaceInternal(file): Promise<void> {
-        this.outputChannel.appendLine(`Deleting ${path.basename(file)} in CloudShell`);
+        terraformChannel.appendLine(`Deleting ${path.basename(file)} in CloudShell`);
         const retryInterval = 500;
         const retryTimes = 30;
 
@@ -131,14 +132,14 @@ export class CloudShell extends BaseShell {
                         this.csTerm.ws.send("rm " + path.relative(vscode.workspace.rootPath, file) + " \n");
                         // TODO: Add directory management
                     } catch (err) {
-                        this.outputChannel.appendLine(err);
+                        terraformChannel.appendLine(err);
                     }
                     break;
                 }
             }
         } else {
             vscode.window.showErrorMessage("Open a terminal first");
-            this.outputChannel.appendLine("Terminal not opened when trying to transfer files");
+            terraformChannel.appendLine("Terminal not opened when trying to transfer files");
         }
     }
 
@@ -200,7 +201,7 @@ export class CloudShell extends BaseShell {
             .getExtension<AzureSubscription>("ms-vscode.azure-account")!.exports;
 
         const operationSystem = process.platform === "win32" ? OSes.Windows : OSes.Linux;
-        return await openCloudConsole(accountAPI, azureSubscription, operationSystem, this.outputChannel, tempFile);
+        return await openCloudConsole(accountAPI, azureSubscription, operationSystem, tempFile);
     }
 
     protected async runTFCommand(command: string, workdir: string, terminal: Terminal): Promise<void> {
@@ -235,7 +236,7 @@ export class CloudShell extends BaseShell {
                     this.csTerm.storageAccountKey = terminal[3];
                     this.csTerm.fileShareName = terminal[4];
                     this.csTerm.ResourceGroup = terminal[5];
-                    this.outputChannel.appendLine("Obtained cloudshell terminal, retrying push files.");
+                    terraformChannel.appendLine("Obtained cloudshell terminal, retrying push files.");
                     resolve(true);
                 } else {
                     console.log("Open CloudShell cancelled by user.");

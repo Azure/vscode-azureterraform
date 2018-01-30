@@ -1,6 +1,5 @@
 "use strict";
 
-import * as vscode from "vscode";
 import { executeCommand } from "./cpUtils";
 import { openUrlHint } from "./uiUtils";
 
@@ -14,7 +13,7 @@ export async function isDockerInstalled(): Promise<boolean> {
     }
 }
 
-export async function runLintInDocker(outputChannel: vscode.OutputChannel, volumn: string, containerName: string): Promise<void> {
+export async function runLintInDocker(volumn: string, containerName: string): Promise<void> {
     try {
         await executeCommand(
             "docker",
@@ -30,14 +29,13 @@ export async function runLintInDocker(outputChannel: vscode.OutputChannel, volum
                 "build",
             ],
             { shell: true },
-            outputChannel,
         );
     } catch (error) {
         throw new Error("Run lint task in Docker failed, Please switch to output channel for more details.");
     }
 }
 
-export async function runE2EInDocker(outputChannel: vscode.OutputChannel, volumn: string[], containerName: string): Promise<void> {
+export async function runE2EInDocker(volumn: string[], containerName: string): Promise<void> {
     try {
         await executeCommand(
             "docker",
@@ -64,7 +62,6 @@ export async function runE2EInDocker(outputChannel: vscode.OutputChannel, volumn
                 "e2e",
             ],
             { shell: true },
-            outputChannel,
         );
     } catch (error) {
         throw new Error("Run E2E test in Docker failed, Please switch to output channel for more details.");
