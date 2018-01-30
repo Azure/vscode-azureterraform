@@ -1,6 +1,7 @@
 "use strict";
 
 import * as vscode from "vscode";
+import { delay } from "./cloudConsoleLauncher";
 import { terraformChannel } from "./terraformChannel";
 
 export abstract class BaseShell {
@@ -15,8 +16,13 @@ export abstract class BaseShell {
         const tfActiveFile = vscode.window.activeTextEditor ? vscode.window.activeTextEditor.document.fileName : null;
         terraformChannel.appendLine(`Running - ${tfCommand}, Active File: ${tfActiveFile}`);
 
-        // Run Terraform command
-        this.runTerraformInternal(tfCommand, workingDir);
+        // Save all open files
+        vscode.workspace.saveAll().then(() => {
+            // Run Terraform command
+            delay(500);
+            this.runTerraformInternal(tfCommand, workingDir);
+
+        });
 
     }
 
