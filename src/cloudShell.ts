@@ -251,7 +251,6 @@ export class CloudShell extends BaseShell {
             case TestOption.lint:
                 return "rake -f ../../Rakefile build";
             case TestOption.e2enossh:
-                return "rake -f ../../Rakefile e2e";
             case TestOption.e2ewithssh:
                 return "rake -f ../../Rakefile e2e";
             case TestOption.custom:
