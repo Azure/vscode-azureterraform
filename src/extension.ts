@@ -12,7 +12,7 @@ let cs: CloudShell;
 let is: IntegratedShell;
 let fileWatcher: vscode.FileSystemWatcher;
 let isFirstPush = true;
-
+const chDirCmd = "cd ~/clouddrive/" + vscode.workspace.name + " && ";
 function getShell(): BaseShell {
     let activeShell = null;
     if (terminalSetToCloudshell()) {
@@ -38,27 +38,27 @@ export function activate(ctx: vscode.ExtensionContext) {
     }));
 
     ctx.subscriptions.push(vscode.commands.registerCommand("vscode-terraform-azure.init", () => {
-        getShell().runTerraformCmd("terraform init", Constants.clouddrive);
+        getShell().runTerraformCmd(chDirCmd + "terraform init", Constants.clouddrive);
     }));
 
     ctx.subscriptions.push(vscode.commands.registerCommand("vscode-terraform-azure.plan", () => {
-        getShell().runTerraformCmd("terraform plan", Constants.clouddrive);
+        getShell().runTerraformCmd(chDirCmd + "terraform plan", Constants.clouddrive);
     }));
 
     ctx.subscriptions.push(vscode.commands.registerCommand("vscode-terraform-azure.apply", () => {
-        getShell().runTerraformCmd("terraform apply", Constants.clouddrive);
+        getShell().runTerraformCmd(chDirCmd + "terraform apply", Constants.clouddrive);
     }));
 
     ctx.subscriptions.push(vscode.commands.registerCommand("vscode-terraform-azure.destroy", () => {
-        getShell().runTerraformCmd("terraform destroy", Constants.clouddrive);
+        getShell().runTerraformCmd(chDirCmd + "terraform destroy", Constants.clouddrive);
     }));
 
     ctx.subscriptions.push(vscode.commands.registerCommand("vscode-terraform-azure.refresh", () => {
-        getShell().runTerraformCmd("terraform refresh", Constants.clouddrive);
+        getShell().runTerraformCmd(chDirCmd + "terraform refresh", Constants.clouddrive);
     }));
 
     ctx.subscriptions.push(vscode.commands.registerCommand("vscode-terraform-azure.validate", () => {
-        getShell().runTerraformCmd("terraform validate", Constants.clouddrive);
+        getShell().runTerraformCmd(chDirCmd + "terraform validate", Constants.clouddrive);
     }));
 
     ctx.subscriptions.push(vscode.commands.registerCommand("vscode-terraform-azure.visualize", async () => {
