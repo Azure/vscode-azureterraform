@@ -39,11 +39,16 @@ resource "azurerm_container_group" "TFTest" {
         memory = "2"
         port = "80"
 
-        command = "/bin/bash -c '/tf-test/module/${projectName}/.TFTesting/containercmd.sh'"
+        environment_variables {
+            "ARM_TEST_LOCATION"="${location}"
+            "ARM_TEST_LOCATION_ALT"="${location}"
+        }
+
+        command = "/bin/bash -c '/module/${projectName}/.TFTesting/containercmd.sh'"
 
         volume {
             name = "module"
-            mount_path = "/tf-test/module"
+            mount_path = "/module"
             read_only = false
             share_name = "${storageAccountShare}"
             storage_account_name = "${storageAccountName}"
@@ -67,13 +72,29 @@ resource "azurerm_container_group" "TFTest" {
 export function exportTestScript(testType: string, TFConfiguration: string, resoureGroupName: string, storageAccountName: string, fileShareName: string, testDirectory: string): string {
     const testScript = `
         #!/bin/bash
-        if [ ! -d "${testDirectory}" ]; then
+        if [ ! -d "$HOME/clouddrive/${testDirectory}" ]; then
+            mkdir -p $HOME/clouddrive/${testDirectory}
+        fi
+
+        if [ ! -d "$HOME/clouddrive/${testDirectory}/.ssh" ]; then
             mkdir -p $HOME/clouddrive/${testDirectory}
         fi
 
         echo -e "${TFConfiguration}" > $HOME/clouddrive/${testDirectory}/testfile.tf
 
         export TF_VAR_storage_account_key=$(az storage account keys list -g ${resoureGroupName} -n ${storageAccountName} | jq '.[0].value')
+
+        if [ -f "$HOME/clouddrive/${testDirectory}/.ssh/id_rsa" ]; then
+            mv $HOME/clouddrive/${testDirectory}/.ssh/id_rsa $HOME/clouddrive/${testDirectory}/.ssh/id_rsa.old
+        fi
+
+        if [ -f "$HOME/clouddrive/${testDirectory}/.ssh/id_rsa.pub" ]; then
+            mv $HOME/clouddrive/${testDirectory}/.ssh/id_rsa.pub $HOME/clouddrive/${testDirectory}/.ssh/id_rsa.pub.old
+        fi
+
+        ssh-keygen -t rsa -b 2048 -C "vscode-testing" -f $HOME/clouddrive/${testDirectory}/.ssh/id_rsa -N ""
+
+        cp -r $HOME/.azure/ $HOME/clouddrive/${testDirectory}/
 
     `;
 
@@ -83,6 +104,14 @@ export function exportTestScript(testType: string, TFConfiguration: string, reso
 export function exportContainerCmd(moduleDir: string, containerCommand: string): string {
     const containerScript = `
         #!/bin/bash
+
+        mkdir /root/.ssh
+        cp -r /module/${moduleDir}/ /tf-test/module/
+
+        mkdir /root/.azure
+        cp /module/${moduleDir}/.TFTesting/.azure/*.json /root/.azure
+
+        cp /tf-test/module/${moduleDir}/.TFTesting/.ssh/* /root/.ssh/
 
         cd ${moduleDir}
         ${containerCommand}
