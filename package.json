@@ -4,6 +4,7 @@
     "description": "VS Code extension for developing with Terraform on Azure",
     "version": "0.0.1",
     "publisher": "Microsoft",
+    "icon": "images/terraform.png",
     "repository": {
         "type": "git",
         "url": "https://github.com/Azure/vscode-terraform-azure.git"
