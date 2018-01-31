@@ -7,11 +7,13 @@ import { Constants } from "./constants";
 import { IntegratedShell } from "./integratedShell";
 import { TestOption } from "./shared";
 import { isDotInstalled } from "./utils/dotUtils";
+import { selectWorkspaceFolder } from "./utils/workspaceUtils";
 
 let cs: CloudShell;
 let is: IntegratedShell;
 let fileWatcher: vscode.FileSystemWatcher;
 let isFirstPush = true;
+let folder: vscode.WorkspaceFolder;
 
 function getShell(): BaseShell {
     let activeShell = null;
@@ -37,28 +39,28 @@ export function activate(ctx: vscode.ExtensionContext) {
         }
     }));
 
-    ctx.subscriptions.push(vscode.commands.registerCommand("vscode-terraform-azure.init", () => {
-        getShell().runTerraformCmd("terraform init", Constants.clouddrive);
+    ctx.subscriptions.push(vscode.commands.registerCommand("vscode-terraform-azure.init", async () => {
+        getShell().runTerraformCmd((await getChDirCmd()) + "terraform init", Constants.clouddrive);
     }));
 
-    ctx.subscriptions.push(vscode.commands.registerCommand("vscode-terraform-azure.plan", () => {
-        getShell().runTerraformCmd("terraform plan", Constants.clouddrive);
+    ctx.subscriptions.push(vscode.commands.registerCommand("vscode-terraform-azure.plan", async () => {
+        getShell().runTerraformCmd((await getChDirCmd()) + "terraform plan", Constants.clouddrive);
     }));
 
-    ctx.subscriptions.push(vscode.commands.registerCommand("vscode-terraform-azure.apply", () => {
-        getShell().runTerraformCmd("terraform apply", Constants.clouddrive);
+    ctx.subscriptions.push(vscode.commands.registerCommand("vscode-terraform-azure.apply", async () => {
+        getShell().runTerraformCmd((await getChDirCmd()) + "terraform apply", Constants.clouddrive);
     }));
 
-    ctx.subscriptions.push(vscode.commands.registerCommand("vscode-terraform-azure.destroy", () => {
-        getShell().runTerraformCmd("terraform destroy", Constants.clouddrive);
+    ctx.subscriptions.push(vscode.commands.registerCommand("vscode-terraform-azure.destroy", async () => {
+        getShell().runTerraformCmd((await getChDirCmd()) + "terraform destroy", Constants.clouddrive);
     }));
 
-    ctx.subscriptions.push(vscode.commands.registerCommand("vscode-terraform-azure.refresh", () => {
-        getShell().runTerraformCmd("terraform refresh", Constants.clouddrive);
+    ctx.subscriptions.push(vscode.commands.registerCommand("vscode-terraform-azure.refresh", async () => {
+        getShell().runTerraformCmd((await getChDirCmd()) + "terraform refresh", Constants.clouddrive);
     }));
 
-    ctx.subscriptions.push(vscode.commands.registerCommand("vscode-terraform-azure.validate", () => {
-        getShell().runTerraformCmd("terraform validate", Constants.clouddrive);
+    ctx.subscriptions.push(vscode.commands.registerCommand("vscode-terraform-azure.validate", async () => {
+        getShell().runTerraformCmd((await getChDirCmd()) + "terraform validate", Constants.clouddrive);
     }));
 
     ctx.subscriptions.push(vscode.commands.registerCommand("vscode-terraform-azure.visualize", async () => {
@@ -101,6 +103,10 @@ export function workspaceSyncEnabled(): boolean {
     return vscode.workspace.getConfiguration("tf-azure").get("syncEnabled") as boolean;
 }
 
+async function getChDirCmd(): Promise<string> {
+    folder = await selectWorkspaceFolder();
+    return folder ? "cd ~/clouddrive/" + folder.name + " && " : "";
+}
 function initFileWatcher(ctx: vscode.ExtensionContext): void {
     fileWatcher = vscode.workspace.createFileSystemWatcher(filesGlobSetting());
     ctx.subscriptions.push(
