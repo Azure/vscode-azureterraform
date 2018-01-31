@@ -23,7 +23,7 @@ export class IntegratedShell extends BaseShell {
 
     // Creates a png of terraform resource graph to visualize the resources under management.
     public async visualize(): Promise<void> {
-        const cwd: string = await selectWorkspaceFolder();
+        const cwd: string = (await selectWorkspaceFolder()).uri.fsPath;
         if (!cwd) {
             return;
         }
