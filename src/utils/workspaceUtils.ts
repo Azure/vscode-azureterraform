@@ -4,7 +4,7 @@ import * as _ from "lodash";
 import * as vscode from "vscode";
 import { DialogOption, showFolderDialog } from "./uiUtils";
 
-export async function selectWorkspaceFolder(): Promise<string | undefined> {
+export async function selectWorkspaceFolder(): Promise<vscode.WorkspaceFolder | undefined> {
     let folder: vscode.WorkspaceFolder;
     if (!_.isEmpty(vscode.workspace.workspaceFolders)) {
         if (vscode.workspace.workspaceFolders.length > 1) {
@@ -33,5 +33,5 @@ export async function selectWorkspaceFolder(): Promise<string | undefined> {
             }
         }
     }
-    return folder ? folder.uri.fsPath : undefined;
+    return folder ? folder : undefined;
 }
