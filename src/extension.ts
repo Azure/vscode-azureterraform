@@ -7,6 +7,7 @@ import { Constants } from "./constants";
 import { IntegratedShell } from "./integratedShell";
 import { TestOption } from "./shared";
 import { isDotInstalled } from "./utils/dotUtils";
+import { selectWorkspaceFolder } from "./utils/workspaceUtils";
 
 let cs: CloudShell;
 let is: IntegratedShell;
@@ -73,9 +74,15 @@ export function activate(ctx: vscode.ExtensionContext) {
             [TestOption.lint, TestOption.e2enossh, TestOption.e2ewithssh, TestOption.custom],
             { placeHolder: "Select the type of test that you want to run" },
         );
-        if (pick) {
-            await getShell().runTerraformTests(pick);
+        if (!pick) {
+            return;
         }
+        const workingDirectory: string = await selectWorkspaceFolder();
+        if (!workingDirectory) {
+            return;
+        }
+        await getShell().runTerraformTests(pick, workingDirectory);
+
     }));
 
     ctx.subscriptions.push(vscode.commands.registerCommand("vscode-terraform-azure.push", () => {

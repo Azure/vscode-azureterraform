@@ -28,12 +28,7 @@ export abstract class BaseShell {
         return this.runTerraformAsyncInternal(tfActiveFile, tfCommand);
     }
 
-    // Method used to run the end to end tests
-    public async runTerraformTests(testType: string): Promise<any> {
-
-        // Check the environment variables to ensure SPN exist (See )
-        return await this.runTerraformTestsInternal(testType);
-    }
+    public abstract runTerraformTests(testType: string, workingDirectory: string);
 
     protected output(label: string, message: string): void {
         terraformChannel.appendLine(`[${label}] ${message}`);
@@ -48,8 +43,6 @@ export abstract class BaseShell {
     }
 
     protected abstract runTerraformInternal(tfCommand: string, workingDir: string);
-    protected abstract runTerraformAsyncInternal(tfConfiguration: string, tfCommand: string): Promise<any>;
+    protected abstract runTerraformAsyncInternal(tfConfiguration: string, tfCommand: string): void;
     protected abstract initShellInternal();
-    protected abstract syncWorkspaceInternal(fileName: string);
-    protected abstract runTerraformTestsInternal(testType: string);
 }
