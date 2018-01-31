@@ -39,7 +39,7 @@
                 },
                 "tf-azure.files": {
                     "type": "string",
-                    "default": "**/*.{tf,txt,yml,tfvars,rb}",
+                    "default": "**/*.{rb,sh,tf,tfvars,txt,yml}",
                     "description": "Indicates the files that should be synchronized to Azure cloudshell using the glob pattern string, for example: **/*.{tf,txt,yml,tfvars,rb}"
                 },
                 "tf-azure.syncEnabled": {
