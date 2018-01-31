@@ -1,11 +1,12 @@
 "use strict";
 
+import * as _ from "lodash";
 import * as vscode from "vscode";
 import { DialogOption, showFolderDialog } from "./uiUtils";
 
 export async function selectWorkspaceFolder(): Promise<string | undefined> {
     let folder: vscode.WorkspaceFolder;
-    if (vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0) {
+    if (!_.isEmpty(vscode.workspace.workspaceFolders)) {
         if (vscode.workspace.workspaceFolders.length > 1) {
             folder =  await vscode.window.showWorkspaceFolderPick({
                 placeHolder: "Select the working directory you wish to use",
