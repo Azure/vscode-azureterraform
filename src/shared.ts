@@ -51,6 +51,7 @@ export function escapeFile(data: string): string {
 }
 
 export async function azFileDelete(
+    workspaceName: string,
     storageAccountName: string,
     storageAccountKey: string,
     fileShareName: string,
@@ -58,7 +59,7 @@ export async function azFileDelete(
 
     const fs = azureStorage.createFileService(storageAccountName, storageAccountKey);
     const cf = new CloudFile(
-        vscode.workspace.name,
+        workspaceName,
         fileShareName,
         localFileUri,
         FileSystem.local);
@@ -67,6 +68,7 @@ export async function azFileDelete(
 }
 
 export async function azFilePull(
+    workspaceName: string,
     storageAccountName: string,
     storageAccountKey: string,
     fileShareName: string,
@@ -74,7 +76,7 @@ export async function azFilePull(
 
     const fs = azureStorage.createFileService(storageAccountName, storageAccountKey);
     const cf = new CloudFile(
-        vscode.workspace.name,
+        workspaceName,
         fileShareName,
         cloudShellFileName,
         FileSystem.cloudshell);
@@ -83,6 +85,7 @@ export async function azFilePull(
 }
 
 export async function azFilePush(
+    workspaceName: string,
     storageAccountName: string,
     storageAccountKey: string,
     fileShareName: string,
@@ -90,7 +93,7 @@ export async function azFilePush(
 
     const fs = azureStorage.createFileService(storageAccountName, storageAccountKey);
     const cf = new CloudFile(
-        vscode.workspace.name,
+        workspaceName,
         fileShareName,
         fileName,
         FileSystem.local);

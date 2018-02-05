@@ -50,6 +50,70 @@ export class IntegratedShell extends BaseShell {
         await commands.executeCommand("vscode.open", Uri.file(path.join(cwd, IntegratedShell.GRAPH_FILE_NAME)), ViewColumn.Two);
     }
 
+    public async runTerraformTests(TestType: string, workingDirectory: string) {
+        if (!await isDockerInstalled()) {
+            return;
+        }
+        const containerName: string = vscode.workspace.getConfiguration("tf-azure").get("test-container");
+
+        terraformChannel.appendLine("Checking Azure Service Principal environment variables...");
+        if (!isServicePrincipalSetInEnv()) {
+            return;
+        }
+
+        switch (TestType) {
+            case TestOption.lint: {
+                await runLintInDocker(
+                    workingDirectory + ":/tf-test/module",
+                    containerName,
+                );
+                break;
+            }
+            case TestOption.e2enossh: {
+                console.log("Running e2e test in " + process.env["ARM_TEST_LOCATION"]);
+                await runE2EInDocker(
+                    [
+                        workingDirectory + "/logs:/tf-test/module.kitchen",
+                        workingDirectory + ":/tf-test/module",
+                    ],
+                    containerName,
+                );
+                break;
+            }
+            case TestOption.e2ewithssh: {
+                console.log("Running e2e test in " + process.env["ARM_TEST_LOCATION"]);
+                await runE2EInDocker(
+                    [
+                        `${path.join(os.homedir(), ".ssh")}:/root/.ssh/`,
+                        workingDirectory + "/logs:/tf-test/module.kitchen",
+                        workingDirectory + ":/tf-test/module",
+                    ],
+                    containerName,
+                );
+                break;
+            }
+            case TestOption.custom: {
+                console.log("Running custom test in " + process.env["ARM_TEST_LOCATION"]);
+                const cmd: string = await vscode.window.showInputBox({
+                    prompt: "Type your custom test command",
+                    value: `run -v ${workingDirectory}:/tf-test/module --rm ${containerName} rake -f ../Rakefile build`,
+                });
+                if (cmd) {
+                    await executeCommand(
+                        "docker",
+                        cmd.split(" "),
+                        { shell: true },
+                    );
+                }
+                break;
+            }
+            default: {
+                console.log("Default step in test for Integrated Terminal");
+                break;
+            }
+        }
+    }
+
     // init shell env and hook up close handler. Close handler ensures if user closes terminal window,
     // that extension is notified and can handle appropriately.
     protected initShellInternal() {
@@ -69,85 +133,14 @@ export class IntegratedShell extends BaseShell {
         return;
     }
 
-    // run tf cmd async and return promise.
-    protected runTerraformAsyncInternal(TFConfiguration: string, TFCommand: string): Promise<any> {
+    protected runTerraformAsyncInternal(TFConfiguration: string, TFCommand: string): void {
         this.checkCreateTerminal();
 
         const term = this.term.terminal;
 
         term.show();
 
-        const ret = term.sendText(TFCommand);
-        return Promise.all([ret]);
-    }
-
-    protected async runTerraformTestsInternal(TestType: string) {
-        if (!await isDockerInstalled()) {
-            return;
-        }
-        const containerName: string = vscode.workspace.getConfiguration("tf-azure").get("test-container");
-
-        terraformChannel.appendLine("Checking Azure Service Principal environment variables...");
-        if (!isServicePrincipalSetInEnv()) {
-            return;
-        }
-
-        switch (TestType) {
-            case TestOption.lint: {
-                await runLintInDocker(
-                    vscode.workspace.workspaceFolders[0].uri.fsPath + ":/tf-test/module",
-                    containerName,
-                );
-                break;
-            }
-            case TestOption.e2enossh: {
-                console.log("Running e2e test in " + process.env["ARM_TEST_LOCATION"]);
-                await runE2EInDocker(
-                    [
-                        vscode.workspace.workspaceFolders[0].uri.fsPath + "/logs:/tf-test/module.kitchen",
-                        vscode.workspace.workspaceFolders[0].uri.fsPath + ":/tf-test/module",
-                    ],
-                    containerName,
-                );
-                break;
-            }
-            case TestOption.e2ewithssh: {
-                console.log("Running e2e test in " + process.env["ARM_TEST_LOCATION"]);
-                await runE2EInDocker(
-                    [
-                        `${path.join(os.homedir(), ".ssh")}:/root/.ssh/`,
-                        vscode.workspace.workspaceFolders[0].uri.fsPath + "/logs:/tf-test/module.kitchen",
-                        vscode.workspace.workspaceFolders[0].uri.fsPath + ":/tf-test/module",
-                    ],
-                    containerName,
-                );
-                break;
-            }
-            case TestOption.custom: {
-                console.log("Running custom test in " + process.env["ARM_TEST_LOCATION"]);
-                const cmd: string = await vscode.window.showInputBox({
-                    prompt: "Type your custom test command",
-                    value: `run -v ${vscode.workspace.workspaceFolders[0].uri.fsPath}:/tf-test/module --rm ${containerName} rake -f ../Rakefile build`,
-                });
-                if (cmd) {
-                    await executeCommand(
-                        "docker",
-                        cmd.split(" "),
-                        { shell: true },
-                    );
-                }
-                break;
-            }
-            default: {
-                console.log("Default step in test for Integrated Terminal");
-                break;
-            }
-        }
-    }
-
-    protected syncWorkspaceInternal() {
-        // not implemented for integrated terminal
-        return;
+        term.sendText(TFCommand);
     }
 
     private async deletePng(cwd: string): Promise<void> {

@@ -42,7 +42,9 @@ export class CloudShell extends BaseShell {
                     try {
                         if (await fsExtra.pathExists(file)) {
                             terraformChannel.appendLine(`Uploading file ${file} to cloud shell`);
-                            await azFilePush(this.csTerm.storageAccountName,
+                            await azFilePush(
+                                vscode.workspace.getWorkspaceFolder(vscode.Uri.file(file)).name,
+                                this.csTerm.storageAccountName,
                                 this.csTerm.storageAccountKey,
                                 this.csTerm.fileShareName, file);
                         }
@@ -77,7 +79,9 @@ export class CloudShell extends BaseShell {
                 for (const file of files.map((a) => a.fsPath)) {
                     try {
                         terraformChannel.appendLine(`Deleting file ${file} from cloud shell`);
-                        await azFileDelete(this.csTerm.storageAccountName,
+                        await azFileDelete(
+                            vscode.workspace.getWorkspaceFolder(vscode.Uri.file(file)).name,
+                            this.csTerm.storageAccountName,
                             this.csTerm.storageAccountKey,
                             this.csTerm.fileShareName, file);
                     } catch (err) {
@@ -86,6 +90,61 @@ export class CloudShell extends BaseShell {
                 }
             }
         }
+    }
+
+    public async runTerraformTests(testType: string, workingDirectory: string) {
+        if ((this.csTerm.terminal != null) && (this.csTerm.storageAccountKey != null)) {
+            const workspaceName: string = path.basename(workingDirectory);
+            const cloudDrivePath: string = `${workspaceName}/.TFTesting`;
+            const localPath: string = path.join(workingDirectory, ".TFTesting");
+            const CREATE_ACI_SCRIPT: string = "createacitest.sh";
+            const CONTAINER_CMD_SCRIPT: string = "containercmd.sh";
+
+            const TFConfiguration = escapeFile(aciConfig(
+                    vscode.workspace.getConfiguration("tf-azure").get("aci-ResGroup"),
+                    vscode.workspace.getConfiguration("tf-azure").get("aci-name"),
+                    vscode.workspace.getConfiguration("tf-azure").get("aci-group"),
+                    this.csTerm.storageAccountName, this.csTerm.fileShareName,
+                    vscode.workspace.getConfiguration("tf-azure").get("test-location"),
+                    vscode.workspace.getConfiguration("tf-azure").get("test-container"),
+                    workspaceName,
+            ));
+
+            const shellscript = exportTestScript("lint", TFConfiguration, this.csTerm.ResourceGroup, this.csTerm.storageAccountName, this.csTerm.fileShareName, cloudDrivePath);
+
+            console.log("Wrting scripts for e2e test");
+            await Promise.all([
+                fsExtra.outputFile(path.join(localPath, CREATE_ACI_SCRIPT), shellscript),
+                fsExtra.outputFile(path.join(localPath, CONTAINER_CMD_SCRIPT), exportContainerCmd(workspaceName, await this.resolveContainerCmd(testType))),
+            ]);
+
+            console.log("Push scripts to cloudshell");
+            await Promise.all([
+                azFilePush(workspaceName, this.csTerm.storageAccountName, this.csTerm.storageAccountKey, this.csTerm.fileShareName, path.join(localPath, CREATE_ACI_SCRIPT)),
+                azFilePush(workspaceName, this.csTerm.storageAccountName, this.csTerm.storageAccountKey, this.csTerm.fileShareName, path.join(localPath, CONTAINER_CMD_SCRIPT)),
+            ]);
+            await this.runTFCommand(`cd ~/clouddrive/${cloudDrivePath} && source ${CREATE_ACI_SCRIPT} && terraform fmt && terraform init && terraform apply -auto-approve && terraform taint azurerm_container_group.TFTest && \
+                               echo "\nRun the following command to get the logs from the ACI container: az container logs -g ${vscode.workspace.getConfiguration("tf-azure").get("aci-ResGroup")} -n ${vscode.workspace.getConfiguration("tf-azure").get("aci-name")}\n"`, cloudDrivePath, this.csTerm.terminal);
+            vscode.window.showInformationMessage(`An Azure Container Instance will be created in the Resource Group '${vscode.workspace.getConfiguration("tf-azure").get("aci-ResGroup")}' if the command executes successfully.`);
+
+        } else {
+            const message = "A CloudShell session is needed, do you want to open CloudShell?";
+            const response: MessageItem = await vscode.window.showWarningMessage(message, DialogOption.OK, DialogOption.CANCEL);
+            if (response === DialogOption.OK) {
+                const terminal: Terminal = await this.startCloudShell();
+                this.csTerm.terminal = terminal[0];
+                this.csTerm.ws = terminal[1];
+                this.csTerm.storageAccountName = terminal[2];
+                this.csTerm.storageAccountKey = terminal[3];
+                this.csTerm.fileShareName = terminal[4];
+                this.csTerm.ResourceGroup = terminal[5];
+                console.log(`Obtained terminal and fileshare data\n`);
+                await this.runTerraformTests(testType, workingDirectory);
+            }
+
+            console.log("Terminal not opened when trying to transfer files");
+        }
+
     }
 
     protected async runTerraformInternal(TFCommand: string, WorkDir: string): Promise<void> {
@@ -117,79 +176,7 @@ export class CloudShell extends BaseShell {
         });
     }
 
-    protected async syncWorkspaceInternal(file): Promise<void> {
-        terraformChannel.appendLine(`Deleting ${path.basename(file)} in CloudShell`);
-        const retryInterval = 500;
-        const retryTimes = 30;
-
-        // Checking if the terminal has been created
-        if (this.csTerm.terminal != null) {
-            for (let i = 0; i < retryTimes; i++) {
-                if (this.csTerm.ws.readyState !== ws.OPEN) {
-                    await delay(retryInterval);
-                } else {
-                    try {
-                        this.csTerm.ws.send("rm " + path.relative(vscode.workspace.rootPath, file) + " \n");
-                        // TODO: Add directory management
-                    } catch (err) {
-                        terraformChannel.appendLine(err);
-                    }
-                    break;
-                }
-            }
-        } else {
-            vscode.window.showErrorMessage("Open a terminal first");
-            terraformChannel.appendLine("Terminal not opened when trying to transfer files");
-        }
-    }
-
-    protected async runTerraformTestsInternal(testType: string) {
-        if ((this.csTerm.terminal != null) && (this.csTerm.storageAccountKey != null)) {
-            const cloudDrivePath = `${vscode.workspace.name}/.TFTesting`;
-            const localPath = vscode.workspace.workspaceFolders[0].uri.fsPath + path.sep + ".TFTesting";
-            const createAciScript = "createacitest.sh";
-
-            const TFConfiguration = escapeFile(aciConfig(vscode.workspace.getConfiguration("tf-azure").get("aci-ResGroup"),
-                vscode.workspace.getConfiguration("tf-azure").get("aci-name"),
-                vscode.workspace.getConfiguration("tf-azure").get("aci-group"),
-                this.csTerm.storageAccountName, this.csTerm.fileShareName,
-                vscode.workspace.getConfiguration("tf-azure").get("test-location"),
-                vscode.workspace.getConfiguration("tf-azure").get("test-container"), `${vscode.workspace.name}`));
-
-            console.log("Writing TF Configuration for ACI");
-            const shellscript = exportTestScript("lint", TFConfiguration, this.csTerm.ResourceGroup, this.csTerm.storageAccountName, this.csTerm.fileShareName, cloudDrivePath);
-            await fsExtra.outputFile(localPath + path.sep + "createacitest.sh", shellscript);
-            await azFilePush(this.csTerm.storageAccountName, this.csTerm.storageAccountKey, this.csTerm.fileShareName, localPath + path.sep + createAciScript);
-
-            console.log("Writing the Container command script");
-            await fsExtra.outputFile(localPath + path.sep + "containercmd.sh", exportContainerCmd(`${vscode.workspace.name}`, await this.resolveContainerCmd(testType)));
-            await azFilePush(this.csTerm.storageAccountName, this.csTerm.storageAccountKey, this.csTerm.fileShareName, localPath + path.sep + "containercmd.sh");
-
-            await this.runTFCommand(`cd ~/clouddrive/${cloudDrivePath} && source ${createAciScript} && terraform fmt && terraform init && terraform apply -auto-approve && terraform taint azurerm_container_group.TFTest && \
-                               echo "\nRun the following command to get the logs from the ACI container: az container logs -g ${vscode.workspace.getConfiguration("tf-azure").get("aci-ResGroup")} -n ${vscode.workspace.getConfiguration("tf-azure").get("aci-name")}\n"`, cloudDrivePath, this.csTerm.terminal);
-            vscode.window.showInformationMessage(`An Azure Container Instance will be created in the Resource Group '${vscode.workspace.getConfiguration("tf-azure").get("aci-ResGroup")}' if the command executes successfully.`);
-
-        } else {
-            const message = "A CloudShell session is needed, do you want to open CloudShell?";
-            const response: MessageItem = await vscode.window.showWarningMessage(message, DialogOption.OK, DialogOption.CANCEL);
-            if (response === DialogOption.OK) {
-                const terminal: Terminal = await this.startCloudShell();
-                this.csTerm.terminal = terminal[0];
-                this.csTerm.ws = terminal[1];
-                this.csTerm.storageAccountName = terminal[2];
-                this.csTerm.storageAccountKey = terminal[3];
-                this.csTerm.fileShareName = terminal[4];
-                this.csTerm.ResourceGroup = terminal[5];
-                console.log(`Obtained terminal and fileshare data\n`);
-                await this.runTerraformTestsInternal(testType);
-            }
-
-            console.log("Terminal not opened when trying to transfer files");
-        }
-
-    }
-
-    protected runTerraformAsyncInternal(TFConfiguration: string, TFCommand: string): Promise<any> {
+    protected runTerraformAsyncInternal(TFConfiguration: string, TFCommand: string): void {
         return null;
     }
 
