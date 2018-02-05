@@ -18,9 +18,6 @@ import { selectWorkspaceFolder } from "./utils/workspaceUtils";
 export class IntegratedShell extends BaseShell {
     private static readonly GRAPH_FILE_NAME = "graph.png";
 
-    // terminal wrapper
-    public term = new TFTerminal(TerminalType.Integrated, Constants.TerraformTerminalName);
-
     // Creates a png of terraform resource graph to visualize the resources under management.
     public async visualize(): Promise<void> {
         const cwd: string = await selectWorkspaceFolder();
@@ -114,20 +111,19 @@ export class IntegratedShell extends BaseShell {
         }
     }
 
-    // init shell env and hook up close handler. Close handler ensures if user closes terminal window,
-    // that extension is notified and can handle appropriately.
     protected initShellInternal() {
+        this.tfTerminal = new TFTerminal(TerminalType.Integrated, Constants.TerraformTerminalName);
         vscode.window.onDidCloseTerminal((terminal) => {
-            if (terminal === this.term.terminal) {
+            if (terminal === this.tfTerminal.terminal) {
                 terraformChannel.appendLine("Terraform Terminal closed", terminal.name);
-                this.term.terminal = null;
+                this.tfTerminal.terminal = null;
             }
         });
     }
 
     protected runTerraformInternal(TFCommand: string, WorkDir: string): void {
         this.checkCreateTerminal();
-        const term = this.term.terminal;
+        const term = this.tfTerminal.terminal;
         term.show();
         term.sendText(TFCommand);
         return;
@@ -136,7 +132,7 @@ export class IntegratedShell extends BaseShell {
     protected runTerraformAsyncInternal(TFConfiguration: string, TFCommand: string): void {
         this.checkCreateTerminal();
 
-        const term = this.term.terminal;
+        const term = this.tfTerminal.terminal;
 
         term.show();
 
@@ -151,8 +147,8 @@ export class IntegratedShell extends BaseShell {
     }
 
     private checkCreateTerminal(): void {
-        if (!this.term.terminal) {
-            this.term.terminal = vscode.window.createTerminal(Constants.TerraformTerminalName);
+        if (!this.tfTerminal.terminal) {
+            this.tfTerminal.terminal = vscode.window.createTerminal(Constants.TerraformTerminalName);
         }
     }
 }

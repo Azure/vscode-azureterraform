@@ -281,22 +281,43 @@ function connectSocket(url: string) {
 		process.stdin.on("data", (data) => {
 			ws.send(data);
 		});
+		startKeepAlive();
 	});
 
 	ws.on("message", (data) => {
 		process.stdout.write(String(data));
 	});
 
-	let error = false;
-	ws.on("error", (event) => {
-		error = true;
+	ws.on("error", (error) => {
+		console.log(error.toString());
 	});
 
 	ws.on("close", () => {
-		if (!error) {
-			process.exit(0);
-		}
+		console.log("websocket closed");
 	});
+
+	function startKeepAlive() {
+		let isAlive = true;
+		ws.on("pong", () => {
+			isAlive = true;
+		});
+		const timer = setInterval(() => {
+			if (isAlive === false) {
+				console.log("Socket timeout");
+				clearInterval(timer);
+				if (ws) {
+					ws.terminate();
+				}
+			} else {
+				isAlive = false;
+				if (ws && ws.readyState === ws.OPEN) {
+					ws.ping();
+				}
+			}
+		}, 60000 /* 60 seconds */);
+		timer.unref();
+	}
+
 	return ws;
 }
 
