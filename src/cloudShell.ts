@@ -96,7 +96,7 @@ export class CloudShell extends BaseShell {
         if ((this.csTerm.terminal != null) && (this.csTerm.storageAccountKey != null)) {
             const workspaceName: string = path.basename(workingDirectory);
             const cloudDrivePath: string = `${workspaceName}/.TFTesting`;
-            const localPath: string = `${workingDirectory}${path.sep}.TFTesting`;
+            const localPath: string = path.join(workingDirectory, ".TFTesting");
             const CREATE_ACI_SCRIPT: string = "createacitest.sh";
             const CONTAINER_CMD_SCRIPT: string = "containercmd.sh";
 
@@ -114,14 +114,14 @@ export class CloudShell extends BaseShell {
 
             console.log("Wrting scripts for e2e test");
             await Promise.all([
-                fsExtra.outputFile(localPath + path.sep + CREATE_ACI_SCRIPT, shellscript),
-                fsExtra.outputFile(localPath + path.sep + CONTAINER_CMD_SCRIPT, exportContainerCmd(workspaceName, await this.resolveContainerCmd(testType))),
+                fsExtra.outputFile(path.join(localPath, CREATE_ACI_SCRIPT), shellscript),
+                fsExtra.outputFile(path.join(localPath, CONTAINER_CMD_SCRIPT), exportContainerCmd(workspaceName, await this.resolveContainerCmd(testType))),
             ]);
 
             console.log("Push scripts to cloudshell");
             await Promise.all([
-                azFilePush(workspaceName, this.csTerm.storageAccountName, this.csTerm.storageAccountKey, this.csTerm.fileShareName, localPath + path.sep + CREATE_ACI_SCRIPT),
-                azFilePush(workspaceName, this.csTerm.storageAccountName, this.csTerm.storageAccountKey, this.csTerm.fileShareName, localPath + path.sep + CONTAINER_CMD_SCRIPT),
+                azFilePush(workspaceName, this.csTerm.storageAccountName, this.csTerm.storageAccountKey, this.csTerm.fileShareName, path.join(localPath, CREATE_ACI_SCRIPT)),
+                azFilePush(workspaceName, this.csTerm.storageAccountName, this.csTerm.storageAccountKey, this.csTerm.fileShareName, path.join(localPath, CONTAINER_CMD_SCRIPT)),
             ]);
             await this.runTFCommand(`cd ~/clouddrive/${cloudDrivePath} && source ${CREATE_ACI_SCRIPT} && terraform fmt && terraform init && terraform apply -auto-approve && terraform taint azurerm_container_group.TFTest && \
                                echo "\nRun the following command to get the logs from the ACI container: az container logs -g ${vscode.workspace.getConfiguration("tf-azure").get("aci-ResGroup")} -n ${vscode.workspace.getConfiguration("tf-azure").get("aci-name")}\n"`, cloudDrivePath, this.csTerm.terminal);
