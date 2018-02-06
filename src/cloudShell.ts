@@ -113,7 +113,7 @@ export class CloudShell extends BaseShell {
 
     }
 
-    protected async runTerraformInternal(TFCommand: string, WorkDir: string): Promise<void> {
+    public async runTerraformCmd(tfCommand: string, workingDir: string): Promise<void> {
         // Workaround the TLS error
         process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
         // TODO: Check if logged with azure account
@@ -125,9 +125,9 @@ export class CloudShell extends BaseShell {
             this.tfTerminal.storageAccountKey = terminal[3];
             this.tfTerminal.fileShareName = terminal[4];
             this.tfTerminal.ResourceGroup = terminal[5];
-            await this.runTFCommand(TFCommand, WorkDir, this.tfTerminal.terminal);
+            await this.runTFCommand(tfCommand, workingDir, this.tfTerminal.terminal);
         } else {
-            await this.runTFCommand(TFCommand, WorkDir, this.tfTerminal.terminal);
+            await this.runTFCommand(tfCommand, workingDir, this.tfTerminal.terminal);
         }
 
     }
@@ -140,10 +140,6 @@ export class CloudShell extends BaseShell {
                 await fsExtra.remove(tempFile);
             }
         });
-    }
-
-    protected runTerraformAsyncInternal(TFConfiguration: string, TFCommand: string): void {
-        return null;
     }
 
     protected async startCloudShell(): Promise<Terminal> {

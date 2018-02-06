@@ -111,6 +111,13 @@ export class IntegratedShell extends BaseShell {
         }
     }
 
+    public runTerraformCmd(tfCommand: string, workingDir: string): void {
+        this.checkCreateTerminal();
+        const term = this.tfTerminal.terminal;
+        term.show();
+        term.sendText(tfCommand);
+    }
+
     protected initShellInternal() {
         this.tfTerminal = new TFTerminal(TerminalType.Integrated, Constants.TerraformTerminalName);
         vscode.window.onDidCloseTerminal((terminal) => {
@@ -119,24 +126,6 @@ export class IntegratedShell extends BaseShell {
                 this.tfTerminal.terminal = null;
             }
         });
-    }
-
-    protected runTerraformInternal(TFCommand: string, WorkDir: string): void {
-        this.checkCreateTerminal();
-        const term = this.tfTerminal.terminal;
-        term.show();
-        term.sendText(TFCommand);
-        return;
-    }
-
-    protected runTerraformAsyncInternal(TFConfiguration: string, TFCommand: string): void {
-        this.checkCreateTerminal();
-
-        const term = this.tfTerminal.terminal;
-
-        term.show();
-
-        term.sendText(TFCommand);
     }
 
     private async deletePng(cwd: string): Promise<void> {
