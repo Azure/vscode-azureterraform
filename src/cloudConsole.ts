@@ -121,7 +121,6 @@ export async function openCloudConsole(api: AzureAccount, subscription: AzureSub
 
         const response = await runInTerminal(result.token.accessToken, consoleUri, "");
 
-        progress.cancel();
         const terminal = window.createTerminal({
             name: "Terraform in CloudShell",
             shellPath,
