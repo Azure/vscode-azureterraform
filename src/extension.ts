@@ -92,3 +92,6 @@ export function terminalSetToCloudshell(): boolean {
 export function filesGlobSetting(): vscode.GlobPattern {
     return vscode.workspace.getConfiguration("tf-azure").get("files") as vscode.GlobPattern;
 }
+
+// tslint:disable-next-line:no-empty
+export function deactivate(): void { }
