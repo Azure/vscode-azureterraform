@@ -1,7 +1,7 @@
 "use strict";
 
 import { executeCommand } from "./cpUtils";
-import { openUrlHint } from "./uiUtils";
+import { DialogType, openUrlHint, promptForOpenOutputChannel } from "./uiUtils";
 
 export async function isDockerInstalled(): Promise<boolean> {
     try {
@@ -13,11 +13,13 @@ export async function isDockerInstalled(): Promise<boolean> {
     }
 }
 
-export async function pullLatestTestingImage(): Promise<void> {
+export async function latestTestingImagePulled(): Promise<boolean> {
     try {
         await executeCommand("docker", ["pull", "microsoft/terraform-test:latest"], { shell: true });
+        return true;
     } catch (error) {
-        throw new Error("Failed to pull the latest image: microsoft/terraform-test, Please switch to output channel for more details.");
+        promptForOpenOutputChannel("Failed to pull the latest image: microsoft/terraform-test. Please switch to the output channel for more details.", DialogType.error);
+        return false;
     }
 }
 
@@ -39,7 +41,7 @@ export async function runLintInDocker(volumn: string, containerName: string): Pr
             { shell: true },
         );
     } catch (error) {
-        throw new Error("Run lint task in Docker failed, Please switch to output channel for more details.");
+        promptForOpenOutputChannel("Failed to run lint task in Docker. Please switch to the output channel for more details.", DialogType.error);
     }
 }
 
@@ -72,7 +74,7 @@ export async function runE2EInDocker(volumn: string[], containerName: string): P
             { shell: true },
         );
     } catch (error) {
-        throw new Error("Run E2E test in Docker failed, Please switch to output channel for more details.");
+        promptForOpenOutputChannel("Failed to run end to end tests in Docker. Please switch to the output channel for more details.", DialogType.error);
     }
 }
 

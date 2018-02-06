@@ -11,7 +11,7 @@ import { TerminalType, TestOption, TFTerminal } from "./shared";
 import { terraformChannel } from "./terraformChannel";
 import { isServicePrincipalSetInEnv } from "./utils/azureUtils";
 import { executeCommand } from "./utils/cpUtils";
-import { isDockerInstalled, pullLatestTestingImage, runE2EInDocker, runLintInDocker } from "./utils/dockerUtils";
+import { isDockerInstalled, latestTestingImagePulled, runE2EInDocker, runLintInDocker } from "./utils/dockerUtils";
 import { drawGraph } from "./utils/dotUtils";
 import { selectWorkspaceFolder } from "./utils/workspaceUtils";
 
@@ -59,7 +59,9 @@ export class IntegratedShell extends BaseShell {
         }
 
         terraformChannel.appendLine("Pulling the latest image for 'microsoft/terraform-test'...");
-        await pullLatestTestingImage();
+        if (!await latestTestingImagePulled()) {
+            return;
+        }
 
         switch (TestType) {
             case TestOption.lint: {
