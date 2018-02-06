@@ -22,6 +22,7 @@ export abstract class BaseShell {
     protected dispose(): void {
         terraformChannel.appendLine("Terraform Terminal closed", this.tfTerminal.name);
         this.tfTerminal.terminal = undefined;
+        this.tfTerminal.storageAccountKey = undefined;
         if (this.tfTerminal.ws) {
             this.tfTerminal.ws.close();
             this.tfTerminal.ws = undefined;
