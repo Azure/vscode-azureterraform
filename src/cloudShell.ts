@@ -21,37 +21,27 @@ const tempFile = path.join(os.tmpdir(), "cloudshell" + vscode.env.sessionId + ".
 export class CloudShell extends BaseShell {
 
     public async pushFiles(files: vscode.Uri[], syncAllFiles: boolean): Promise<void> {
-        terraformChannel.appendLine("Attempting to upload files to CloudShell");
-        const RETRY_INTERVAL = 500;
-        const RETRY_TIMES = 30;
+        terraformChannel.appendLine("Attempting to upload files to CloudShell...");
 
         if (await this.connectedToCloudShell()) {
-            for (let i = 0; i < RETRY_TIMES; i++) {
-                if (this.tfTerminal.ws.readyState !== ws.OPEN) {
-                    // wait for valid ws connection
-                    await delay(RETRY_INTERVAL);
-                } else {
-                    for (const file of files.map((a) => a.fsPath)) {
-                        try {
-                            if (await fsExtra.pathExists(file)) {
-                                terraformChannel.appendLine(`Uploading file ${file} to cloud shell`);
-                                await azFilePush(
-                                    vscode.workspace.getWorkspaceFolder(vscode.Uri.file(file)).name,
-                                    this.tfTerminal.storageAccountName,
-                                    this.tfTerminal.storageAccountKey,
-                                    this.tfTerminal.fileShareName, file);
-                            }
-                        } catch (err) {
-                            terraformChannel.appendLine(err);
-                        }
+            for (const file of files.map((a) => a.fsPath)) {
+                try {
+                    if (await fsExtra.pathExists(file)) {
+                        terraformChannel.appendLine(`Uploading file ${file} to cloud shell`);
+                        await azFilePush(
+                            vscode.workspace.getWorkspaceFolder(vscode.Uri.file(file)).name,
+                            this.tfTerminal.storageAccountName,
+                            this.tfTerminal.storageAccountKey,
+                            this.tfTerminal.fileShareName, file);
                     }
-
-                    if (syncAllFiles) {
-                        vscode.window.showInformationMessage(
-                            "Synced all matched files in the current workspace to CloudShell");
-                    }
-                    break;
+                } catch (err) {
+                    terraformChannel.appendLine(err);
                 }
+            }
+
+            if (syncAllFiles) {
+                vscode.window.showInformationMessage(
+                    "Synced all matched files in the current workspace to CloudShell");
             }
         }
     }
@@ -65,13 +55,13 @@ export class CloudShell extends BaseShell {
             const CONTAINER_CMD_SCRIPT: string = "containercmd.sh";
 
             const TFConfiguration = escapeFile(aciConfig(
-                    vscode.workspace.getConfiguration("tf-azure").get("aci-ResGroup"),
-                    vscode.workspace.getConfiguration("tf-azure").get("aci-name"),
-                    vscode.workspace.getConfiguration("tf-azure").get("aci-group"),
-                    this.tfTerminal.storageAccountName, this.tfTerminal.fileShareName,
-                    vscode.workspace.getConfiguration("tf-azure").get("test-location"),
-                    vscode.workspace.getConfiguration("tf-azure").get("test-container"),
-                    workspaceName,
+                vscode.workspace.getConfiguration("tf-azure").get("aci-ResGroup"),
+                vscode.workspace.getConfiguration("tf-azure").get("aci-name"),
+                vscode.workspace.getConfiguration("tf-azure").get("aci-group"),
+                this.tfTerminal.storageAccountName, this.tfTerminal.fileShareName,
+                vscode.workspace.getConfiguration("tf-azure").get("test-location"),
+                vscode.workspace.getConfiguration("tf-azure").get("test-container"),
+                workspaceName,
             ));
 
             const shellscript = exportTestScript("lint", TFConfiguration, this.tfTerminal.ResourceGroup, this.tfTerminal.storageAccountName, this.tfTerminal.fileShareName, cloudDrivePath);
@@ -139,33 +129,31 @@ export class CloudShell extends BaseShell {
         });
     }
 
-    private connectedToCloudShell(): Promise<boolean> {
-        return new Promise<boolean>(async (resolve) => {
-            if (this.tfTerminal.terminal && this.tfTerminal.storageAccountKey) {
-                resolve(true);
-            } else {
-                const message = "Do you want to open CloudShell?";
-                const response: MessageItem = await vscode.window.showWarningMessage(message, DialogOption.OK, DialogOption.CANCEL);
-                if (response === DialogOption.OK) {
-                    const terminal: any[] = await this.startCloudShell();
-                    if (_.isEmpty(terminal)) {
-                        resolve(false);
-                    } else {
-                        this.tfTerminal.terminal = terminal[0];
-                        this.tfTerminal.ws = terminal[1];
-                        this.tfTerminal.storageAccountName = terminal[2];
-                        this.tfTerminal.storageAccountKey = terminal[3];
-                        this.tfTerminal.fileShareName = terminal[4];
-                        this.tfTerminal.ResourceGroup = terminal[5];
-                        terraformChannel.appendLine("Cloudshell terminal opened.");
-                        resolve(true);
-                    }
-                } else {
-                    console.log("Open CloudShell cancelled by user.");
-                    resolve(false);
-                }
+    private async connectedToCloudShell(): Promise<boolean> {
+        if (this.tfTerminal.terminal && this.tfTerminal.storageAccountKey) {
+            return true;
+        }
+
+        const message = "Do you want to open CloudShell?";
+        const response: MessageItem = await vscode.window.showWarningMessage(message, DialogOption.OK, DialogOption.CANCEL);
+        if (response === DialogOption.OK) {
+            const terminal: any[] = await this.startCloudShell();
+            if (_.isEmpty(terminal)) {
+                return false;
             }
-        });
+            this.tfTerminal.terminal = terminal[0];
+            this.tfTerminal.ws = terminal[1];
+            this.tfTerminal.storageAccountName = terminal[2];
+            this.tfTerminal.storageAccountKey = terminal[3];
+            this.tfTerminal.fileShareName = terminal[4];
+            this.tfTerminal.ResourceGroup = terminal[5];
+            terraformChannel.appendLine("Cloudshell terminal opened.");
+            return true;
+        }
+
+        console.log("Open CloudShell cancelled by user.");
+        return false;
+
     }
 
     private async resolveContainerCmd(TestType: string): Promise<string> {
