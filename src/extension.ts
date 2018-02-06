@@ -11,8 +11,6 @@ import { selectWorkspaceFolder } from "./utils/workspaceUtils";
 
 let cs: CloudShell;
 let is: IntegratedShell;
-let fileWatcher: vscode.FileSystemWatcher;
-let isFirstPush = true;
 
 function getShell(): BaseShell {
     let activeShell = null;
@@ -28,15 +26,6 @@ function getShell(): BaseShell {
 export function activate(ctx: vscode.ExtensionContext) {
     cs = new CloudShell();
     is = new IntegratedShell();
-    initFileWatcher(ctx);
-
-    ctx.subscriptions.push(vscode.workspace.onDidChangeConfiguration((e) => {
-        if (e.affectsConfiguration("tf-azure.files")) {
-            // dispose of current file watcher and re-init
-            fileWatcher.dispose();
-            initFileWatcher(ctx);
-        }
-    }));
 
     ctx.subscriptions.push(vscode.commands.registerCommand("vscode-terraform-azure.init", () => {
         getShell().runTerraformCmd("terraform init", Constants.clouddrive);
@@ -102,41 +91,4 @@ export function terminalSetToCloudshell(): boolean {
 
 export function filesGlobSetting(): vscode.GlobPattern {
     return vscode.workspace.getConfiguration("tf-azure").get("files") as vscode.GlobPattern;
-}
-
-export function workspaceSyncEnabled(): boolean {
-    return vscode.workspace.getConfiguration("tf-azure").get("syncEnabled") as boolean;
-}
-
-function initFileWatcher(ctx: vscode.ExtensionContext): void {
-    fileWatcher = vscode.workspace.createFileSystemWatcher(filesGlobSetting());
-    ctx.subscriptions.push(
-        fileWatcher.onDidDelete((deletedUri) => {
-            if (terminalSetToCloudshell() && workspaceSyncEnabled()) {
-                cs.deleteFiles([deletedUri]);
-            }
-        }),
-        fileWatcher.onDidCreate((createdUri) => pushHelper(createdUri)),
-        fileWatcher.onDidChange((changedUri) => pushHelper(changedUri)),
-    );
-}
-
-function pushHelper(uri: vscode.Uri) {
-    if (terminalSetToCloudshell() && workspaceSyncEnabled()) {
-        if (isFirstPush) {
-            // do initial sync of workspace before enabling file watcher.
-            vscode.workspace.findFiles(filesGlobSetting()).then((tfFiles) => {
-                cs.pushFiles(tfFiles, false);
-            });
-            isFirstPush = false;
-            return;
-        }
-        cs.pushFiles([uri], false);
-    }
-}
-
-export function deactivate(): void {
-    if (fileWatcher) {
-        fileWatcher.dispose();
-    }
 }
