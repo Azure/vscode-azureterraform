@@ -202,10 +202,10 @@ export class CloudShell extends BaseShell {
     private async resolveContainerCmd(TestType: string): Promise<string> {
         switch (TestType) {
             case TestOption.lint:
-                return "rake -f ../../Rakefile build";
+                return "rake -f ../Rakefile build";
             case TestOption.e2enossh:
             case TestOption.e2ewithssh:
-                return "rake -f ../../Rakefile e2e";
+                return "rake -f ../Rakefile e2e";
             case TestOption.custom:
                 const cmd: string = await vscode.window.showInputBox({
                     prompt: "Type your custom test command",

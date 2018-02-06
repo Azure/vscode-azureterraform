@@ -70,7 +70,7 @@ export class IntegratedShell extends BaseShell {
                 console.log("Running e2e test in " + process.env["ARM_TEST_LOCATION"]);
                 await runE2EInDocker(
                     [
-                        workingDirectory + "/logs:/tf-test/module.kitchen",
+                        workingDirectory + "/logs:/tf-test/module/.kitchen",
                         workingDirectory + ":/tf-test/module",
                     ],
                     containerName,
@@ -82,7 +82,7 @@ export class IntegratedShell extends BaseShell {
                 await runE2EInDocker(
                     [
                         `${path.join(os.homedir(), ".ssh")}:/root/.ssh/`,
-                        workingDirectory + "/logs:/tf-test/module.kitchen",
+                        workingDirectory + "/logs:/tf-test/module/.kitchen",
                         workingDirectory + ":/tf-test/module",
                     ],
                     containerName,

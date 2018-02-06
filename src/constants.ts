@@ -54,15 +54,6 @@ resource "azurerm_container_group" "TFTest" {
             storage_account_name = "${storageAccountName}"
             storage_account_key = "\${var.storage_account_key}"
         }
-
-        volume {
-            name = "logs"
-            mount_path = "/tf-test/module/.kitchen"
-            read_only = false
-            share_name = "kitchen-logs"
-            storage_account_name = "${storageAccountName}"
-            storage_account_key = "\${var.storage_account_key}"
-        }
     }
 }`;
 
@@ -77,7 +68,7 @@ export function exportTestScript(testType: string, TFConfiguration: string, reso
         fi
 
         if [ ! -d "$HOME/clouddrive/${testDirectory}/.ssh" ]; then
-            mkdir -p $HOME/clouddrive/${testDirectory}
+            mkdir -p $HOME/clouddrive/${testDirectory}/.ssh
         fi
 
         echo -e "${TFConfiguration}" > $HOME/clouddrive/${testDirectory}/testfile.tf
@@ -102,22 +93,21 @@ export function exportTestScript(testType: string, TFConfiguration: string, reso
 }
 
 export function exportContainerCmd(moduleDir: string, containerCommand: string): string {
-    const containerScript = `
-        #!/bin/bash
+    const containerScript =
+`#!/bin/bash
 
-        mkdir /root/.ssh
-        cp -r /module/${moduleDir}/ /tf-test/module/
+echo "Copying terraform project..."
+cp -a /module/${moduleDir}/. /tf-test/module/
 
-        mkdir /root/.azure
-        cp /module/${moduleDir}/.TFTesting/.azure/*.json /root/.azure
+echo "Initializing environment..."
+mkdir /root/.azure
+cp /module/${moduleDir}/.TFTesting/.azure/*.json /root/.azure
+mkdir /root/.ssh
+cp /module/${moduleDir}/.TFTesting/.ssh/* /root/.ssh/
 
-        cp /tf-test/module/${moduleDir}/.TFTesting/.ssh/* /root/.ssh/
-
-        cd ${moduleDir}
-        ${containerCommand}
-        echo "Container test operation completed - read the logs for status"
-    `;
+echo "Starting to Run test task..."
+${containerCommand}
+echo "Container test operation completed - read the logs for status"`;
 
     return containerScript;
-
 }
