@@ -6,7 +6,6 @@ import * as os from "os";
 import * as path from "path";
 import * as vscode from "vscode";
 import { MessageItem, Terminal } from "vscode";
-import * as ws from "ws";
 import { AzureAccount, AzureSubscription } from "./azure-account.api";
 import { BaseShell } from "./baseShell";
 import { openCloudConsole, OSes } from "./cloudConsole";
