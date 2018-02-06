@@ -13,6 +13,14 @@ export async function isDockerInstalled(): Promise<boolean> {
     }
 }
 
+export async function pullLatestTestingImage(): Promise<void> {
+    try {
+        await executeCommand("docker", ["pull", "microsoft/terraform-test:latest"], { shell: true });
+    } catch (error) {
+        throw new Error("Failed to pull the latest image: microsoft/terraform-test, Please switch to output channel for more details.");
+    }
+}
+
 export async function runLintInDocker(volumn: string, containerName: string): Promise<void> {
     try {
         await executeCommand(
