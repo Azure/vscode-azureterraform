@@ -11,7 +11,7 @@ import { BaseShell } from "./baseShell";
 import { openCloudConsole, OSes } from "./cloudConsole";
 import { delay } from "./cloudConsoleLauncher";
 import { aciConfig, Constants, exportContainerCmd, exportTestScript } from "./constants";
-import { azFileDelete, azFilePush, escapeFile, TerminalType, TestOption, TFTerminal } from "./shared";
+import { azFilePush, escapeFile, TerminalType, TestOption, TFTerminal } from "./shared";
 import { terraformChannel } from "./terraformChannel";
 import { DialogOption } from "./utils/uiUtils";
 
@@ -54,36 +54,6 @@ export class CloudShell extends BaseShell {
                         "Synced all matched files in the current workspace to CloudShell");
                 }
                 break;
-            }
-        }
-    }
-
-    public async deleteFiles(files: vscode.Uri[]): Promise<void> {
-        const RETRY_INTERVAL = 500;
-        const RETRY_TIMES = 3;
-
-        // Checking if the terminal has been created and user is logged in.
-        if (!await this.terminalInitialized()) {
-            return;
-        }
-
-        for (let i = 0; i < RETRY_TIMES; i++) {
-            if (this.tfTerminal.ws.readyState !== ws.OPEN) {
-                // wait for valid ws connection
-                await delay(RETRY_INTERVAL);
-            } else {
-                for (const file of files.map((a) => a.fsPath)) {
-                    try {
-                        terraformChannel.appendLine(`Deleting file ${file} from cloud shell`);
-                        await azFileDelete(
-                            vscode.workspace.getWorkspaceFolder(vscode.Uri.file(file)).name,
-                            this.tfTerminal.storageAccountName,
-                            this.tfTerminal.storageAccountKey,
-                            this.tfTerminal.fileShareName, file);
-                    } catch (err) {
-                        terraformChannel.appendLine(err);
-                    }
-                }
             }
         }
     }
