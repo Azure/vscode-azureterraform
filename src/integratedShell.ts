@@ -11,7 +11,7 @@ import { TerminalType, TestOption, TFTerminal } from "./shared";
 import { terraformChannel } from "./terraformChannel";
 import { isServicePrincipalSetInEnv } from "./utils/azureUtils";
 import { executeCommand } from "./utils/cpUtils";
-import { isDockerInstalled, runE2EInDocker, runLintInDocker } from "./utils/dockerUtils";
+import { isDockerInstalled, latestTestingImagePulled, runE2EInDocker, runLintInDocker } from "./utils/dockerUtils";
 import { drawGraph } from "./utils/dotUtils";
 import { selectWorkspaceFolder } from "./utils/workspaceUtils";
 
@@ -55,6 +55,11 @@ export class IntegratedShell extends BaseShell {
 
         terraformChannel.appendLine("Checking Azure Service Principal environment variables...");
         if (!isServicePrincipalSetInEnv()) {
+            return;
+        }
+
+        terraformChannel.appendLine("Pulling the latest image of 'microsoft/terraform-test'...");
+        if (!await latestTestingImagePulled()) {
             return;
         }
 
