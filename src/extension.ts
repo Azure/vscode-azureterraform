@@ -78,7 +78,7 @@ export function activate(ctx: vscode.ExtensionContext) {
         // Create a function that will sync the files to Cloudshell
         if (terminalSetToCloudshell()) {
             vscode.workspace.findFiles(filesGlobSetting()).then((tfFiles) => {
-                cs.pushFiles(tfFiles, true);
+                cs.pushFiles(tfFiles);
             });
         } else {
             vscode.window.showErrorMessage("Push function only available when using cloudshell.");

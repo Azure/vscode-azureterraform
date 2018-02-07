@@ -13,34 +13,28 @@ import { delay } from "./cloudConsoleLauncher";
 import { aciConfig, Constants, exportContainerCmd, exportTestScript } from "./constants";
 import { azFilePush, escapeFile, TerminalType, TestOption, TFTerminal } from "./shared";
 import { terraformChannel } from "./terraformChannel";
-import { DialogOption } from "./utils/uiUtils";
+import { DialogOption, DialogType, promptForOpenOutputChannel } from "./utils/uiUtils";
 
 const tempFile = path.join(os.tmpdir(), "cloudshell" + vscode.env.sessionId + ".log");
 
 export class CloudShell extends BaseShell {
 
-    public async pushFiles(files: vscode.Uri[], syncAllFiles: boolean): Promise<void> {
+    public async pushFiles(files: vscode.Uri[]): Promise<void> {
         terraformChannel.appendLine("Attempting to upload files to CloudShell...");
 
         if (await this.connectedToCloudShell()) {
+            const promises: Array<Promise<void>> = [];
             for (const file of files.map((a) => a.fsPath)) {
-                try {
-                    if (await fsExtra.pathExists(file)) {
-                        terraformChannel.appendLine(`Uploading file ${file} to cloud shell`);
-                        await azFilePush(
-                            vscode.workspace.getWorkspaceFolder(vscode.Uri.file(file)).name,
-                            this.tfTerminal.storageAccountName,
-                            this.tfTerminal.storageAccountKey,
-                            this.tfTerminal.fileShareName, file);
-                    }
-                } catch (err) {
-                    terraformChannel.appendLine(err);
-                }
+                promises.push(this.pushFilePromise(file));
             }
 
-            if (syncAllFiles) {
-                vscode.window.showInformationMessage(
-                    "Synced all matched files in the current workspace to CloudShell");
+            try {
+                await promises;
+                vscode.window.showInformationMessage("Synced all matched files in the current workspace to CloudShell");
+            } catch (error) {
+                terraformChannel.appendLine(error);
+                await promptForOpenOutputChannel("Failed to push files to the cloud. Please open the output channel for more details.", DialogType.error);
+
             }
         }
     }
@@ -152,7 +146,19 @@ export class CloudShell extends BaseShell {
 
         console.log("Open CloudShell cancelled by user.");
         return false;
+    }
 
+    private async pushFilePromise(file: string): Promise<void> {
+        if (await fsExtra.pathExists(file)) {
+            terraformChannel.appendLine(`Uploading file ${file} to cloud shell`);
+            await azFilePush(
+                vscode.workspace.getWorkspaceFolder(vscode.Uri.file(file)).name,
+                this.tfTerminal.storageAccountName,
+                this.tfTerminal.storageAccountKey,
+                this.tfTerminal.fileShareName,
+                file,
+            );
+        }
     }
 
     private async resolveContainerCmd(TestType: string): Promise<string> {
