@@ -58,7 +58,7 @@ export class IntegratedShell extends BaseShell {
             return;
         }
 
-        terraformChannel.appendLine("Pulling the latest image for 'microsoft/terraform-test'...");
+        terraformChannel.appendLine("Pulling the latest image of 'microsoft/terraform-test'...");
         if (!await latestTestingImagePulled()) {
             return;
         }

@@ -42,6 +42,7 @@ export async function promptForOpenOutputChannel(message: string, type: DialogTy
         default:
             break;
     }
+
     if (result === DialogOption.OPEN) {
         terraformChannel.show();
     }

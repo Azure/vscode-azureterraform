@@ -18,7 +18,7 @@ export async function latestTestingImagePulled(): Promise<boolean> {
         await executeCommand("docker", ["pull", "microsoft/terraform-test:latest"], { shell: true });
         return true;
     } catch (error) {
-        promptForOpenOutputChannel("Failed to pull the latest image: microsoft/terraform-test. Please switch to the output channel for more details.", DialogType.error);
+        promptForOpenOutputChannel("Failed to pull the latest image: microsoft/terraform-test. Please open the output channel for more details.", DialogType.error);
         return false;
     }
 }
@@ -41,7 +41,7 @@ export async function runLintInDocker(volumn: string, containerName: string): Pr
             { shell: true },
         );
     } catch (error) {
-        promptForOpenOutputChannel("Failed to run lint task in Docker. Please switch to the output channel for more details.", DialogType.error);
+        promptForOpenOutputChannel("Failed to run lint task in Docker. Please open the output channel for more details.", DialogType.error);
     }
 }
 
@@ -74,7 +74,7 @@ export async function runE2EInDocker(volumn: string[], containerName: string): P
             { shell: true },
         );
     } catch (error) {
-        promptForOpenOutputChannel("Failed to run end to end tests in Docker. Please switch to the output channel for more details.", DialogType.error);
+        promptForOpenOutputChannel("Failed to run end to end tests in Docker. Please open the output channel for more details.", DialogType.error);
     }
 }
 
