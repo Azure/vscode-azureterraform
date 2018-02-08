@@ -2,7 +2,7 @@
 
 The VSCode Terraform Azure extension is designed to increase developer productivity building Terraform modules for Azure.  The extension provides, linting, terraform command support, resource graph visualization, testing and cloudshell integration inside of VSCode.
 
-![overview](images/image1.png)
+![overview](images/overview.png)
 
 ## Features
 
@@ -17,24 +17,26 @@ This extension supports the following features:
 ### Terraform Azure: init
 
 Executes `terraform init` command against the current project workspace.  If run with terminal set to cloudshell, will run `terraform init` in cloudshell.
-![tfinit](images/image2.png)
 
 ### Terraform Azure: plan
 
 Executes `terraform plan` command against the current project workspace.  If run with terminal set to cloudshell, will run `terraform plan` in cloudshell.
-![tfplan](images/image3.png)
 
 ### Terraform Azure: apply
 
-Executes `terraform apply` command against the current directory. If run with terminal set to cloudshell, will run `terraform apply` in cloudshell.
+Executes `terraform apply` command against the current project workspace. If run with terminal set to cloudshell, will run `terraform apply` in cloudshell.
 
 ### Terraform Azure: validate
 
-Executes `terraform validate` command against the current directory. If run with terminal set to cloudshell, will run `terraform apply` in cloudshell.
+Executes `terraform validate` command against the current project workspace. If run with terminal set to cloudshell, will run `terraform validate` in cloudshell.
 
 ### Terraform Azure: refresh
 
+Executes `terraform refresh` command against the current project workspace. If run with terminal set to cloudshell, will run `terraform refresh` in cloudshell.
+
 ### Terraform Azure: destroy
+
+Executes `terraform destroy` command against the current project workspace. If run with terminal set to cloudshell, will run `terraform destroy` in cloudshell.
 
 ### Terraform Azure: visualize
 
@@ -44,10 +46,15 @@ Creates a visual representation of the components of the module and save it in `
 
 ### Terraform Azure: execute test
 
-Runs one of the following test against the current module using a test container :
+Runs one of the following test against the current module using a test container:
 
 - lint: This command checks the formating of the code of the Terraform module.
-- e2e no ssh: This command will deploy the current module with the settings specified in the .tfvars file, verify that the deployment pass the controls and destroy the resources that have been created.
+
+- e2e - no ssh: This command will deploy the current module with the settings specified in the .tfvars file, verify that the deployment pass the controls and destroy the resources that have been created.
+
+- e2e - with ssh: This command will deploy the current module with the settings specified in the .tfvars file, verify that the deployment pass the controls and destroy the resources that have been created. The difference between `e2e - with ssh` command and `e2e - no ssh` is `e2e - with ssh` will mount a volumn which contains the ssh keys.
+
+- custom: This command will run the customized command against the Terraform module.
 
 You can run the test locally or in Azure.
 
@@ -98,23 +105,4 @@ This extension requires:
 
 ## Release Notes
 
-### 1.0.0
-
-Initial release of vscode-terraform-azure extension.
-
------------------------------------------------------------------------------------------------------------
-
-## Working with Markdown
-
-**Note:** You can author your README using Visual Studio Code.  Here are some useful editor keyboard shortcuts:
-
-- Split the editor (`Cmd+\` on OSX or `Ctrl+\` on Windows and Linux)
-- Toggle preview (`Shift+CMD+V` on OSX or `Shift+Ctrl+V` on Windows and Linux)
-- Press `Ctrl+Space` (Windows, Linux) or `Cmd+Space` (OSX) to see a list of Markdown snippets
-
-### For more information
-
-- [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-- [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+Refer to [CHANGELOG](CHANGELOG.md)
