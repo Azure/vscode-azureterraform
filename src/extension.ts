@@ -23,9 +23,8 @@ function getShell(): BaseShell {
     return activeShell;
 }
 
-export async function activate(ctx: vscode.ExtensionContext) {
+export function activate(ctx: vscode.ExtensionContext) {
     cs = new CloudShell();
-    await cs.removeLogFile();
     is = new IntegratedShell();
 
     ctx.subscriptions.push(vscode.commands.registerCommand("vscode-terraform-azure.init", () => {

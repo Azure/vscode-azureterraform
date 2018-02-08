@@ -94,18 +94,12 @@ export class CloudShell extends BaseShell {
         }
     }
 
-    public async removeLogFile(): Promise<void> {
-        if (await fsExtra.pathExists(tempFile)) {
-            await fsExtra.remove(tempFile);
-        }
-    }
-
     protected initShellInternal() {
         this.tfTerminal = new TFTerminal(TerminalType.CloudShell, Constants.TerraformTerminalName);
         vscode.window.onDidCloseTerminal(async (terminal) => {
             if (terminal === this.tfTerminal.terminal) {
                 this.dispose();
-                await this.removeLogFile();
+                await fsExtra.remove(tempFile);
             }
         });
     }
