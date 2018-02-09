@@ -167,9 +167,8 @@ export class CloudShell extends BaseShell {
         switch (TestType) {
             case TestOption.lint:
                 return "rake -f ../Rakefile build";
-            case TestOption.e2enossh:
-            case TestOption.e2ewithssh:
-                return "rake -f ../Rakefile e2e";
+            case TestOption.e2e:
+                return "ssh-keygen -t rsa -b 2048 -C terraformTest -f /root/.ssh/id_rsa -N ''; rake -f ../Rakefile e2e";
             case TestOption.custom:
                 const cmd: string = await vscode.window.showInputBox({
                     prompt: "Type your custom test command",

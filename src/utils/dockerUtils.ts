@@ -66,10 +66,9 @@ export async function runE2EInDocker(volumn: string[], containerName: string): P
                 "ARM_TEST_LOCATION_ALT",
                 "--rm",
                 containerName,
-                "rake",
-                "-f",
-                "../Rakefile",
-                "e2e",
+                "/bin/bash",
+                "-c",
+                `"ssh-keygen -t rsa -b 2048 -C terraformTest -f /root/.ssh/id_rsa -N ''; rake -f ../Rakefile e2e"`,
             ],
             { shell: true },
         );

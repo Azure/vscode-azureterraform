@@ -68,7 +68,7 @@ export function activate(ctx: vscode.ExtensionContext) {
     ctx.subscriptions.push(vscode.commands.registerCommand("vscode-terraform-azure.exectest", async () => {
         console.log("Testing current module");
         const pick: string = await vscode.window.showQuickPick(
-            [TestOption.lint, TestOption.e2enossh, TestOption.e2ewithssh, TestOption.custom],
+            [TestOption.lint, TestOption.e2e, TestOption.custom],
             { placeHolder: "Select the type of test that you want to run" },
         );
         if (!pick) {

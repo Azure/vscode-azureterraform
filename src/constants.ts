@@ -67,21 +67,9 @@ export function exportTestScript(testType: string, TFConfiguration: string, reso
             mkdir -p $HOME/clouddrive/${testDirectory}
         fi
 
-        if [ ! -d "$HOME/clouddrive/${testDirectory}/.ssh" ]; then
-            mkdir -p $HOME/clouddrive/${testDirectory}/.ssh
-        fi
-
         echo -e "${TFConfiguration}" > $HOME/clouddrive/${testDirectory}/testfile.tf
 
         export TF_VAR_storage_account_key=$(az storage account keys list -g ${resoureGroupName} -n ${storageAccountName} | jq '.[0].value')
-
-        if [ -f "$HOME/clouddrive/${testDirectory}/.ssh/id_rsa" ]; then
-            mv $HOME/clouddrive/${testDirectory}/.ssh/id_rsa $HOME/clouddrive/${testDirectory}/.ssh/id_rsa.old
-        fi
-
-        if [ -f "$HOME/clouddrive/${testDirectory}/.ssh/id_rsa.pub" ]; then
-            mv $HOME/clouddrive/${testDirectory}/.ssh/id_rsa.pub $HOME/clouddrive/${testDirectory}/.ssh/id_rsa.pub.old
-        fi
 
         ssh-keygen -t rsa -b 2048 -C "vscode-testing" -f $HOME/clouddrive/${testDirectory}/.ssh/id_rsa -N ""
 
@@ -102,8 +90,6 @@ cp -a /module/${moduleDir}/. /tf-test/module/
 echo "Initializing environment..."
 mkdir /root/.azure
 cp /module/${moduleDir}/.TFTesting/.azure/*.json /root/.azure
-mkdir /root/.ssh
-cp /module/${moduleDir}/.TFTesting/.ssh/* /root/.ssh/
 
 echo "Starting to Run test task..."
 ${containerCommand}

@@ -41,8 +41,7 @@ export enum FileSystem {
 
 export enum TestOption {
     lint = "lint",
-    e2enossh = "e2e - no ssh",
-    e2ewithssh = "e2e - with ssh",
+    e2e = "end to end",
     custom = "custom",
 }
 
