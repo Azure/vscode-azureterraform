@@ -78,12 +78,11 @@ export function activate(ctx: vscode.ExtensionContext) {
 
     }));
 
-    ctx.subscriptions.push(vscode.commands.registerCommand("vscode-terraform-azure.push", () => {
+    ctx.subscriptions.push(vscode.commands.registerCommand("vscode-terraform-azure.push", async () => {
         // Create a function that will sync the files to Cloudshell
         if (terminalSetToCloudshell()) {
-            vscode.workspace.findFiles(filesGlobSetting()).then((tfFiles) => {
-                cloudShell.pushFiles(tfFiles);
-            });
+            const tfFiles: vscode.Uri[] = await vscode.workspace.findFiles(filesGlobSetting());
+            await cloudShell.pushFiles(tfFiles);
         } else {
             vscode.window.showErrorMessage("Push function only available when using cloudshell.");
         }

@@ -30,7 +30,7 @@ export class CloudShell extends BaseShell {
 
             try {
                 await Promise.all(promises);
-                vscode.window.showInformationMessage("Synced all matched files in the current workspace to CloudShell");
+                await vscode.window.showInformationMessage("Synced all matched files in the current workspace to CloudShell");
             } catch (error) {
                 terraformChannel.appendLine(error);
                 await promptForOpenOutputChannel("Failed to push files to the cloud. Please open the output channel for more details.", DialogType.error);
@@ -41,6 +41,15 @@ export class CloudShell extends BaseShell {
 
     public async runTerraformTests(testType: string, workingDirectory: string) {
         if (await this.connectedToCloudShell()) {
+            const choice: vscode.MessageItem = await vscode.window.showInformationMessage(
+                "Would you like to push the terraform project files onto the cloudshell?",
+                DialogOption.OK,
+                DialogOption.CANCEL,
+            );
+            if (choice === DialogOption.OK) {
+                await vscode.commands.executeCommand("vscode-terraform-azure.push");
+            }
+
             const workspaceName: string = path.basename(workingDirectory);
             const cloudDrivePath: string = `${workspaceName}/.TFTesting`;
             const localPath: string = path.join(workingDirectory, ".TFTesting");
@@ -59,17 +68,16 @@ export class CloudShell extends BaseShell {
 
             const shellscript = exportTestScript("lint", TFConfiguration, this.tfTerminal.ResourceGroup, this.tfTerminal.storageAccountName, this.tfTerminal.fileShareName, cloudDrivePath);
 
-            console.log("Wrting scripts for e2e test");
             await Promise.all([
                 fsExtra.outputFile(path.join(localPath, CREATE_ACI_SCRIPT), shellscript),
                 fsExtra.outputFile(path.join(localPath, CONTAINER_CMD_SCRIPT), exportContainerCmd(workspaceName, await this.resolveContainerCmd(testType))),
             ]);
 
-            console.log("Push scripts to cloudshell");
             await Promise.all([
                 azFilePush(workspaceName, this.tfTerminal.storageAccountName, this.tfTerminal.storageAccountKey, this.tfTerminal.fileShareName, path.join(localPath, CREATE_ACI_SCRIPT)),
                 azFilePush(workspaceName, this.tfTerminal.storageAccountName, this.tfTerminal.storageAccountKey, this.tfTerminal.fileShareName, path.join(localPath, CONTAINER_CMD_SCRIPT)),
             ]);
+
             const sentToTerminal: boolean = await this.runTFCommand(`cd ~/clouddrive/${cloudDrivePath} && source ${CREATE_ACI_SCRIPT} && terraform fmt && terraform init && terraform apply -auto-approve && terraform taint azurerm_container_group.TFTest && \
                                echo "\nRun the following command to get the logs from the ACI container: az container logs -g ${vscode.workspace.getConfiguration("tf-azure").get("aci-ResGroup")} -n ${vscode.workspace.getConfiguration("tf-azure").get("aci-name")}\n"`, cloudDrivePath);
             if (sentToTerminal) {
