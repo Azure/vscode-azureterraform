@@ -1,5 +1,6 @@
 "use strict";
 
+import * as fsExtra from "fs-extra";
 import * as path from "path";
 import { clearInterval, setInterval } from "timers";
 import { commands, window } from "vscode";
@@ -35,6 +36,7 @@ export const OSes: Record<string, IOS> = {
 };
 
 export async function openCloudConsole(api: AzureAccount, subscription: AzureSubscription, os: IOS, tempFile: string): Promise<any[]> {
+    await fsExtra.remove(tempFile);
     const progress = delayedInterval(() => terraformChannel.append(".."), 500);
     return (async function retry(): Promise<any> {
         terraformChannel.show();
