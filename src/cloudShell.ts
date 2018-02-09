@@ -29,7 +29,7 @@ export class CloudShell extends BaseShell {
             }
 
             try {
-                await promises;
+                await Promise.all(promises);
                 vscode.window.showInformationMessage("Synced all matched files in the current workspace to CloudShell");
             } catch (error) {
                 terraformChannel.appendLine(error);
