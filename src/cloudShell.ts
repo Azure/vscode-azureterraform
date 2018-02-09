@@ -5,7 +5,7 @@ import * as _ from "lodash";
 import * as os from "os";
 import * as path from "path";
 import * as vscode from "vscode";
-import { MessageItem, Terminal } from "vscode";
+import { MessageItem } from "vscode";
 import { AzureAccount, AzureSubscription } from "./azure-account.api";
 import { BaseShell } from "./baseShell";
 import { openCloudConsole, OSes } from "./cloudConsole";
@@ -70,9 +70,13 @@ export class CloudShell extends BaseShell {
                 azFilePush(workspaceName, this.tfTerminal.storageAccountName, this.tfTerminal.storageAccountKey, this.tfTerminal.fileShareName, path.join(localPath, CREATE_ACI_SCRIPT)),
                 azFilePush(workspaceName, this.tfTerminal.storageAccountName, this.tfTerminal.storageAccountKey, this.tfTerminal.fileShareName, path.join(localPath, CONTAINER_CMD_SCRIPT)),
             ]);
-            await this.runTFCommand(`cd ~/clouddrive/${cloudDrivePath} && source ${CREATE_ACI_SCRIPT} && terraform fmt && terraform init && terraform apply -auto-approve && terraform taint azurerm_container_group.TFTest && \
-                               echo "\nRun the following command to get the logs from the ACI container: az container logs -g ${vscode.workspace.getConfiguration("tf-azure").get("aci-ResGroup")} -n ${vscode.workspace.getConfiguration("tf-azure").get("aci-name")}\n"`, cloudDrivePath, this.tfTerminal.terminal);
-            vscode.window.showInformationMessage(`An Azure Container Instance will be created in the Resource Group '${vscode.workspace.getConfiguration("tf-azure").get("aci-ResGroup")}' if the command executes successfully.`);
+            const sentToTerminal: boolean = await this.runTFCommand(`cd ~/clouddrive/${cloudDrivePath} && source ${CREATE_ACI_SCRIPT} && terraform fmt && terraform init && terraform apply -auto-approve && terraform taint azurerm_container_group.TFTest && \
+                               echo "\nRun the following command to get the logs from the ACI container: az container logs -g ${vscode.workspace.getConfiguration("tf-azure").get("aci-ResGroup")} -n ${vscode.workspace.getConfiguration("tf-azure").get("aci-name")}\n"`, cloudDrivePath);
+            if (sentToTerminal) {
+                vscode.window.showInformationMessage(`An Azure Container Instance will be created in the Resource Group '${vscode.workspace.getConfiguration("tf-azure").get("aci-ResGroup")}' if the command executes successfully.`);
+            } else {
+                vscode.window.showErrorMessage("Failed to send the command to terminal, please try it again.");
+            }
         }
     }
 
@@ -80,7 +84,7 @@ export class CloudShell extends BaseShell {
         // Workaround the TLS error
         process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
         if (await this.connectedToCloudShell()) {
-            await this.runTFCommand(tfCommand, workingDir, this.tfTerminal.terminal);
+            await this.runTFCommand(tfCommand, workingDir);
         }
     }
 
@@ -105,21 +109,19 @@ export class CloudShell extends BaseShell {
         return await openCloudConsole(accountAPI, azureSubscription, operationSystem, tempFile);
     }
 
-    protected async runTFCommand(command: string, workdir: string, terminal: Terminal): Promise<void> {
-        return new Promise<void>(async (resolve, reject) => {
-            let count: number = 30;
-            while (count--) {
-                if (await fsExtra.pathExists(tempFile)) {
-                    if (terminal) {
-                        terminal.sendText(`${command}`);
-                        terminal.show();
-                        return resolve();
-                    }
+    protected async runTFCommand(command: string, workdir: string): Promise<boolean> {
+        let count: number = 30;
+        while (count--) {
+            if (await fsExtra.pathExists(tempFile)) {
+                if (this.tfTerminal.terminal) {
+                    this.tfTerminal.terminal.show();
+                    this.tfTerminal.terminal.sendText(`${command}`);
+                    return true;
                 }
-                await delay(500);
             }
-            reject("Connecting to terminal failed, please retry.");
-        });
+            await delay(500);
+        }
+        return false;
     }
 
     private async connectedToCloudShell(): Promise<boolean> {
