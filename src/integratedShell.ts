@@ -68,38 +68,20 @@ export class IntegratedShell extends BaseShell {
         }
 
         switch (TestType) {
-            case TestOption.lint: {
+            case TestOption.lint:
                 await runLintInDocker(
                     workingDirectory + ":/tf-test/module",
                     containerName,
                 );
                 break;
-            }
-            case TestOption.e2enossh: {
-                console.log("Running e2e test in " + process.env["ARM_TEST_LOCATION"]);
+            case TestOption.e2e:
                 await runE2EInDocker(
-                    [
-                        workingDirectory + "/logs:/tf-test/module/.kitchen",
-                        workingDirectory + ":/tf-test/module",
-                    ],
+                    workingDirectory + ":/tf-test/module",
                     containerName,
                 );
                 break;
-            }
-            case TestOption.e2ewithssh: {
-                console.log("Running e2e test in " + process.env["ARM_TEST_LOCATION"]);
-                await runE2EInDocker(
-                    [
-                        `${path.join(os.homedir(), ".ssh")}:/root/.ssh/`,
-                        workingDirectory + "/logs:/tf-test/module/.kitchen",
-                        workingDirectory + ":/tf-test/module",
-                    ],
-                    containerName,
-                );
-                break;
-            }
-            case TestOption.custom: {
-                console.log("Running custom test in " + process.env["ARM_TEST_LOCATION"]);
+
+            case TestOption.custom:
                 const cmd: string = await vscode.window.showInputBox({
                     prompt: "Type your custom test command",
                     value: `run -v ${workingDirectory}:/tf-test/module --rm ${containerName} rake -f ../Rakefile build`,
@@ -112,11 +94,9 @@ export class IntegratedShell extends BaseShell {
                     );
                 }
                 break;
-            }
-            default: {
+            default:
                 console.log("Default step in test for Integrated Terminal");
                 break;
-            }
         }
     }
 

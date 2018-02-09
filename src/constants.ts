@@ -63,29 +63,15 @@ resource "azurerm_container_group" "TFTest" {
 export function exportTestScript(testType: string, TFConfiguration: string, resoureGroupName: string, storageAccountName: string, fileShareName: string, testDirectory: string): string {
     const testScript = `
         #!/bin/bash
-        if [ ! -d "$HOME/clouddrive/${testDirectory}" ]; then
-            mkdir -p $HOME/clouddrive/${testDirectory}
-        fi
-
-        if [ ! -d "$HOME/clouddrive/${testDirectory}/.ssh" ]; then
-            mkdir -p $HOME/clouddrive/${testDirectory}/.ssh
-        fi
+        mkdir -p $HOME/clouddrive/${testDirectory}
 
         echo -e "${TFConfiguration}" > $HOME/clouddrive/${testDirectory}/testfile.tf
 
         export TF_VAR_storage_account_key=$(az storage account keys list -g ${resoureGroupName} -n ${storageAccountName} | jq '.[0].value')
 
-        if [ -f "$HOME/clouddrive/${testDirectory}/.ssh/id_rsa" ]; then
-            mv $HOME/clouddrive/${testDirectory}/.ssh/id_rsa $HOME/clouddrive/${testDirectory}/.ssh/id_rsa.old
-        fi
+        mkdir -p $HOME/clouddrive/${testDirectory}/.azure
 
-        if [ -f "$HOME/clouddrive/${testDirectory}/.ssh/id_rsa.pub" ]; then
-            mv $HOME/clouddrive/${testDirectory}/.ssh/id_rsa.pub $HOME/clouddrive/${testDirectory}/.ssh/id_rsa.pub.old
-        fi
-
-        ssh-keygen -t rsa -b 2048 -C "vscode-testing" -f $HOME/clouddrive/${testDirectory}/.ssh/id_rsa -N ""
-
-        cp -r $HOME/.azure/ $HOME/clouddrive/${testDirectory}/
+        cp $HOME/.azure/*.json $HOME/clouddrive/${testDirectory}/.azure
 
     `;
 
@@ -102,8 +88,6 @@ cp -a /module/${moduleDir}/. /tf-test/module/
 echo "Initializing environment..."
 mkdir /root/.azure
 cp /module/${moduleDir}/.TFTesting/.azure/*.json /root/.azure
-mkdir /root/.ssh
-cp /module/${moduleDir}/.TFTesting/.ssh/* /root/.ssh/
 
 echo "Starting to Run test task..."
 ${containerCommand}
