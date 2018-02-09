@@ -45,13 +45,14 @@ export async function runLintInDocker(volumn: string, containerName: string): Pr
     }
 }
 
-export async function runE2EInDocker(volumn: string[], containerName: string): Promise<void> {
+export async function runE2EInDocker(volumn: string, containerName: string): Promise<void> {
     try {
         await executeCommand(
             "docker",
             [
                 "run",
-                ...insertElementIntoArray(volumn, "-v"),
+                "-v",
+                volumn,
                 "-e",
                 "ARM_CLIENT_ID",
                 "-e",
@@ -75,9 +76,4 @@ export async function runE2EInDocker(volumn: string[], containerName: string): P
     } catch (error) {
         promptForOpenOutputChannel("Failed to run end to end tests in Docker. Please open the output channel for more details.", DialogType.error);
     }
-}
-
-// usage: insertElementIntoArray([1, 2], 0) => [0, 1, 0, 2]
-function insertElementIntoArray(array: any[], element: any): any[] {
-    return array.reduce((pre, cur) => pre.concat(element, cur), []);
 }

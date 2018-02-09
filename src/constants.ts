@@ -63,17 +63,15 @@ resource "azurerm_container_group" "TFTest" {
 export function exportTestScript(testType: string, TFConfiguration: string, resoureGroupName: string, storageAccountName: string, fileShareName: string, testDirectory: string): string {
     const testScript = `
         #!/bin/bash
-        if [ ! -d "$HOME/clouddrive/${testDirectory}" ]; then
-            mkdir -p $HOME/clouddrive/${testDirectory}
-        fi
+        mkdir -p $HOME/clouddrive/${testDirectory}
 
         echo -e "${TFConfiguration}" > $HOME/clouddrive/${testDirectory}/testfile.tf
 
         export TF_VAR_storage_account_key=$(az storage account keys list -g ${resoureGroupName} -n ${storageAccountName} | jq '.[0].value')
 
-        ssh-keygen -t rsa -b 2048 -C "vscode-testing" -f $HOME/clouddrive/${testDirectory}/.ssh/id_rsa -N ""
+        mkdir -p $HOME/clouddrive/${testDirectory}/.azure
 
-        cp -r $HOME/.azure/ $HOME/clouddrive/${testDirectory}/
+        cp $HOME/.azure/*.json $HOME/clouddrive/${testDirectory}/.azure
 
     `;
 

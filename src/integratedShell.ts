@@ -75,18 +75,13 @@ export class IntegratedShell extends BaseShell {
                 );
                 break;
             case TestOption.e2e:
-                console.log("Running e2e test in " + process.env["ARM_TEST_LOCATION"]);
                 await runE2EInDocker(
-                    [
-                        workingDirectory + "/logs:/tf-test/module/.kitchen",
-                        workingDirectory + ":/tf-test/module",
-                    ],
+                    workingDirectory + ":/tf-test/module",
                     containerName,
                 );
                 break;
 
             case TestOption.custom:
-                console.log("Running custom test in " + process.env["ARM_TEST_LOCATION"]);
                 const cmd: string = await vscode.window.showInputBox({
                     prompt: "Type your custom test command",
                     value: `run -v ${workingDirectory}:/tf-test/module --rm ${containerName} rake -f ../Rakefile build`,
