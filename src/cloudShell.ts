@@ -42,7 +42,7 @@ export class CloudShell extends BaseShell {
     public async runTerraformTests(testType: string, workingDirectory: string) {
         if (await this.connectedToCloudShell()) {
             const choice: vscode.MessageItem = await vscode.window.showInformationMessage(
-                "Would you like to push the terraform project files onto the cloudshell?",
+                "Would you like to push the terraform project files to the CloudShell?",
                 DialogOption.OK,
                 DialogOption.CANCEL,
             );
