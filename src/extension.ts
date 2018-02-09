@@ -54,7 +54,7 @@ export function activate(ctx: vscode.ExtensionContext) {
     ctx.subscriptions.push(vscode.commands.registerCommand("vscode-terraform-azure.visualize", async () => {
         if (terminalSetToCloudshell()) {
             const choice: vscode.MessageItem = await vscode.window.showInformationMessage(
-                "Visualize task is only available in integrated terminal. Would you like to continue?",
+                "Visualization only works locally. Would you like to run it in the integrated terminal?",
                 DialogOption.OK,
                 DialogOption.CANCEL,
             );
