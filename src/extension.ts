@@ -6,7 +6,7 @@ import { CloudShell } from "./cloudShell";
 import { Constants } from "./constants";
 import { IntegratedShell } from "./integratedShell";
 import { TestOption } from "./shared";
-import { isDotInstalled } from "./utils/dotUtils";
+import { DialogOption } from "./utils/uiUtils";
 import { selectWorkspaceFolder } from "./utils/workspaceUtils";
 
 let cs: CloudShell;
@@ -52,9 +52,17 @@ export function activate(ctx: vscode.ExtensionContext) {
     }));
 
     ctx.subscriptions.push(vscode.commands.registerCommand("vscode-terraform-azure.visualize", async () => {
-        if (await isDotInstalled()) {
-            await is.visualize();
+        if (terminalSetToCloudshell()) {
+            const choice: vscode.MessageItem = await vscode.window.showInformationMessage(
+                "Visualization only works locally. Would you like to run it in the integrated terminal?",
+                DialogOption.OK,
+                DialogOption.CANCEL,
+            );
+            if (choice === DialogOption.CANCEL) {
+                return;
+            }
         }
+        await is.visualize();
     }));
 
     ctx.subscriptions.push(vscode.commands.registerCommand("vscode-terraform-azure.exectest", async () => {
