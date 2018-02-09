@@ -9,23 +9,19 @@ import { TestOption } from "./shared";
 import { DialogOption } from "./utils/uiUtils";
 import { selectWorkspaceFolder } from "./utils/workspaceUtils";
 
-let cs: CloudShell;
-let is: IntegratedShell;
+let cloudShell: CloudShell;
+let integratedShell: IntegratedShell;
 
 function getShell(): BaseShell {
-    let activeShell = null;
     if (terminalSetToCloudshell()) {
-        activeShell = cs;
-    } else {
-        activeShell = is;
+        return cloudShell;
     }
-
-    return activeShell;
+    return integratedShell;
 }
 
 export function activate(ctx: vscode.ExtensionContext) {
-    cs = new CloudShell();
-    is = new IntegratedShell();
+    cloudShell = new CloudShell();
+    integratedShell = new IntegratedShell();
 
     ctx.subscriptions.push(vscode.commands.registerCommand("vscode-terraform-azure.init", () => {
         getShell().runTerraformCmd("terraform init", Constants.clouddrive);
@@ -62,7 +58,7 @@ export function activate(ctx: vscode.ExtensionContext) {
                 return;
             }
         }
-        await is.visualize();
+        await integratedShell.visualize();
     }));
 
     ctx.subscriptions.push(vscode.commands.registerCommand("vscode-terraform-azure.exectest", async () => {
@@ -86,7 +82,7 @@ export function activate(ctx: vscode.ExtensionContext) {
         // Create a function that will sync the files to Cloudshell
         if (terminalSetToCloudshell()) {
             vscode.workspace.findFiles(filesGlobSetting()).then((tfFiles) => {
-                cs.pushFiles(tfFiles);
+                cloudShell.pushFiles(tfFiles);
             });
         } else {
             vscode.window.showErrorMessage("Push function only available when using cloudshell.");
