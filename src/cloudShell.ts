@@ -14,6 +14,7 @@ import { aciConfig, Constants, exportContainerCmd, exportTestScript } from "./co
 import { azFilePush, escapeFile, TerminalType, TestOption, TFTerminal } from "./shared";
 import { terraformChannel } from "./terraformChannel";
 import { DialogOption, DialogType, promptForOpenOutputChannel } from "./utils/uiUtils";
+import { selectWorkspaceFolder } from "./utils/workspaceUtils";
 
 const tempFile = path.join(os.tmpdir(), "cloudshell" + vscode.env.sessionId + ".log");
 
@@ -30,7 +31,7 @@ export class CloudShell extends BaseShell {
 
             try {
                 await Promise.all(promises);
-                await vscode.window.showInformationMessage("Synced all matched files in the current workspace to CloudShell");
+                vscode.window.showInformationMessage("Synced all matched files in the current workspace to CloudShell");
             } catch (error) {
                 terraformChannel.appendLine(error);
                 await promptForOpenOutputChannel("Failed to push files to the cloud. Please open the output channel for more details.", DialogType.error);
@@ -51,48 +52,56 @@ export class CloudShell extends BaseShell {
             }
 
             const workspaceName: string = path.basename(workingDirectory);
-            const cloudDrivePath: string = `${workspaceName}/.TFTesting`;
+            const setupFilesFolder: string = `${workspaceName}/.TFTesting`;
             const localPath: string = path.join(workingDirectory, ".TFTesting");
-            const CREATE_ACI_SCRIPT: string = "createacitest.sh";
-            const CONTAINER_CMD_SCRIPT: string = "containercmd.sh";
+            const createAciScript: string = "createacitest.sh";
+            const containerCommandScript: string = "containercmd.sh";
+            const resourceGroup: string = vscode.workspace.getConfiguration("tf-azure").get("aci-ResGroup");
+            const aciName: string = vscode.workspace.getConfiguration("tf-azure").get("aci-name");
+            const aciGroup: string = vscode.workspace.getConfiguration("tf-azure").get("aci-group");
 
             const TFConfiguration = escapeFile(aciConfig(
-                vscode.workspace.getConfiguration("tf-azure").get("aci-ResGroup"),
-                vscode.workspace.getConfiguration("tf-azure").get("aci-name"),
-                vscode.workspace.getConfiguration("tf-azure").get("aci-group"),
-                this.tfTerminal.storageAccountName, this.tfTerminal.fileShareName,
+                resourceGroup,
+                aciName,
+                aciGroup,
+                this.tfTerminal.storageAccountName,
+                this.tfTerminal.fileShareName,
                 vscode.workspace.getConfiguration("tf-azure").get("test-location"),
                 vscode.workspace.getConfiguration("tf-azure").get("test-container"),
                 workspaceName,
             ));
 
-            const shellscript = exportTestScript("lint", TFConfiguration, this.tfTerminal.ResourceGroup, this.tfTerminal.storageAccountName, this.tfTerminal.fileShareName, cloudDrivePath);
+            const shellscript = exportTestScript("lint", TFConfiguration, this.tfTerminal.ResourceGroup, this.tfTerminal.storageAccountName, this.tfTerminal.fileShareName, setupFilesFolder);
 
             await Promise.all([
-                fsExtra.outputFile(path.join(localPath, CREATE_ACI_SCRIPT), shellscript),
-                fsExtra.outputFile(path.join(localPath, CONTAINER_CMD_SCRIPT), exportContainerCmd(workspaceName, await this.resolveContainerCmd(testType))),
+                fsExtra.outputFile(path.join(localPath, createAciScript), shellscript),
+                fsExtra.outputFile(path.join(localPath, containerCommandScript), exportContainerCmd(workspaceName, await this.resolveContainerCmd(testType))),
             ]);
 
             await Promise.all([
-                azFilePush(workspaceName, this.tfTerminal.storageAccountName, this.tfTerminal.storageAccountKey, this.tfTerminal.fileShareName, path.join(localPath, CREATE_ACI_SCRIPT)),
-                azFilePush(workspaceName, this.tfTerminal.storageAccountName, this.tfTerminal.storageAccountKey, this.tfTerminal.fileShareName, path.join(localPath, CONTAINER_CMD_SCRIPT)),
+                azFilePush(workspaceName, this.tfTerminal.storageAccountName, this.tfTerminal.storageAccountKey, this.tfTerminal.fileShareName, path.join(localPath, createAciScript)),
+                azFilePush(workspaceName, this.tfTerminal.storageAccountName, this.tfTerminal.storageAccountKey, this.tfTerminal.fileShareName, path.join(localPath, containerCommandScript)),
             ]);
 
-            const sentToTerminal: boolean = await this.runTFCommand(`cd ~/clouddrive/${cloudDrivePath} && source ${CREATE_ACI_SCRIPT} && terraform fmt && terraform init && terraform apply -auto-approve && terraform taint azurerm_container_group.TFTest && \
-                               echo "\nRun the following command to get the logs from the ACI container: az container logs -g ${vscode.workspace.getConfiguration("tf-azure").get("aci-ResGroup")} -n ${vscode.workspace.getConfiguration("tf-azure").get("aci-name")}\n"`, cloudDrivePath);
+            const sentToTerminal: boolean = await this.runTFCommand(
+                `source ${createAciScript} && terraform fmt && terraform init && terraform apply -auto-approve && terraform taint azurerm_container_group.TFTest && \
+                echo "\nRun the following command to get the logs from the ACI container: az container logs -g ${resourceGroup} -n ${aciName}\n"`,
+                `${Constants.clouddrive}/${setupFilesFolder}`,
+            );
             if (sentToTerminal) {
-                vscode.window.showInformationMessage(`An Azure Container Instance will be created in the Resource Group '${vscode.workspace.getConfiguration("tf-azure").get("aci-ResGroup")}' if the command executes successfully.`);
+                vscode.window.showInformationMessage(`An Azure Container Instance will be created in the Resource Group '${resourceGroup}' if the command executes successfully.`);
             } else {
                 vscode.window.showErrorMessage("Failed to send the command to terminal, please try it again.");
             }
         }
     }
 
-    public async runTerraformCmd(tfCommand: string, workingDir: string): Promise<void> {
+    public async runTerraformCmd(tfCommand: string): Promise<void> {
         // Workaround the TLS error
         process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
         if (await this.connectedToCloudShell()) {
-            await this.runTFCommand(tfCommand, workingDir);
+            const workingDirectory: string = await selectWorkspaceFolder();
+            await this.runTFCommand(tfCommand, workingDirectory ? `${Constants.clouddrive}/${path.basename(workingDirectory)}` : "");
         }
     }
 
@@ -123,6 +132,9 @@ export class CloudShell extends BaseShell {
             if (await fsExtra.pathExists(tempFile)) {
                 if (this.tfTerminal.terminal) {
                     this.tfTerminal.terminal.show();
+                    if (workdir) {
+                        this.tfTerminal.terminal.sendText(`cd "${workdir}"`);
+                    }
                     this.tfTerminal.terminal.sendText(`${command}`);
                     return true;
                 }

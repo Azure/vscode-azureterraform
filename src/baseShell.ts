@@ -11,7 +11,7 @@ export abstract class BaseShell {
         this.initShellInternal();
     }
 
-    public abstract runTerraformCmd(tfCommand: string, workingDir: string);
+    public abstract runTerraformCmd(tfCommand: string);
 
     public abstract runTerraformTests(testType: string, workingDirectory: string);
 

@@ -3,7 +3,6 @@
 import * as vscode from "vscode";
 import { BaseShell } from "./baseShell";
 import { CloudShell } from "./cloudShell";
-import { Constants } from "./constants";
 import { IntegratedShell } from "./integratedShell";
 import { TestOption } from "./shared";
 import { DialogOption } from "./utils/uiUtils";
@@ -24,27 +23,27 @@ export function activate(ctx: vscode.ExtensionContext) {
     integratedShell = new IntegratedShell();
 
     ctx.subscriptions.push(vscode.commands.registerCommand("vscode-terraform-azure.init", () => {
-        getShell().runTerraformCmd("terraform init", Constants.clouddrive);
+        getShell().runTerraformCmd("terraform init");
     }));
 
     ctx.subscriptions.push(vscode.commands.registerCommand("vscode-terraform-azure.plan", () => {
-        getShell().runTerraformCmd("terraform plan", Constants.clouddrive);
+        getShell().runTerraformCmd("terraform plan");
     }));
 
     ctx.subscriptions.push(vscode.commands.registerCommand("vscode-terraform-azure.apply", () => {
-        getShell().runTerraformCmd("terraform apply", Constants.clouddrive);
+        getShell().runTerraformCmd("terraform apply");
     }));
 
     ctx.subscriptions.push(vscode.commands.registerCommand("vscode-terraform-azure.destroy", () => {
-        getShell().runTerraformCmd("terraform destroy", Constants.clouddrive);
+        getShell().runTerraformCmd("terraform destroy");
     }));
 
     ctx.subscriptions.push(vscode.commands.registerCommand("vscode-terraform-azure.refresh", () => {
-        getShell().runTerraformCmd("terraform refresh", Constants.clouddrive);
+        getShell().runTerraformCmd("terraform refresh");
     }));
 
     ctx.subscriptions.push(vscode.commands.registerCommand("vscode-terraform-azure.validate", () => {
-        getShell().runTerraformCmd("terraform validate", Constants.clouddrive);
+        getShell().runTerraformCmd("terraform validate");
     }));
 
     ctx.subscriptions.push(vscode.commands.registerCommand("vscode-terraform-azure.visualize", async () => {
