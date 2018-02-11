@@ -40,7 +40,7 @@ Executes `terraform destroy` command against the current project workspace. If r
 
 ### Terraform Azure: visualize
 
-- > NOTE: only runs locally.
+> NOTE: only runs locally.
 
 Creates a visual representation of the components of the module and save it in `graph.png`. This command requires [GraphViz dot](http://www.graphviz.org) to be installed locally.
 
@@ -50,9 +50,7 @@ Runs one of the following test against the current module using a test container
 
 - lint: This command checks the formating of the code of the Terraform module.
 
-- e2e - no ssh: This command will deploy the current module with the settings specified in the .tfvars file, verify that the deployment pass the controls and destroy the resources that have been created.
-
-- e2e - with ssh: This command will deploy the current module with the settings specified in the .tfvars file, verify that the deployment pass the controls and destroy the resources that have been created. The difference between `e2e - with ssh` command and `e2e - no ssh` is `e2e - with ssh` will mount a volumn which contains the ssh keys.
+- end to end: This command will deploy the current module with the settings specified in the .tfvars file, verify that the deployment pass the controls and destroy the resources that have been created.
 
 - custom: This command will run the customized command against the Terraform module.
 
@@ -67,7 +65,7 @@ Use the following command to get the results of the test (Replace with your own 
 
 In both cases the default test container is "microsoft/terraform-test" and it can be customized through the settings.
 
-- > NOTE: Running the tests in Azure will count against your Azure consumption.
+> NOTE: Running the tests in Azure will count against your Azure consumption.
 
 ### Terraform Azure: push
 
@@ -81,7 +79,7 @@ This extension requires:
 - [Docker](http://www.docker.io) if you are running the execute test feature locally.
 - [GraphViz dot](http://www.graphviz.org) if you are using the visualize feature.
 
-- NOTE: On Windows after installing the graphViz msi/zip, you will most likely need to add your PATH env variable `(Ex. c:\Program Files(x86)\GraphViz2.38\bin)` in order to use dot from the command line.
+> NOTE: On Windows after installing the graphViz msi/zip, you will most likely need to add your PATH env variable `(Ex. c:\Program Files(x86)\GraphViz2.38\bin)` in order to use dot from the command line.
 
 ## Supported Environments
 
