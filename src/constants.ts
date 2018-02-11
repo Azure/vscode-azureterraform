@@ -7,7 +7,7 @@ export class Constants {
     public static TerraformTerminalName = "Terraform";
     public static UserAgentName = "VSCODEEXT_USER_AGENT";
     public static TestContainer = "microsoft/terraform-test";
-    public static clouddrive = "~/clouddrive";
+    public static clouddrive = "$HOME/clouddrive";
 }
 
 export function aciConfig(resourceGroup: string, aciName: string, aciGroup: string, storageAccountName: string, storageAccountShare: string, location: string, testContainer: string, projectName: string): string {

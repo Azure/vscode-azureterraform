@@ -100,7 +100,7 @@ export class IntegratedShell extends BaseShell {
         }
     }
 
-    public runTerraformCmd(tfCommand: string, workingDir: string): void {
+    public runTerraformCmd(tfCommand: string): void {
         this.checkCreateTerminal();
         const term = this.tfTerminal.terminal;
         term.show();
