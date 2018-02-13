@@ -13,18 +13,11 @@ export async function isDockerInstalled(): Promise<boolean> {
     }
 }
 
-export async function latestTestingImagePulled(): Promise<boolean> {
+export async function runLintInDocker(volumn: string, containerName: string): Promise<boolean> {
     try {
-        await executeCommand("docker", ["pull", "microsoft/terraform-test:latest"], { shell: true });
-        return true;
-    } catch (error) {
-        promptForOpenOutputChannel("Failed to pull the latest image: microsoft/terraform-test. Please open the output channel for more details.", DialogType.error);
-        return false;
-    }
-}
-
-export async function runLintInDocker(volumn: string, containerName: string): Promise<void> {
-    try {
+        if (!await pullLatestImage(containerName)) {
+            return false;
+        }
         await executeCommand(
             "docker",
             [
@@ -40,13 +33,18 @@ export async function runLintInDocker(volumn: string, containerName: string): Pr
             ],
             { shell: true },
         );
+        return true;
     } catch (error) {
         promptForOpenOutputChannel("Failed to run lint task in Docker. Please open the output channel for more details.", DialogType.error);
+        return false;
     }
 }
 
-export async function runE2EInDocker(volumn: string, containerName: string): Promise<void> {
+export async function runE2EInDocker(volumn: string, containerName: string): Promise<boolean> {
     try {
+        if (!await pullLatestImage(containerName)) {
+            return false;
+        }
         await executeCommand(
             "docker",
             [
@@ -73,7 +71,36 @@ export async function runE2EInDocker(volumn: string, containerName: string): Pro
             ],
             { shell: true },
         );
+        return true;
     } catch (error) {
         promptForOpenOutputChannel("Failed to run end to end tests in Docker. Please open the output channel for more details.", DialogType.error);
+        return false;
+    }
+}
+
+export async function runCustomCommandInDocker(cmd: string, containerName: string): Promise<boolean> {
+    try {
+        if (!await pullLatestImage(containerName)) {
+            return false;
+        }
+        await executeCommand(
+            "docker",
+            cmd.split(" "),
+            { shell: true },
+        );
+        return true;
+    } catch (error) {
+        promptForOpenOutputChannel("Failed to run the custom command in Docker. Please open the output channel for more details.", DialogType.error);
+        return false;
+    }
+}
+
+async function pullLatestImage(image: string): Promise<boolean> {
+    try {
+        await executeCommand("docker", ["pull", `${image}:latest`], { shell: true });
+        return true;
+    } catch (error) {
+        promptForOpenOutputChannel(`Failed to pull the latest image: ${image}. Please open the output channel for more details.`, DialogType.error);
+        return false;
     }
 }

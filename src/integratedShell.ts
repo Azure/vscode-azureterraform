@@ -11,9 +11,10 @@ import { TerminalType, TestOption, TFTerminal } from "./shared";
 import { terraformChannel } from "./terraformChannel";
 import { isServicePrincipalSetInEnv } from "./utils/azureUtils";
 import { executeCommand } from "./utils/cpUtils";
-import { isDockerInstalled, latestTestingImagePulled, runE2EInDocker, runLintInDocker } from "./utils/dockerUtils";
+import { isDockerInstalled, runCustomCommandInDocker, runE2EInDocker, runLintInDocker } from "./utils/dockerUtils";
 import { drawGraph } from "./utils/dotUtils";
 import { isDotInstalled } from "./utils/dotUtils";
+import { DialogType, promptForOpenOutputChannel } from "./utils/uiUtils";
 import { selectWorkspaceFolder } from "./utils/workspaceUtils";
 
 export class IntegratedShell extends BaseShell {
@@ -62,20 +63,16 @@ export class IntegratedShell extends BaseShell {
             return;
         }
 
-        terraformChannel.appendLine("Pulling the latest image of 'microsoft/terraform-test'...");
-        if (!await latestTestingImagePulled()) {
-            return;
-        }
-
+        let executeResult: boolean = false;
         switch (TestType) {
             case TestOption.lint:
-                await runLintInDocker(
+                executeResult = await runLintInDocker(
                     workingDirectory + ":/tf-test/module",
                     containerName,
                 );
                 break;
             case TestOption.e2e:
-                await runE2EInDocker(
+                executeResult = await runE2EInDocker(
                     workingDirectory + ":/tf-test/module",
                     containerName,
                 );
@@ -86,17 +83,16 @@ export class IntegratedShell extends BaseShell {
                     prompt: "Type your custom test command",
                     value: `run -v ${workingDirectory}:/tf-test/module --rm ${containerName} rake -f ../Rakefile build`,
                 });
-                if (cmd) {
-                    await executeCommand(
-                        "docker",
-                        cmd.split(" "),
-                        { shell: true },
-                    );
+                if (!cmd) {
+                    return;
                 }
+                executeResult = await runCustomCommandInDocker(cmd, containerName);
                 break;
             default:
-                console.log("Default step in test for Integrated Terminal");
                 break;
+        }
+        if (executeResult) {
+            await promptForOpenOutputChannel("The tests finished. Please open the output channel for more details.", DialogType.info);
         }
     }
 
