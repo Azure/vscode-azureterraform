@@ -63,7 +63,7 @@ export class IntegratedShell extends BaseShell {
             return;
         }
 
-        let executeResult: boolean;
+        let executeResult: boolean = false;
         switch (TestType) {
             case TestOption.lint:
                 executeResult = await runLintInDocker(
@@ -89,7 +89,6 @@ export class IntegratedShell extends BaseShell {
                 executeResult = await runCustomCommandInDocker(cmd, containerName);
                 break;
             default:
-                console.log("Default step in test for Integrated Terminal");
                 break;
         }
         if (executeResult) {

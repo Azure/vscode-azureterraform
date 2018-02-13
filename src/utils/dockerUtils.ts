@@ -15,7 +15,7 @@ export async function isDockerInstalled(): Promise<boolean> {
 
 export async function runLintInDocker(volumn: string, containerName: string): Promise<boolean> {
     try {
-        if (!await latestImagePulled(containerName)) {
+        if (!await pullLatestImage(containerName)) {
             return false;
         }
         await executeCommand(
@@ -42,7 +42,7 @@ export async function runLintInDocker(volumn: string, containerName: string): Pr
 
 export async function runE2EInDocker(volumn: string, containerName: string): Promise<boolean> {
     try {
-        if (!await latestImagePulled(containerName)) {
+        if (!await pullLatestImage(containerName)) {
             return false;
         }
         await executeCommand(
@@ -80,7 +80,7 @@ export async function runE2EInDocker(volumn: string, containerName: string): Pro
 
 export async function runCustomCommandInDocker(cmd: string, containerName: string): Promise<boolean> {
     try {
-        if (!await latestImagePulled(containerName)) {
+        if (!await pullLatestImage(containerName)) {
             return false;
         }
         await executeCommand(
@@ -95,7 +95,7 @@ export async function runCustomCommandInDocker(cmd: string, containerName: strin
     }
 }
 
-async function latestImagePulled(image: string): Promise<boolean> {
+async function pullLatestImage(image: string): Promise<boolean> {
     try {
         await executeCommand("docker", ["pull", `${image}:latest`], { shell: true });
         return true;
