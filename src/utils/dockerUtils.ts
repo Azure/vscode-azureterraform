@@ -1,7 +1,7 @@
 "use strict";
 
 import { executeCommand } from "./cpUtils";
-import { openUrlHint } from "./uiUtils";
+import { DialogType, openUrlHint, promptForOpenOutputChannel } from "./uiUtils";
 
 export async function isDockerInstalled(): Promise<boolean> {
     try {
@@ -13,8 +13,11 @@ export async function isDockerInstalled(): Promise<boolean> {
     }
 }
 
-export async function runLintInDocker(volumn: string, containerName: string): Promise<void> {
+export async function runLintInDocker(volumn: string, containerName: string): Promise<boolean> {
     try {
+        if (!await pullLatestImage(containerName)) {
+            return false;
+        }
         await executeCommand(
             "docker",
             [
@@ -30,18 +33,24 @@ export async function runLintInDocker(volumn: string, containerName: string): Pr
             ],
             { shell: true },
         );
+        return true;
     } catch (error) {
-        throw new Error("Run lint task in Docker failed, Please switch to output channel for more details.");
+        promptForOpenOutputChannel("Failed to run lint task in Docker. Please open the output channel for more details.", DialogType.error);
+        return false;
     }
 }
 
-export async function runE2EInDocker(volumn: string[], containerName: string): Promise<void> {
+export async function runE2EInDocker(volumn: string, containerName: string): Promise<boolean> {
     try {
+        if (!await pullLatestImage(containerName)) {
+            return false;
+        }
         await executeCommand(
             "docker",
             [
                 "run",
-                ...insertElementIntoArray(volumn, "-v"),
+                "-v",
+                volumn,
                 "-e",
                 "ARM_CLIENT_ID",
                 "-e",
@@ -56,19 +65,42 @@ export async function runE2EInDocker(volumn: string[], containerName: string): P
                 "ARM_TEST_LOCATION_ALT",
                 "--rm",
                 containerName,
-                "rake",
-                "-f",
-                "../Rakefile",
-                "e2e",
+                "/bin/bash",
+                "-c",
+                `"ssh-keygen -t rsa -b 2048 -C terraformTest -f /root/.ssh/id_rsa -N ''; rake -f ../Rakefile e2e"`,
             ],
             { shell: true },
         );
+        return true;
     } catch (error) {
-        throw new Error("Run E2E test in Docker failed, Please switch to output channel for more details.");
+        promptForOpenOutputChannel("Failed to run end to end tests in Docker. Please open the output channel for more details.", DialogType.error);
+        return false;
     }
 }
 
-// usage: insertElementIntoArray([1, 2], 0) => [0, 1, 0, 2]
-function insertElementIntoArray(array: any[], element: any): any[] {
-    return array.reduce((pre, cur) => pre.concat(element, cur), []);
+export async function runCustomCommandInDocker(cmd: string, containerName: string): Promise<boolean> {
+    try {
+        if (!await pullLatestImage(containerName)) {
+            return false;
+        }
+        await executeCommand(
+            "docker",
+            cmd.split(" "),
+            { shell: true },
+        );
+        return true;
+    } catch (error) {
+        promptForOpenOutputChannel("Failed to run the custom command in Docker. Please open the output channel for more details.", DialogType.error);
+        return false;
+    }
+}
+
+async function pullLatestImage(image: string): Promise<boolean> {
+    try {
+        await executeCommand("docker", ["pull", `${image}:latest`], { shell: true });
+        return true;
+    } catch (error) {
+        promptForOpenOutputChannel(`Failed to pull the latest image: ${image}. Please open the output channel for more details.`, DialogType.error);
+        return false;
+    }
 }

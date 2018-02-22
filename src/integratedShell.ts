@@ -11,8 +11,10 @@ import { TerminalType, TestOption, TFTerminal } from "./shared";
 import { terraformChannel } from "./terraformChannel";
 import { isServicePrincipalSetInEnv } from "./utils/azureUtils";
 import { executeCommand } from "./utils/cpUtils";
-import { isDockerInstalled, runE2EInDocker, runLintInDocker } from "./utils/dockerUtils";
+import { isDockerInstalled, runCustomCommandInDocker, runE2EInDocker, runLintInDocker } from "./utils/dockerUtils";
 import { drawGraph } from "./utils/dotUtils";
+import { isDotInstalled } from "./utils/dotUtils";
+import { DialogType, promptForOpenOutputChannel } from "./utils/uiUtils";
 import { selectWorkspaceFolder } from "./utils/workspaceUtils";
 
 export class IntegratedShell extends BaseShell {
@@ -20,6 +22,9 @@ export class IntegratedShell extends BaseShell {
 
     // Creates a png of terraform resource graph to visualize the resources under management.
     public async visualize(): Promise<void> {
+        if (!await isDotInstalled()) {
+            return;
+        }
         const cwd: string = await selectWorkspaceFolder();
         if (!cwd) {
             return;
@@ -58,57 +63,44 @@ export class IntegratedShell extends BaseShell {
             return;
         }
 
+        let executeResult: boolean = false;
         switch (TestType) {
-            case TestOption.lint: {
-                await runLintInDocker(
+            case TestOption.lint:
+                executeResult = await runLintInDocker(
                     workingDirectory + ":/tf-test/module",
                     containerName,
                 );
                 break;
-            }
-            case TestOption.e2enossh: {
-                console.log("Running e2e test in " + process.env["ARM_TEST_LOCATION"]);
-                await runE2EInDocker(
-                    [
-                        workingDirectory + "/logs:/tf-test/module.kitchen",
-                        workingDirectory + ":/tf-test/module",
-                    ],
+            case TestOption.e2e:
+                executeResult = await runE2EInDocker(
+                    workingDirectory + ":/tf-test/module",
                     containerName,
                 );
                 break;
-            }
-            case TestOption.e2ewithssh: {
-                console.log("Running e2e test in " + process.env["ARM_TEST_LOCATION"]);
-                await runE2EInDocker(
-                    [
-                        `${path.join(os.homedir(), ".ssh")}:/root/.ssh/`,
-                        workingDirectory + "/logs:/tf-test/module.kitchen",
-                        workingDirectory + ":/tf-test/module",
-                    ],
-                    containerName,
-                );
-                break;
-            }
-            case TestOption.custom: {
-                console.log("Running custom test in " + process.env["ARM_TEST_LOCATION"]);
+
+            case TestOption.custom:
                 const cmd: string = await vscode.window.showInputBox({
                     prompt: "Type your custom test command",
                     value: `run -v ${workingDirectory}:/tf-test/module --rm ${containerName} rake -f ../Rakefile build`,
                 });
-                if (cmd) {
-                    await executeCommand(
-                        "docker",
-                        cmd.split(" "),
-                        { shell: true },
-                    );
+                if (!cmd) {
+                    return;
                 }
+                executeResult = await runCustomCommandInDocker(cmd, containerName);
                 break;
-            }
-            default: {
-                console.log("Default step in test for Integrated Terminal");
+            default:
                 break;
-            }
         }
+        if (executeResult) {
+            await promptForOpenOutputChannel("The tests finished. Please open the output channel for more details.", DialogType.info);
+        }
+    }
+
+    public runTerraformCmd(tfCommand: string): void {
+        this.checkCreateTerminal();
+        const term = this.tfTerminal.terminal;
+        term.show();
+        term.sendText(tfCommand);
     }
 
     protected initShellInternal() {
@@ -119,24 +111,6 @@ export class IntegratedShell extends BaseShell {
                 this.tfTerminal.terminal = null;
             }
         });
-    }
-
-    protected runTerraformInternal(TFCommand: string, WorkDir: string): void {
-        this.checkCreateTerminal();
-        const term = this.tfTerminal.terminal;
-        term.show();
-        term.sendText(TFCommand);
-        return;
-    }
-
-    protected runTerraformAsyncInternal(TFConfiguration: string, TFCommand: string): void {
-        this.checkCreateTerminal();
-
-        const term = this.tfTerminal.terminal;
-
-        term.show();
-
-        term.sendText(TFCommand);
     }
 
     private async deletePng(cwd: string): Promise<void> {

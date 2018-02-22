@@ -1,12 +1,13 @@
 "use strict";
 
+import * as fsExtra from "fs-extra";
 import * as path from "path";
-import { clearInterval, setInterval, setTimeout } from "timers";
+import { clearInterval, setInterval } from "timers";
 import { commands, window } from "vscode";
 import * as nls from "vscode-nls";
 import { AzureAccount, AzureSession, AzureSubscription } from "./azure-account.api";
 import {
-    delay, Errors, getStorageAccountKey, getUserSettings,
+    Errors, getStorageAccountKey, getUserSettings,
     provisionConsole, resetConsole, runInTerminal,
 } from "./cloudConsoleLauncher";
 import { terraformChannel } from "./terraformChannel";
@@ -34,18 +35,12 @@ export const OSes: Record<string, IOS> = {
     },
 };
 
-export function openCloudConsole(
-    api: AzureAccount,
-    subscription: AzureSubscription,
-    os: IOS,
-    tempFile: string) {
-
+export async function openCloudConsole(api: AzureAccount, subscription: AzureSubscription, os: IOS, tempFile: string): Promise<any[]> {
+    await fsExtra.remove(tempFile);
+    const progress = delayedInterval(() => terraformChannel.append(".."), 500);
     return (async function retry(): Promise<any> {
         terraformChannel.show();
         terraformChannel.appendLine("Attempting to open CloudConsole - Connecting to cloudshell");
-        /* tslint:disable:semicolon */
-        const progress = delayedInterval(() => { terraformChannel.append("..") }, 500);
-        /* tslint:enable:semicolon */
 
         const isWindows = process.platform === "win32";
         if (isWindows && !await isNodeVersionValid()) {
@@ -99,17 +94,9 @@ export function openCloudConsole(
         // Getting the console URI
         let consoleUri: string;
         const armEndpoint = result.token.session.environment.resourceManagerEndpointUrl;
-        const inProgress = delayed(() =>
-            window.showInformationMessage(localize(
-                "azure-account.provisioningInProgress",
-                "Provisioning {0} in Cloud Shell may take a few seconds.",
-                os.shellName)), 2000);
         try {
             consoleUri = await provisionConsole(result.token.accessToken, armEndpoint, result.userSettings, "linux");
-            inProgress.cancel();
-            progress.cancel();
         } catch (err) {
-            inProgress.cancel();
             progress.cancel();
             if (err && err.message === Errors.DeploymentOsTypeConflict) {
                 return deploymentConflict(retry, result.token.accessToken, armEndpoint);
@@ -136,7 +123,6 @@ export function openCloudConsole(
 
         const response = await runInTerminal(result.token.accessToken, consoleUri, "");
 
-        progress.cancel();
         const terminal = window.createTerminal({
             name: "Terraform in CloudShell",
             shellPath,
@@ -150,15 +136,14 @@ export function openCloudConsole(
             },
         });
 
-        // Introducing arbitrary delay to allow to send the command.
-        await delay(500);
-
         terminal.show();
+        progress.cancel();
         return [terminal, response, storageAccount.storageAccountName, storageAccountKey, fileShareName, storageAccount.resourceGroup];
 
     })().catch((err) => {
         terraformChannel.appendLine("Connecting to CloudShell failed with error: " + err);
         terraformChannel.show();
+        progress.cancel();
         throw err;
     });
 }
@@ -205,13 +190,6 @@ async function findUserSettings(tokens: IToken[]) {
             return { userSettings, token };
         }
     }
-}
-
-function delayed(func: () => void, timerDelay: number) {
-    const handle = setTimeout(func, timerDelay);
-    return {
-        cancel: () => clearTimeout(handle),
-    };
 }
 
 function delayedInterval(func: () => void, interval: number) {

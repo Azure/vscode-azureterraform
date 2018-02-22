@@ -7,7 +7,7 @@ export class Constants {
     public static TerraformTerminalName = "Terraform";
     public static UserAgentName = "VSCODEEXT_USER_AGENT";
     public static TestContainer = "microsoft/terraform-test";
-    public static clouddrive = "~/clouddrive";
+    public static clouddrive = "$HOME/clouddrive";
 }
 
 export function aciConfig(resourceGroup: string, aciName: string, aciGroup: string, storageAccountName: string, storageAccountShare: string, location: string, testContainer: string, projectName: string): string {
@@ -54,15 +54,6 @@ resource "azurerm_container_group" "TFTest" {
             storage_account_name = "${storageAccountName}"
             storage_account_key = "\${var.storage_account_key}"
         }
-
-        volume {
-            name = "logs"
-            mount_path = "/tf-test/module/.kitchen"
-            read_only = false
-            share_name = "kitchen-logs"
-            storage_account_name = "${storageAccountName}"
-            storage_account_key = "\${var.storage_account_key}"
-        }
     }
 }`;
 
@@ -72,29 +63,15 @@ resource "azurerm_container_group" "TFTest" {
 export function exportTestScript(testType: string, TFConfiguration: string, resoureGroupName: string, storageAccountName: string, fileShareName: string, testDirectory: string): string {
     const testScript = `
         #!/bin/bash
-        if [ ! -d "$HOME/clouddrive/${testDirectory}" ]; then
-            mkdir -p $HOME/clouddrive/${testDirectory}
-        fi
-
-        if [ ! -d "$HOME/clouddrive/${testDirectory}/.ssh" ]; then
-            mkdir -p $HOME/clouddrive/${testDirectory}
-        fi
+        mkdir -p $HOME/clouddrive/${testDirectory}
 
         echo -e "${TFConfiguration}" > $HOME/clouddrive/${testDirectory}/testfile.tf
 
         export TF_VAR_storage_account_key=$(az storage account keys list -g ${resoureGroupName} -n ${storageAccountName} | jq '.[0].value')
 
-        if [ -f "$HOME/clouddrive/${testDirectory}/.ssh/id_rsa" ]; then
-            mv $HOME/clouddrive/${testDirectory}/.ssh/id_rsa $HOME/clouddrive/${testDirectory}/.ssh/id_rsa.old
-        fi
+        mkdir -p $HOME/clouddrive/${testDirectory}/.azure
 
-        if [ -f "$HOME/clouddrive/${testDirectory}/.ssh/id_rsa.pub" ]; then
-            mv $HOME/clouddrive/${testDirectory}/.ssh/id_rsa.pub $HOME/clouddrive/${testDirectory}/.ssh/id_rsa.pub.old
-        fi
-
-        ssh-keygen -t rsa -b 2048 -C "vscode-testing" -f $HOME/clouddrive/${testDirectory}/.ssh/id_rsa -N ""
-
-        cp -r $HOME/.azure/ $HOME/clouddrive/${testDirectory}/
+        cp $HOME/.azure/*.json $HOME/clouddrive/${testDirectory}/.azure
 
     `;
 
@@ -102,22 +79,19 @@ export function exportTestScript(testType: string, TFConfiguration: string, reso
 }
 
 export function exportContainerCmd(moduleDir: string, containerCommand: string): string {
-    const containerScript = `
-        #!/bin/bash
+    const containerScript =
+`#!/bin/bash
 
-        mkdir /root/.ssh
-        cp -r /module/${moduleDir}/ /tf-test/module/
+echo "Copying terraform project..."
+cp -a /module/${moduleDir}/. /tf-test/module/
 
-        mkdir /root/.azure
-        cp /module/${moduleDir}/.TFTesting/.azure/*.json /root/.azure
+echo "Initializing environment..."
+mkdir /root/.azure
+cp /module/${moduleDir}/.TFTesting/.azure/*.json /root/.azure
 
-        cp /tf-test/module/${moduleDir}/.TFTesting/.ssh/* /root/.ssh/
-
-        cd ${moduleDir}
-        ${containerCommand}
-        echo "Container test operation completed - read the logs for status"
-    `;
+echo "Starting to Run test task..."
+${containerCommand}
+echo "Container test operation completed - read the logs for status"`;
 
     return containerScript;
-
 }

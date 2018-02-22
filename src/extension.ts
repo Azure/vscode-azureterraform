@@ -3,75 +3,67 @@
 import * as vscode from "vscode";
 import { BaseShell } from "./baseShell";
 import { CloudShell } from "./cloudShell";
-import { Constants } from "./constants";
 import { IntegratedShell } from "./integratedShell";
 import { TestOption } from "./shared";
-import { isDotInstalled } from "./utils/dotUtils";
+import { DialogOption } from "./utils/uiUtils";
 import { selectWorkspaceFolder } from "./utils/workspaceUtils";
 
-let cs: CloudShell;
-let is: IntegratedShell;
-let fileWatcher: vscode.FileSystemWatcher;
-let isFirstPush = true;
+let cloudShell: CloudShell;
+let integratedShell: IntegratedShell;
 
 function getShell(): BaseShell {
-    let activeShell = null;
     if (terminalSetToCloudshell()) {
-        activeShell = cs;
-    } else {
-        activeShell = is;
+        return cloudShell;
     }
-
-    return activeShell;
+    return integratedShell;
 }
 
 export function activate(ctx: vscode.ExtensionContext) {
-    cs = new CloudShell();
-    is = new IntegratedShell();
-    initFileWatcher(ctx);
-
-    ctx.subscriptions.push(vscode.workspace.onDidChangeConfiguration((e) => {
-        if (e.affectsConfiguration("tf-azure.files")) {
-            // dispose of current file watcher and re-init
-            fileWatcher.dispose();
-            initFileWatcher(ctx);
-        }
-    }));
+    cloudShell = new CloudShell();
+    integratedShell = new IntegratedShell();
 
     ctx.subscriptions.push(vscode.commands.registerCommand("vscode-terraform-azure.init", () => {
-        getShell().runTerraformCmd("terraform init", Constants.clouddrive);
+        getShell().runTerraformCmd("terraform init");
     }));
 
     ctx.subscriptions.push(vscode.commands.registerCommand("vscode-terraform-azure.plan", () => {
-        getShell().runTerraformCmd("terraform plan", Constants.clouddrive);
+        getShell().runTerraformCmd("terraform plan");
     }));
 
     ctx.subscriptions.push(vscode.commands.registerCommand("vscode-terraform-azure.apply", () => {
-        getShell().runTerraformCmd("terraform apply", Constants.clouddrive);
+        getShell().runTerraformCmd("terraform apply");
     }));
 
     ctx.subscriptions.push(vscode.commands.registerCommand("vscode-terraform-azure.destroy", () => {
-        getShell().runTerraformCmd("terraform destroy", Constants.clouddrive);
+        getShell().runTerraformCmd("terraform destroy");
     }));
 
     ctx.subscriptions.push(vscode.commands.registerCommand("vscode-terraform-azure.refresh", () => {
-        getShell().runTerraformCmd("terraform refresh", Constants.clouddrive);
+        getShell().runTerraformCmd("terraform refresh");
     }));
 
     ctx.subscriptions.push(vscode.commands.registerCommand("vscode-terraform-azure.validate", () => {
-        getShell().runTerraformCmd("terraform validate", Constants.clouddrive);
+        getShell().runTerraformCmd("terraform validate");
     }));
 
     ctx.subscriptions.push(vscode.commands.registerCommand("vscode-terraform-azure.visualize", async () => {
-        if (await isDotInstalled()) {
-            await is.visualize();
+        if (terminalSetToCloudshell()) {
+            const choice: vscode.MessageItem = await vscode.window.showInformationMessage(
+                "Visualization only works locally. Would you like to run it in the integrated terminal?",
+                DialogOption.OK,
+                DialogOption.CANCEL,
+            );
+            if (choice === DialogOption.CANCEL) {
+                return;
+            }
         }
+        await integratedShell.visualize();
     }));
 
     ctx.subscriptions.push(vscode.commands.registerCommand("vscode-terraform-azure.exectest", async () => {
         console.log("Testing current module");
         const pick: string = await vscode.window.showQuickPick(
-            [TestOption.lint, TestOption.e2enossh, TestOption.e2ewithssh, TestOption.custom],
+            [TestOption.lint, TestOption.e2e, TestOption.custom],
             { placeHolder: "Select the type of test that you want to run" },
         );
         if (!pick) {
@@ -85,12 +77,11 @@ export function activate(ctx: vscode.ExtensionContext) {
 
     }));
 
-    ctx.subscriptions.push(vscode.commands.registerCommand("vscode-terraform-azure.push", () => {
+    ctx.subscriptions.push(vscode.commands.registerCommand("vscode-terraform-azure.push", async () => {
         // Create a function that will sync the files to Cloudshell
         if (terminalSetToCloudshell()) {
-            vscode.workspace.findFiles(filesGlobSetting()).then((tfFiles) => {
-                cs.pushFiles(tfFiles, true);
-            });
+            const tfFiles: vscode.Uri[] = await vscode.workspace.findFiles(filesGlobSetting());
+            await cloudShell.pushFiles(tfFiles);
         } else {
             vscode.window.showErrorMessage("Push function only available when using cloudshell.");
         }
@@ -104,39 +95,5 @@ export function filesGlobSetting(): vscode.GlobPattern {
     return vscode.workspace.getConfiguration("tf-azure").get("files") as vscode.GlobPattern;
 }
 
-export function workspaceSyncEnabled(): boolean {
-    return vscode.workspace.getConfiguration("tf-azure").get("syncEnabled") as boolean;
-}
-
-function initFileWatcher(ctx: vscode.ExtensionContext): void {
-    fileWatcher = vscode.workspace.createFileSystemWatcher(filesGlobSetting());
-    ctx.subscriptions.push(
-        fileWatcher.onDidDelete((deletedUri) => {
-            if (terminalSetToCloudshell() && workspaceSyncEnabled()) {
-                cs.deleteFiles([deletedUri]);
-            }
-        }),
-        fileWatcher.onDidCreate((createdUri) => pushHelper(createdUri)),
-        fileWatcher.onDidChange((changedUri) => pushHelper(changedUri)),
-    );
-}
-
-function pushHelper(uri: vscode.Uri) {
-    if (terminalSetToCloudshell() && workspaceSyncEnabled()) {
-        if (isFirstPush) {
-            // do initial sync of workspace before enabling file watcher.
-            vscode.workspace.findFiles(filesGlobSetting()).then((tfFiles) => {
-                cs.pushFiles(tfFiles, false);
-            });
-            isFirstPush = false;
-            return;
-        }
-        cs.pushFiles([uri], false);
-    }
-}
-
-export function deactivate(): void {
-    if (fileWatcher) {
-        fileWatcher.dispose();
-    }
-}
+// tslint:disable-next-line:no-empty
+export function deactivate(): void { }
