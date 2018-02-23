@@ -30,7 +30,8 @@ resource "azurerm_container_group" "TFTest" {
     location = "${location}"
     resource_group_name = "${resourceGroup}"
     ip_address_type = "public"
-    os_type     = "linux"
+    os_type = "linux"
+    restart_policy = "Never"
 
     container {
         name = "${aciName}"
