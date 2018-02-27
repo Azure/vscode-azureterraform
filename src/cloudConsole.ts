@@ -52,7 +52,10 @@ export async function openCloudConsole(api: AzureAccount, subscription: AzureSub
         // Loging in to Azure using the azure account extension
         if (!(await api.waitForLogin())) {
             progress.cancel();
-            return commands.executeCommand("azure-account.askForLogin");
+            await commands.executeCommand("azure-account.askForLogin");
+            if (!(await api.waitForLogin())) {
+                return;
+            }
         }
 
         // Getting the tokens for the session
