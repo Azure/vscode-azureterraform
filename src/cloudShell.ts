@@ -162,7 +162,11 @@ export class CloudShell extends BaseShell {
                 DialogOption.CANCEL,
             );
             if (choice === DialogOption.OK) {
+<<<<<<< HEAD
                 await vscode.commands.executeCommand("azureTerraform.push");
+=======
+                await vscode.commands.executeCommand("vscode-terraform-azure.push");
+>>>>>>> ask user to upload files once the cloud shell has been provisioned
             }
             return true;
         }
