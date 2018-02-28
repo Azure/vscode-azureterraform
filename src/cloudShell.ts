@@ -42,14 +42,6 @@ export class CloudShell extends BaseShell {
 
     public async runTerraformTests(testType: string, workingDirectory: string) {
         if (await this.connectedToCloudShell()) {
-            const choice: vscode.MessageItem = await vscode.window.showInformationMessage(
-                "Would you like to push the terraform project files to CloudShell?",
-                DialogOption.OK,
-                DialogOption.CANCEL,
-            );
-            if (choice === DialogOption.OK) {
-                await vscode.commands.executeCommand("vscode-terraform-azure.push");
-            }
 
             const workspaceName: string = path.basename(workingDirectory);
             const setupFilesFolder: string = `${workspaceName}/.TFTesting`;
@@ -163,6 +155,15 @@ export class CloudShell extends BaseShell {
             this.tfTerminal.fileShareName = terminal[4];
             this.tfTerminal.ResourceGroup = terminal[5];
             terraformChannel.appendLine("Cloudshell terminal opened.");
+
+            const choice: vscode.MessageItem = await vscode.window.showInformationMessage(
+                "Would you like to push the terraform project files in current workspace to Cloud Shell?",
+                DialogOption.OK,
+                DialogOption.CANCEL,
+            );
+            if (choice === DialogOption.OK) {
+                await vscode.commands.executeCommand("vscode-terraform-azure.push");
+            }
             return true;
         }
 
