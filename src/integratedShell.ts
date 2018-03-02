@@ -56,7 +56,7 @@ export class IntegratedShell extends BaseShell {
         if (!await isDockerInstalled()) {
             return;
         }
-        const containerName: string = vscode.workspace.getConfiguration("tf-azure").get("test-container");
+        const containerName: string = vscode.workspace.getConfiguration("azureTerraform").get("test-container");
 
         terraformChannel.appendLine("Checking Azure Service Principal environment variables...");
         if (!isServicePrincipalSetInEnv()) {

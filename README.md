@@ -69,7 +69,7 @@ In both cases the default test container is "microsoft/terraform-test" and it ca
 
 ### Azure Terraform: push
 
-This command will sync workspace files that meet the filter `tf-azure.files` setting in your configuration to Azure clouddrive.
+This command will sync workspace files that meet the filter `azureTerraform.files` setting in your configuration to Azure clouddrive.
 
 ## Requirements
 
@@ -88,14 +88,14 @@ This extension requires:
 
 ## Extension Settings
 
-- `tf-azure` - Parent for Terraform-Azure related extension settings
-- `tf-azure.terminal` - Specifies terminal used to run Terraform commands. Valid settings are `cloudshell` or `integrated`
-- `tf-azure.files` - Indicates the files that should be synchronized to Azure CloudShell using the glob pattern string, for example `**/*.{tf,txt,yml,tfvars,rb}`
-- `tf-azure.test-container` - Indicates the container to use to run the tests, for example `microsoft/terraform-test`. Private registry is not supported at this time.
-- `tf-azure.aci-name` - Indicates the name of the Azure Container Instance to use for testing. For example: `terraformtesting`
-- `tf-azure.aci-ResGroup` - Indicates the name of the Resource Group to use for the ACI instance. For example: `TerrafornTestRG`
-- `tf-azure.aci-group` - Indicates the name of the Container Group that host the ACI instance. For example: `TerrafornTesting`
-- `tf-azure.test-location` - Indicates the location where to deploy the test container instance. For example: `westus`
+- `azureTerraform` - Parent for Terraform-Azure related extension settings
+- `azureTerraform.terminal` - Specifies terminal used to run Terraform commands. Valid settings are `cloudshell` or `integrated`
+- `azureTerraform.files` - Indicates the files that should be synchronized to Azure CloudShell using the glob pattern string, for example `**/*.{tf,txt,yml,tfvars,rb}`
+- `azureTerraform.test-container` - Indicates the container to use to run the tests, for example `microsoft/terraform-test`. Private registry is not supported at this time.
+- `azureTerraform.aci-name` - Indicates the name of the Azure Container Instance to use for testing. For example: `terraformtesting`
+- `azureTerraform.aci-ResGroup` - Indicates the name of the Resource Group to use for the ACI instance. For example: `TerrafornTestRG`
+- `azureTerraform.aci-group` - Indicates the name of the Container Group that host the ACI instance. For example: `TerrafornTesting`
+- `azureTerraform.test-location` - Indicates the location where to deploy the test container instance. For example: `westus`
 
 ## Known Issues
 
