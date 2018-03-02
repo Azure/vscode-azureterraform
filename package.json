@@ -1,13 +1,13 @@
 {
-    "name": "vscode-terraform-azure",
-    "displayName": "vscode-terraform-azure",
+    "name": "vscode-azureerraform",
+    "displayName": "Azure Terraform",
     "description": "VS Code extension for developing with Terraform on Azure",
     "version": "0.0.1",
     "publisher": "Microsoft",
     "icon": "images/terraform.png",
     "repository": {
         "type": "git",
-        "url": "https://github.com/Azure/vscode-terraform-azure.git"
+        "url": "https://github.com/Azure/vscode-azureterraform.git"
     },
     "engines": {
         "vscode": "^1.18.0"
@@ -18,20 +18,20 @@
     ],
     "activationEvents": [
         "workspaceContains:**/*.tf",
-        "onCommand:vscode-terraform-azure.init",
-        "onCommand:vscode-terraform-azure.plan",
-        "onCommand:vscode-terraform-azure.apply",
-        "onCommand:vscode-terraform-azure.validate",
-        "onCommand:vscode-terraform-azure.refresh",
-        "onCommand:vscode-terraform-azure.destroy",
-        "onCommand:vscode-terraform-azure.visualize",
-        "onCommand:vscode-terraform-azure.exectest",
-        "onCommand:vscode-terraform-azure.push"
+        "onCommand:azureTerraform.init",
+        "onCommand:azureTerraform.plan",
+        "onCommand:azureTerraform.apply",
+        "onCommand:azureTerraform.validate",
+        "onCommand:azureTerraform.refresh",
+        "onCommand:azureTerraform.destroy",
+        "onCommand:azureTerraform.visualize",
+        "onCommand:azureTerraform.exectest",
+        "onCommand:azureTerraform.push"
     ],
     "main": "./out/extension",
     "contributes": {
         "configuration": {
-            "title": "Terraform Azure",
+            "title": "Azure Terraform",
             "properties": {
                 "tf-azure.terminal": {
                     "type": "string",
@@ -72,49 +72,49 @@
         },
         "commands": [
             {
-                "command": "vscode-terraform-azure.plan",
+                "command": "azureTerraform.plan",
                 "title": "plan",
-                "category": "Terraform Azure"
+                "category": "Azure Terraform"
             },
             {
-                "command": "vscode-terraform-azure.apply",
+                "command": "azureTerraform.apply",
                 "title": "apply",
-                "category": "Terraform Azure"
+                "category": "Azure Terraform"
             },
             {
-                "command": "vscode-terraform-azure.init",
+                "command": "azureTerraform.init",
                 "title": "init",
-                "category": "Terraform Azure"
+                "category": "Azure Terraform"
             },
             {
-                "command": "vscode-terraform-azure.validate",
+                "command": "azureTerraform.validate",
                 "title": "validate",
-                "category": "Terraform Azure"
+                "category": "Azure Terraform"
             },
             {
-                "command": "vscode-terraform-azure.refresh",
+                "command": "azureTerraform.refresh",
                 "title": "refresh",
-                "category": "Terraform Azure"
+                "category": "Azure Terraform"
             },
             {
-                "command": "vscode-terraform-azure.destroy",
+                "command": "azureTerraform.destroy",
                 "title": "destroy",
-                "category": "Terraform Azure"
+                "category": "Azure Terraform"
             },
             {
-                "command": "vscode-terraform-azure.visualize",
+                "command": "azureTerraform.visualize",
                 "title": "visualize",
-                "category": "Terraform Azure"
+                "category": "Azure Terraform"
             },
             {
-                "command": "vscode-terraform-azure.exectest",
+                "command": "azureTerraform.exectest",
                 "title": "execute test",
-                "category": "Terraform Azure"
+                "category": "Azure Terraform"
             },
             {
-                "command": "vscode-terraform-azure.push",
+                "command": "azureTerraform.push",
                 "title": "push",
-                "category": "Terraform Azure"
+                "category": "Azure Terraform"
             }
         ]
     },

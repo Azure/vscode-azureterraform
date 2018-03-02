@@ -1,6 +1,6 @@
-# vscode-terraform-azure README
+# Azure Terraform
 
-The VSCode Terraform Azure extension is designed to increase developer productivity building Terraform modules for Azure.  The extension provides, linting, terraform command support, resource graph visualization, testing and CloudShell integration inside of VSCode.
+The VSCode Azure Terraform extension is designed to increase developer productivity building Terraform modules for Azure.  The extension provides, linting, terraform command support, resource graph visualization, testing and CloudShell integration inside of VSCode.
 
 ![overview](images/overview.png)
 
@@ -14,37 +14,37 @@ This extension supports the following features:
 - Visualize the terraform module.
 - Run linting and end to end tests.
 
-### Terraform Azure: init
+### Azure Terraform: init
 
 Executes `terraform init` command against the current project workspace.  If run with terminal set to CloudShell, will run `terraform init` in CloudShell.
 
-### Terraform Azure: plan
+### Azure Terraform: plan
 
 Executes `terraform plan` command against the current project workspace.  If run with terminal set to CloudShell, will run `terraform plan` in CloudShell.
 
-### Terraform Azure: apply
+### Azure Terraform: apply
 
 Executes `terraform apply` command against the current project workspace. If run with terminal set to CloudShell, will run `terraform apply` in CloudShell.
 
-### Terraform Azure: validate
+### Azure Terraform: validate
 
 Executes `terraform validate` command against the current project workspace. If run with terminal set to CloudShell, will run `terraform validate` in CloudShell.
 
-### Terraform Azure: refresh
+### Azure Terraform: refresh
 
 Executes `terraform refresh` command against the current project workspace. If run with terminal set to CloudShell, will run `terraform refresh` in CloudShell.
 
-### Terraform Azure: destroy
+### Azure Terraform: destroy
 
 Executes `terraform destroy` command against the current project workspace. If run with terminal set to CloudShell, will run `terraform destroy` in CloudShell.
 
-### Terraform Azure: visualize
+### Azure Terraform: visualize
 
 > NOTE: only runs locally.
 
 Creates a visual representation of the components of the module and save it in `graph.png`. This command requires [GraphViz dot](http://www.graphviz.org) to be installed locally.
 
-### Terraform Azure: execute test
+### Azure Terraform: execute test
 
 Runs one of the following test against the current module using a test container:
 
@@ -67,7 +67,7 @@ In both cases the default test container is "microsoft/terraform-test" and it ca
 
 > NOTE: Running the tests in Azure will count against your Azure consumption.
 
-### Terraform Azure: push
+### Azure Terraform: push
 
 This command will sync workspace files that meet the filter `tf-azure.files` setting in your configuration to Azure clouddrive.
 
