@@ -4,9 +4,7 @@ import * as vscode from "vscode";
 import { BaseShell } from "./baseShell";
 import { CloudShell } from "./cloudShell";
 import { IntegratedShell } from "./integratedShell";
-import { TestOption } from "./shared";
 import { DialogOption } from "./utils/uiUtils";
-import { selectWorkspaceFolder } from "./utils/workspaceUtils";
 
 let cloudShell: CloudShell;
 let integratedShell: IntegratedShell;
@@ -58,23 +56,6 @@ export function activate(ctx: vscode.ExtensionContext) {
             }
         }
         await integratedShell.visualize();
-    }));
-
-    ctx.subscriptions.push(vscode.commands.registerCommand("azureTerraform.exectest", async () => {
-        console.log("Testing current module");
-        const pick: string = await vscode.window.showQuickPick(
-            [TestOption.lint, TestOption.e2e, TestOption.custom],
-            { placeHolder: "Select the type of test that you want to run" },
-        );
-        if (!pick) {
-            return;
-        }
-        const workingDirectory: string = await selectWorkspaceFolder();
-        if (!workingDirectory) {
-            return;
-        }
-        await getShell().runTerraformTests(pick, workingDirectory);
-
     }));
 
     ctx.subscriptions.push(vscode.commands.registerCommand("azureTerraform.push", async () => {
