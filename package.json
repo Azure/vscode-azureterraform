@@ -1,5 +1,5 @@
 {
-    "name": "vscode-azureerraform",
+    "name": "vscode-azureterraform",
     "displayName": "Azure Terraform",
     "description": "VS Code extension for developing with Terraform on Azure",
     "version": "0.0.1",

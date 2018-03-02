@@ -1,6 +1,6 @@
 # Azure Terraform
 
-The VSCode Azure Terraform extension is designed to increase developer productivity building Terraform modules for Azure.  The extension provides, linting, terraform command support, resource graph visualization, testing and CloudShell integration inside of VSCode.
+The VSCode Azure Terraform extension is designed to increase developer productivity building Terraform modules for Azure. The extension provides linting, terraform command support, resource graph visualization, testing and CloudShell integration inside VSCode.
 
 ![overview](images/overview.png)
 
