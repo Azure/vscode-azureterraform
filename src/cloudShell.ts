@@ -48,9 +48,9 @@ export class CloudShell extends BaseShell {
             const localPath: string = path.join(workingDirectory, ".TFTesting");
             const createAciScript: string = "createacitest.sh";
             const containerCommandScript: string = "containercmd.sh";
-            const resourceGroup: string = vscode.workspace.getConfiguration("tf-azure").get("aci-ResGroup");
-            const aciName: string = vscode.workspace.getConfiguration("tf-azure").get("aci-name");
-            const aciGroup: string = vscode.workspace.getConfiguration("tf-azure").get("aci-group");
+            const resourceGroup: string = vscode.workspace.getConfiguration("azureTerraform").get("aci-ResGroup");
+            const aciName: string = vscode.workspace.getConfiguration("azureTerraform").get("aci-name");
+            const aciGroup: string = vscode.workspace.getConfiguration("azureTerraform").get("aci-group");
 
             const TFConfiguration = escapeFile(aciConfig(
                 resourceGroup,
@@ -58,8 +58,8 @@ export class CloudShell extends BaseShell {
                 aciGroup,
                 this.tfTerminal.storageAccountName,
                 this.tfTerminal.fileShareName,
-                vscode.workspace.getConfiguration("tf-azure").get("test-location"),
-                vscode.workspace.getConfiguration("tf-azure").get("test-container"),
+                vscode.workspace.getConfiguration("azureTerraform").get("test-location"),
+                vscode.workspace.getConfiguration("azureTerraform").get("test-container"),
                 workspaceName,
             ));
 
@@ -162,7 +162,11 @@ export class CloudShell extends BaseShell {
                 DialogOption.CANCEL,
             );
             if (choice === DialogOption.OK) {
+<<<<<<< HEAD
                 await vscode.commands.executeCommand("azureTerraform.push");
+=======
+                await vscode.commands.executeCommand("vscode-terraform-azure.push");
+>>>>>>> ask user to upload files once the cloud shell has been provisioned
             }
             return true;
         }
