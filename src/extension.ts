@@ -87,11 +87,11 @@ export function activate(ctx: vscode.ExtensionContext) {
     }));
 }
 export function terminalSetToCloudshell(): boolean {
-    return (vscode.workspace.getConfiguration("tf-azure").get("terminal") === "cloudshell") as boolean;
+    return (vscode.workspace.getConfiguration("azureTerraform").get("terminal") === "cloudshell") as boolean;
 }
 
 export function filesGlobSetting(): vscode.GlobPattern {
-    return vscode.workspace.getConfiguration("tf-azure").get("files") as vscode.GlobPattern;
+    return vscode.workspace.getConfiguration("azureTerraform").get("files") as vscode.GlobPattern;
 }
 
 // tslint:disable-next-line:no-empty
