@@ -22,31 +22,31 @@ export function activate(ctx: vscode.ExtensionContext) {
     cloudShell = new CloudShell();
     integratedShell = new IntegratedShell();
 
-    ctx.subscriptions.push(vscode.commands.registerCommand("vscode-terraform-azure.init", () => {
+    ctx.subscriptions.push(vscode.commands.registerCommand("azureTerraform.init", () => {
         getShell().runTerraformCmd("terraform init");
     }));
 
-    ctx.subscriptions.push(vscode.commands.registerCommand("vscode-terraform-azure.plan", () => {
+    ctx.subscriptions.push(vscode.commands.registerCommand("azureTerraform.plan", () => {
         getShell().runTerraformCmd("terraform plan");
     }));
 
-    ctx.subscriptions.push(vscode.commands.registerCommand("vscode-terraform-azure.apply", () => {
+    ctx.subscriptions.push(vscode.commands.registerCommand("azureTerraform.apply", () => {
         getShell().runTerraformCmd("terraform apply");
     }));
 
-    ctx.subscriptions.push(vscode.commands.registerCommand("vscode-terraform-azure.destroy", () => {
+    ctx.subscriptions.push(vscode.commands.registerCommand("azureTerraform.destroy", () => {
         getShell().runTerraformCmd("terraform destroy");
     }));
 
-    ctx.subscriptions.push(vscode.commands.registerCommand("vscode-terraform-azure.refresh", () => {
+    ctx.subscriptions.push(vscode.commands.registerCommand("azureTerraform.refresh", () => {
         getShell().runTerraformCmd("terraform refresh");
     }));
 
-    ctx.subscriptions.push(vscode.commands.registerCommand("vscode-terraform-azure.validate", () => {
+    ctx.subscriptions.push(vscode.commands.registerCommand("azureTerraform.validate", () => {
         getShell().runTerraformCmd("terraform validate");
     }));
 
-    ctx.subscriptions.push(vscode.commands.registerCommand("vscode-terraform-azure.visualize", async () => {
+    ctx.subscriptions.push(vscode.commands.registerCommand("azureTerraform.visualize", async () => {
         if (terminalSetToCloudshell()) {
             const choice: vscode.MessageItem = await vscode.window.showInformationMessage(
                 "Visualization only works locally. Would you like to run it in the integrated terminal?",
@@ -60,7 +60,7 @@ export function activate(ctx: vscode.ExtensionContext) {
         await integratedShell.visualize();
     }));
 
-    ctx.subscriptions.push(vscode.commands.registerCommand("vscode-terraform-azure.exectest", async () => {
+    ctx.subscriptions.push(vscode.commands.registerCommand("azureTerraform.exectest", async () => {
         console.log("Testing current module");
         const pick: string = await vscode.window.showQuickPick(
             [TestOption.lint, TestOption.e2e, TestOption.custom],
@@ -77,8 +77,7 @@ export function activate(ctx: vscode.ExtensionContext) {
 
     }));
 
-    ctx.subscriptions.push(vscode.commands.registerCommand("vscode-terraform-azure.push", async () => {
-        // Create a function that will sync the files to Cloudshell
+    ctx.subscriptions.push(vscode.commands.registerCommand("azureTerraform.push", async () => {
         if (terminalSetToCloudshell()) {
             const tfFiles: vscode.Uri[] = await vscode.workspace.findFiles(filesGlobSetting());
             await cloudShell.pushFiles(tfFiles);
