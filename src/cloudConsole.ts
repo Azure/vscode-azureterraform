@@ -4,6 +4,7 @@ import * as fsExtra from "fs-extra";
 import * as path from "path";
 import { clearInterval, setInterval } from "timers";
 import { commands, window } from "vscode";
+import { TelemetryWrapper } from "vscode-extension-telemetry-wrapper";
 import * as nls from "vscode-nls";
 import { AzureAccount, AzureSession, AzureSubscription } from "./azure-account.api";
 import {
@@ -46,6 +47,7 @@ export async function openCloudConsole(api: AzureAccount, subscription: AzureSub
         if (isWindows && !await isNodeVersionValid()) {
             progress.cancel();
             openUrlHint("Opening a Cloud Shell currently requires Node.js 6 or later being installed.", "https://nodejs.org");
+            TelemetryWrapper.error("nodeNotValid");
             return;
         }
 
@@ -54,6 +56,7 @@ export async function openCloudConsole(api: AzureAccount, subscription: AzureSub
             progress.cancel();
             await commands.executeCommand("azure-account.askForLogin");
             if (!(await api.waitForLogin())) {
+                TelemetryWrapper.error("notLoginIn");
                 return;
             }
         }
@@ -64,6 +67,7 @@ export async function openCloudConsole(api: AzureAccount, subscription: AzureSub
         if (!result) {
             progress.cancel();
             openUrlHint("First launch of Cloud Shell requires setup in the Azure portal.", "https://portal.azure.com");
+            TelemetryWrapper.error("needSetupCloudShell");
             return;
         }
 
@@ -104,6 +108,7 @@ export async function openCloudConsole(api: AzureAccount, subscription: AzureSub
             if (err && err.message === Errors.DeploymentOsTypeConflict) {
                 return deploymentConflict(retry, result.token.accessToken, armEndpoint);
             }
+            TelemetryWrapper.error(err);
             throw err;
         }
 
@@ -147,6 +152,7 @@ export async function openCloudConsole(api: AzureAccount, subscription: AzureSub
         terraformChannel.appendLine("Connecting to CloudShell failed with error: " + err);
         terraformChannel.show();
         progress.cancel();
+        TelemetryWrapper.error(err);
         throw err;
     });
 }

@@ -6,6 +6,7 @@ import * as os from "os";
 import * as path from "path";
 import * as vscode from "vscode";
 import { MessageItem } from "vscode";
+import { TelemetryWrapper } from "vscode-extension-telemetry-wrapper";
 import { AzureAccount, AzureSubscription } from "./azure-account.api";
 import { BaseShell } from "./baseShell";
 import { openCloudConsole, OSes } from "./cloudConsole";
@@ -133,6 +134,7 @@ export class CloudShell extends BaseShell {
             }
             await delay(500);
         }
+        TelemetryWrapper.error("sendToTerminalFail");
         return false;
     }
 
