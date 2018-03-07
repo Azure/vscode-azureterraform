@@ -13,8 +13,11 @@ let integratedShell: IntegratedShell;
 function getShell(): BaseShell {
     const isCloudShell: boolean = terminalSetToCloudshell();
     const session = TelemetryWrapper.currentSession();
-    session.extraProperties.isCloudShell = isCloudShell;
-    if (terminalSetToCloudshell()) {
+    if (session && session.extraProperties) {
+        session.extraProperties.isCloudShell = isCloudShell;
+    }
+
+    if (isCloudShell) {
         return cloudShell;
     }
     return integratedShell;
