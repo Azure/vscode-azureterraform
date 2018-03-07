@@ -2,8 +2,9 @@
     "name": "vscode-azureterraform",
     "displayName": "Azure Terraform",
     "description": "VS Code extension for developing with Terraform on Azure",
-    "version": "0.0.1",
+    "version": "0.1.0",
     "publisher": "Microsoft",
+    "aiKey": "ae482601-060f-4c71-8567-ebd5085483c9",
     "icon": "images/terraform.png",
     "repository": {
         "type": "git",
@@ -35,6 +36,10 @@
                 "azureTerraform.terminal": {
                     "type": "string",
                     "default": "cloudshell",
+                    "enum": [
+                        "cloudshell",
+                        "integrated"
+                    ],
                     "description": "Specifies terminal used to run Terraform commands. Valid settings are `cloudshell` or `integrated`"
                 },
                 "azureTerraform.files": {
@@ -116,6 +121,7 @@
         "opn": "5.1.0",
         "request-promise": "4.2.1",
         "semver": "5.4.1",
+        "vscode-extension-telemetry-wrapper": "^0.2.0",
         "vscode-nls": "2.0.2",
         "ws": "3.1.0"
     },

@@ -5,6 +5,7 @@ import * as os from "os";
 import * as path from "path";
 import * as vscode from "vscode";
 import { commands, Uri, ViewColumn } from "vscode";
+import { TelemetryWrapper } from "vscode-extension-telemetry-wrapper";
 import { BaseShell } from "./baseShell";
 import { Constants } from "./constants";
 import { TerminalType, TestOption, TFTerminal } from "./shared";
@@ -23,10 +24,12 @@ export class IntegratedShell extends BaseShell {
     // Creates a png of terraform resource graph to visualize the resources under management.
     public async visualize(): Promise<void> {
         if (!await isDotInstalled()) {
+            TelemetryWrapper.error("dotNotInstalled");
             return;
         }
         const cwd: string = await selectWorkspaceFolder();
         if (!cwd) {
+            TelemetryWrapper.error("noWorkspaceSelected");
             return;
         }
         await this.deletePng(cwd);
@@ -54,12 +57,14 @@ export class IntegratedShell extends BaseShell {
 
     public async runTerraformTests(TestType: string, workingDirectory: string) {
         if (!await isDockerInstalled()) {
+            TelemetryWrapper.error("dockerNotInstalled");
             return;
         }
         const containerName: string = vscode.workspace.getConfiguration("azureTerraform").get("test-container");
 
         terraformChannel.appendLine("Checking Azure Service Principal environment variables...");
         if (!isServicePrincipalSetInEnv()) {
+            TelemetryWrapper.error("servicePrincipalEnvInvalid");
             return;
         }
 
