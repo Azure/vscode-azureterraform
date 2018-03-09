@@ -67,7 +67,7 @@ export async function activate(ctx: vscode.ExtensionContext) {
         await integratedShell.visualize();
     }));
 
-    ctx.subscriptions.push(TelemetryWrapper.registerCommand("azureTerraform.push", async () => {
+    ctx.subscriptions.push(vscode.commands.registerCommand("azureTerraform.push", async () => {
         if (terminalSetToCloudshell()) {
             const tfFiles: vscode.Uri[] = await vscode.workspace.findFiles(filesGlobSetting());
             await cloudShell.pushFiles(tfFiles);
