@@ -121,7 +121,7 @@
         "opn": "5.1.0",
         "request-promise": "4.2.1",
         "semver": "5.4.1",
-        "vscode-extension-telemetry-wrapper": "^0.2.0",
+        "vscode-extension-telemetry-wrapper": "^0.2.1",
         "vscode-nls": "2.0.2",
         "ws": "3.1.0"
     },
