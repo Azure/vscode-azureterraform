@@ -57,7 +57,7 @@ resource "azurerm_container_group" "TFTest" {
     return TFConfiguration;
 }
 
-export function exportTestScript(testType: string, TFConfiguration: string, resoureGroupName: string, storageAccountName: string, fileShareName: string, testDirectory: string): string {
+export function exportTestScript(TFConfiguration: string, resoureGroupName: string, storageAccountName: string, testDirectory: string): string {
     const testScript = `
         #!/bin/bash
         mkdir -p $HOME/clouddrive/${testDirectory}

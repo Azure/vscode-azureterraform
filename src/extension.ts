@@ -4,12 +4,12 @@ import * as _ from "lodash";
 import * as vscode from "vscode";
 import { TelemetryWrapper } from "vscode-extension-telemetry-wrapper";
 import { BaseShell } from "./baseShell";
-import { CloudShell } from "./cloudShell";
+import { AzureCloudShell } from "./cloudShell";
 import { IntegratedShell } from "./integratedShell";
 import { getSyncFileBlobPattern, isTerminalSetToCloudShell } from "./utils/settingUtils";
 import { DialogOption } from "./utils/uiUtils";
 
-let cloudShell: CloudShell;
+let cloudShell: AzureCloudShell;
 let integratedShell: IntegratedShell;
 
 function getShell(): BaseShell {
@@ -26,7 +26,7 @@ function getShell(): BaseShell {
 }
 
 export async function activate(ctx: vscode.ExtensionContext) {
-    cloudShell = new CloudShell();
+    cloudShell = new AzureCloudShell();
     integratedShell = new IntegratedShell();
 
     await TelemetryWrapper.initilizeFromJsonFile(ctx.asAbsolutePath("./package.json"));
