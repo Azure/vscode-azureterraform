@@ -1,5 +1,6 @@
 "use strict";
 
+import * as _ from "lodash";
 import * as vscode from "vscode";
 import { TelemetryWrapper } from "vscode-extension-telemetry-wrapper";
 import { BaseShell } from "./baseShell";
@@ -69,6 +70,10 @@ export async function activate(ctx: vscode.ExtensionContext) {
 
     ctx.subscriptions.push(TelemetryWrapper.registerCommand("azureTerraform.push", async () => {
         if (terminalSetToCloudshell()) {
+            if (_.isEmpty(vscode.workspace.workspaceFolders)) {
+                vscode.window.showInformationMessage("Please open a workspace in VS Code first.");
+                return;
+            }
             const tfFiles: vscode.Uri[] = await vscode.workspace.findFiles(filesGlobSetting());
             await cloudShell.pushFiles(tfFiles);
         } else {
