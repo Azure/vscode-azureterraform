@@ -52,7 +52,6 @@ This command will sync workspace files that meet the filter `azureTerraform.file
 This extension requires:
 
 - [Terraform](https://www.terraform.io/downloads.html)
-- [Docker](http://www.docker.io) if you are running the execute test feature locally.
 - [Node.js 6.0+](https://nodejs.org) if you are using the CloudShell.
 - [GraphViz dot](http://www.graphviz.org) if you are using the visualize feature.
 
