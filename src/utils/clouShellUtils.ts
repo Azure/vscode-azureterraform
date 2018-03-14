@@ -36,6 +36,28 @@ export async function getStorageAccountforCloudShell(cloudShell: CloudShell): Pr
     };
 }
 
+export async function waitForConnection(cloudShell: CloudShell) {
+	const handleStatus = () => {
+		switch (cloudShell.status) {
+			case "Connecting":
+				return new Promise<boolean>((resolve) => {
+					const subs = cloudShell.onStatusChanged(() => {
+						subs.dispose();
+						resolve(handleStatus());
+					});
+				});
+			case "Connected":
+				return true;
+			case "Disconnected":
+				return false;
+			default:
+				const status: never = cloudShell.status;
+				throw new Error(`Unexpected status '${status}' when connect to Cloud Shell.`);
+		}
+	};
+	return handleStatus();
+}
+
 interface IUserSettings {
     preferredLocation: string;
     preferredOsType: string; // The last OS chosen in the portal.

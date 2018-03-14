@@ -2,23 +2,7 @@
 
 import * as azureStorage from "azure-storage";
 import * as path from "path";
-import * as vscode from "vscode";
 import { CloudFile } from "./cloudFile";
-
-export class TFTerminal {
-    public type: TerminalType;
-    public terminal: vscode.Terminal | undefined;
-    public name: string;
-    public storageAccountKey: string | undefined;
-    public storageAccountName: string;
-    public fileShareName: string;
-    public ResourceGroup: string;
-
-    constructor(type: TerminalType, name: string) {
-        this.type = type;
-        this.name = name;
-    }
-}
 
 export enum TerminalType {
     Integrated = "integrated",
