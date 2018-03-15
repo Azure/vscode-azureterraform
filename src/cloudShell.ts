@@ -1,7 +1,6 @@
 "use strict";
 
 import * as fsExtra from "fs-extra";
-import * as os from "os";
 import * as path from "path";
 import { MessageItem } from "vscode";
 import * as vscode from "vscode";
@@ -11,7 +10,7 @@ import { BaseShell } from "./baseShell";
 import { aciConfig, Constants, exportContainerCmd, exportTestScript } from "./constants";
 import { azFilePush, escapeFile, TestOption } from "./shared";
 import { terraformChannel } from "./terraformChannel";
-import { getStorageAccountforCloudShell, IStorageAccount, waitForConnection } from "./utils/clouShellUtils";
+import { getStorageAccountforCloudShell, IStorageAccount } from "./utils/clouShellUtils";
 import { DialogOption, DialogType, promptForOpenOutputChannel } from "./utils/uiUtils";
 import { selectWorkspaceFolder } from "./utils/workspaceUtils";
 
@@ -114,14 +113,15 @@ export class AzureCloudShell extends BaseShell {
     protected async runTFCommand(command: string, workdir: string): Promise<boolean> {
         if (this.terminal) {
             this.terminal.show();
-            if (await waitForConnection(this.cloudShell)) {
+            if (await this.cloudShell.waitForConnection()) {
                 if (workdir) {
                     this.terminal.sendText(`cd "${workdir}"`);
                 }
                 this.terminal.sendText(`${command}`);
                 return true;
             } else {
-                // hint
+                vscode.window.showErrorMessage("Establish connection to Cloud Shell failed, please try again later.");
+                TelemetryWrapper.error("connectFail");
                 return false;
             }
         }
@@ -140,9 +140,10 @@ export class AzureCloudShell extends BaseShell {
             const accountAPI: AzureAccount = vscode.extensions
                 .getExtension<AzureAccount>("ms-vscode.azure-account")!.exports;
 
-            this.cloudShell =  accountAPI.experimental.createCloudShell("Linux");
+            this.cloudShell =  accountAPI.createCloudShell("Linux");
 
             this.terminal = await this.cloudShell.terminal;
+            this.terminal.show();
             const storageAccount: IStorageAccount = await getStorageAccountforCloudShell(this.cloudShell);
             if (!storageAccount) {
                 vscode.window.showErrorMessage("Failed to get the Storage Account information for Cloud Shell, please try again later.");

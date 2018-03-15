@@ -22,12 +22,7 @@ export interface AzureAccount {
 	readonly filters: AzureResourceFilter[];
 	readonly onFiltersChanged: Event<void>;
 	readonly waitForFilters: () => Promise<boolean>;
-	/**
-	 * Experimental API that is subject to change (#34).
-	 */
-	readonly experimental: {
-		createCloudShell(os: 'Linux' | 'Windows'): CloudShell;
-	}
+	createCloudShell(os: 'Linux' | 'Windows'): CloudShell;
 }
 
 export interface AzureSession {
@@ -49,6 +44,7 @@ export type CloudShellStatus = 'Connecting' | 'Connected' | 'Disconnected';
 export interface CloudShell {
 	readonly status: CloudShellStatus;
 	readonly onStatusChanged: Event<CloudShellStatus>;
+	readonly waitForConnection: () => Promise<boolean>;
 	readonly terminal: Promise<Terminal>;
 	readonly session: Promise<AzureSession>;
 }
