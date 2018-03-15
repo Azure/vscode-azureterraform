@@ -21,6 +21,7 @@ export abstract class BaseShell {
 
     protected dispose(): void {
         terraformChannel.appendLine(`Terraform terminal: ${this.terminal.name} closed`);
+        this.terminal.dispose();
         this.terminal = undefined;
     }
 
