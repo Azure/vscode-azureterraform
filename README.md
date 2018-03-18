@@ -27,7 +27,7 @@ This extension supports the following features:
 
 ## Commands
 
-Open the Command Palette (Command+Shift+P on macOS and Ctrl+Shift+P on Windows/Linux) and type in one of the following commands:
+Open the Command Palette (`Command`+`Shift`+`P` on macOS and `Ctrl`+`Shift`+`P` on Windows/Linux) and type in one of the following commands:
 
 <table>
   <thead>
@@ -38,7 +38,7 @@ Open the Command Palette (Command+Shift+P on macOS and Ctrl+Shift+P on Windows/L
   </thead>
   <tbody>
   <tr>
-    <td width="40%">
+    <td width="35%">
       Basic commands:<br>
       <ul>
         <li>Azure Terraform: init</li>
