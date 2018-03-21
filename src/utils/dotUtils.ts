@@ -8,7 +8,7 @@ export async function isDotInstalled(): Promise<boolean> {
         await executeCommand("dot", ["-V"], { shell: true });
         return true;
     } catch (error) {
-        openUrlHint("GraphViz - Dot is not installed, please install GraphViz to continue.", "https://www.graphviz.org");
+        openUrlHint("GraphViz is not installed, please make sure GraphViz is in the PATH environment variable.", "https://aka.ms/azTerraform-requirement");
         return false;
     }
 }
