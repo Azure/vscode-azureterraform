@@ -26,9 +26,9 @@
         "azure"
     ],
     "activationEvents": [
-        "wcloudshell:**/*.tf",
-        "ondevops:azureTerraform.init",
-        "terraform:azureTerraform.plan",
+        "workspaceContains:**/*.tf",
+        "onCommand:azureTerraform.init",
+        "onCommand:azureTerraform.plan",
         "onCommand:azureTerraform.apply",
         "onCommand:azureTerraform.validate",
         "onCommand:azureTerraform.refresh",
