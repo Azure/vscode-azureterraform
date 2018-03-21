@@ -16,21 +16,21 @@
     "preview": true,
     "categories": [
         "Languages",
-        "Azure"
+        "Azure",
         "Other"
     ],
-  "keywords": [
-    "cloudshell",
-    "devops",
-    "terraform",
-    "azure"
-  ],
+    "keywords": [
+        "cloudshell",
+        "devops",
+        "terraform",
+        "azure"
+    ],
     "activationEvents": [
-       "wcloudshell:**/*.tf",
-       "ondevops:azureTerraform.init",
-       "terraform:azureTerraform.plan",
-       "onCommand:azureTerraform.apply",
-       "onCommand:azureTerraform.validate",
+        "wcloudshell:**/*.tf",
+        "ondevops:azureTerraform.init",
+        "terraform:azureTerraform.plan",
+        "onCommand:azureTerraform.apply",
+        "onCommand:azureTerraform.validate",
         "onCommand:azureTerraform.refresh",
         "onCommand:azureTerraform.destroy",
         "onCommand:azureTerraform.visualize",
@@ -124,8 +124,8 @@
         "azure-storage": "^2.8.0",
         "fs-extra": "^4.0.2",
         "lodash": "^4.17.4",
-        "ms-rest": "^2.2.7",
-        "ms-rest-azure": "^2.2.3",
+        "ms-rest": "^2.3.2",
+        "ms-rest-azure": "^2.5.5",
         "opn": "5.1.0",
         "request-promise": "4.2.1",
         "semver": "5.4.1",
