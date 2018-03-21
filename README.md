@@ -11,7 +11,7 @@ The VSCode Azure Terraform extension is designed to increase developer productiv
 This extension requires:
 
 - [Terraform](https://www.terraform.io/downloads.html)
-- [Node.js 6.0+](https://nodejs.org) if you are using the Cloud Shell.
+- [Node.js 6.0+](https://nodejs.org) if you are using Cloud Shell.
 - [GraphViz dot](http://www.graphviz.org) if you are using the visualize feature.
 
 > NOTE: Please make sure these requirements are in your PATH environment variable.
@@ -75,7 +75,7 @@ Open the Command Palette (`Command`+`Shift`+`P` on macOS and `Ctrl`+`Shift`+`P` 
 Refer to [CHANGELOG](CHANGELOG.md)
 
 ## Telemetry
-VS Code collects usage data and sends it to Microsoft to help improve our products and services. Read our [privacy statement](https://go.microsoft.com/fwlink/?LinkID=528096&clcid=0x409) to learn more. If you don’t wish to send usage data to Microsoft, you can set the `telemetry.enableTelemetry` setting to `false`. Learn more in our [FAQ](https://code.visualstudio.com/docs/supporting/faq#_how-to-disable-telemetry-reporting).
+VS Code collects usage data and sends it to Microsoft to help improve our products and services. Read our [privacy statement](https://go.microsoft.com/fwlink/?LinkID=528096&clcid=0x409) to learn more. If you would like to opt out of sending telemetry data to Microsoft, update the `telemetry.enableTelemetry` setting to `false` in the **File** -> **Preferences** -> **Settings**. Read our [FAQ](https://code.visualstudio.com/docs/supporting/faq#_how-to-disable-telemetry-reporting) to learn more. 
 
 ## License
 [MIT](LICENSE.md)
