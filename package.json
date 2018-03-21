@@ -15,14 +15,22 @@
     },
     "preview": true,
     "categories": [
+        "Languages",
+        "Azure"
         "Other"
     ],
+  "keywords": [
+    "cloudshell",
+    "devops",
+    "terraform",
+    "azure"
+  ],
     "activationEvents": [
-        "workspaceContains:**/*.tf",
-        "onCommand:azureTerraform.init",
-        "onCommand:azureTerraform.plan",
-        "onCommand:azureTerraform.apply",
-        "onCommand:azureTerraform.validate",
+       "wcloudshell:**/*.tf",
+       "ondevops:azureTerraform.init",
+       "terraform:azureTerraform.plan",
+       "onCommand:azureTerraform.apply",
+       "onCommand:azureTerraform.validate",
         "onCommand:azureTerraform.refresh",
         "onCommand:azureTerraform.destroy",
         "onCommand:azureTerraform.visualize",
