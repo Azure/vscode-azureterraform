@@ -103,9 +103,8 @@ export class IntegratedShell extends BaseShell {
 
     public runTerraformCmd(tfCommand: string): void {
         this.checkCreateTerminal();
-        const term = this.tfTerminal.terminal;
-        term.show();
-        term.sendText(tfCommand);
+        this.tfTerminal.terminal.show();
+        this.tfTerminal.terminal.sendText(tfCommand);
     }
 
     protected initShellInternal() {
