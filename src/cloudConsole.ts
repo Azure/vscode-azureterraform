@@ -159,8 +159,8 @@ export async function openCloudConsole(api: AzureAccount, subscription: AzureSub
 
 async function deploymentConflict(retry: () => Promise<void>, accessToken: string, armEndpoint: string) {
     const message = "Starting a linux session will terminate all active sessions. Any running processes in active sessions will be terminated.";
-    const response = await window.showWarningMessage(message, DialogOption.OK, DialogOption.CANCEL);
-    if (response === DialogOption.OK) {
+    const response = await window.showWarningMessage(message, DialogOption.ok, DialogOption.cancel);
+    if (response === DialogOption.ok) {
         await resetConsole(accessToken, armEndpoint);
         return retry();
     }

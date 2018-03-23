@@ -5,8 +5,8 @@ import * as vscode from "vscode";
 import { terraformChannel } from "../terraformChannel";
 
 export async function openUrlHint(message: string, url: string): Promise<void> {
-    const response = await vscode.window.showInformationMessage(`${message} (See: ${url})`, DialogOption.OPEN, DialogOption.CANCEL);
-    if (response === DialogOption.OPEN && url) {
+    const response = await vscode.window.showInformationMessage(message, DialogOption.learnMore, DialogOption.cancel);
+    if (response === DialogOption.learnMore && url) {
         opn(url);
     }
 }
@@ -31,27 +31,28 @@ export async function promptForOpenOutputChannel(message: string, type: DialogTy
     let result: vscode.MessageItem;
     switch (type) {
         case DialogType.info:
-            result = await vscode.window.showInformationMessage(message, DialogOption.OPEN, DialogOption.CANCEL);
+            result = await vscode.window.showInformationMessage(message, DialogOption.open, DialogOption.cancel);
             break;
         case DialogType.warning:
-            result = await vscode.window.showWarningMessage(message, DialogOption.OPEN, DialogOption.CANCEL);
+            result = await vscode.window.showWarningMessage(message, DialogOption.open, DialogOption.cancel);
             break;
         case DialogType.error:
-            result = await vscode.window.showErrorMessage(message, DialogOption.OPEN, DialogOption.CANCEL);
+            result = await vscode.window.showErrorMessage(message, DialogOption.open, DialogOption.cancel);
             break;
         default:
             break;
     }
 
-    if (result === DialogOption.OPEN) {
+    if (result === DialogOption.open) {
         terraformChannel.show();
     }
 }
 
 export namespace DialogOption {
-    export const OK: vscode.MessageItem = { title: "OK" };
-    export const CANCEL: vscode.MessageItem = { title: "Cancel", isCloseAffordance: true };
-    export const OPEN: vscode.MessageItem = { title: "Open" };
+    export const ok: vscode.MessageItem = { title: "OK" };
+    export const cancel: vscode.MessageItem = { title: "Cancel", isCloseAffordance: true };
+    export const open: vscode.MessageItem = { title: "Open" };
+    export const learnMore: vscode.MessageItem = { title: "Learn More" };
 }
 
 export enum DialogType {
