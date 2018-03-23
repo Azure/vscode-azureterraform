@@ -144,8 +144,8 @@ export class CloudShell extends BaseShell {
         }
 
         const message = "Do you want to open CloudShell?";
-        const response: MessageItem = await vscode.window.showWarningMessage(message, DialogOption.OK, DialogOption.CANCEL);
-        if (response === DialogOption.OK) {
+        const response: MessageItem = await vscode.window.showWarningMessage(message, DialogOption.ok, DialogOption.cancel);
+        if (response === DialogOption.ok) {
             const terminal: any[] = await this.startCloudShell();
             if (_.isEmpty(terminal)) {
                 return false;
@@ -160,10 +160,10 @@ export class CloudShell extends BaseShell {
 
             const choice: vscode.MessageItem = await vscode.window.showInformationMessage(
                 "Would you like to push the terraform project files in current workspace to Cloud Shell?",
-                DialogOption.OK,
-                DialogOption.CANCEL,
+                DialogOption.ok,
+                DialogOption.cancel,
             );
-            if (choice === DialogOption.OK) {
+            if (choice === DialogOption.ok) {
                 await vscode.commands.executeCommand("azureTerraform.push");
             }
             return true;

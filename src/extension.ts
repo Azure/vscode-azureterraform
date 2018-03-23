@@ -58,10 +58,10 @@ export async function activate(ctx: vscode.ExtensionContext) {
         if (terminalSetToCloudshell()) {
             const choice: vscode.MessageItem = await vscode.window.showInformationMessage(
                 "Visualization only works locally. Would you like to run it in the integrated terminal?",
-                DialogOption.OK,
-                DialogOption.CANCEL,
+                DialogOption.ok,
+                DialogOption.cancel,
             );
-            if (choice === DialogOption.CANCEL) {
+            if (choice === DialogOption.cancel) {
                 return;
             }
         }
