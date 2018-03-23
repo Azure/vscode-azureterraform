@@ -6,13 +6,14 @@ import { TelemetryWrapper } from "vscode-extension-telemetry-wrapper";
 import { BaseShell } from "./baseShell";
 import { CloudShell } from "./cloudShell";
 import { IntegratedShell } from "./integratedShell";
+import { getSyncFileBlobPattern, isTerminalSetToCloudShell } from "./utils/settingUtils";
 import { DialogOption } from "./utils/uiUtils";
 
 let cloudShell: CloudShell;
 let integratedShell: IntegratedShell;
 
 function getShell(): BaseShell {
-    const isCloudShell: boolean = terminalSetToCloudshell();
+    const isCloudShell: boolean = isTerminalSetToCloudShell();
     const session = TelemetryWrapper.currentSession();
     if (session && session.extraProperties) {
         session.extraProperties.isCloudShell = isCloudShell;
@@ -55,7 +56,7 @@ export async function activate(ctx: vscode.ExtensionContext) {
     }));
 
     ctx.subscriptions.push(TelemetryWrapper.registerCommand("azureTerraform.visualize", async () => {
-        if (terminalSetToCloudshell()) {
+        if (isTerminalSetToCloudShell()) {
             const choice: vscode.MessageItem = await vscode.window.showInformationMessage(
                 "Visualization only works locally. Would you like to run it in the integrated terminal?",
                 DialogOption.OK,
@@ -69,24 +70,17 @@ export async function activate(ctx: vscode.ExtensionContext) {
     }));
 
     ctx.subscriptions.push(TelemetryWrapper.registerCommand("azureTerraform.push", async () => {
-        if (terminalSetToCloudshell()) {
+        if (isTerminalSetToCloudShell()) {
             if (_.isEmpty(vscode.workspace.workspaceFolders)) {
                 vscode.window.showInformationMessage("Please open a workspace in VS Code first.");
                 return;
             }
-            const tfFiles: vscode.Uri[] = await vscode.workspace.findFiles(filesGlobSetting());
+            const tfFiles: vscode.Uri[] = await vscode.workspace.findFiles(getSyncFileBlobPattern());
             await cloudShell.pushFiles(tfFiles);
         } else {
             vscode.window.showErrorMessage("Push function only available when using cloudshell.");
         }
     }));
-}
-export function terminalSetToCloudshell(): boolean {
-    return (vscode.workspace.getConfiguration("azureTerraform").get("terminal") === "cloudshell") as boolean;
-}
-
-export function filesGlobSetting(): vscode.GlobPattern {
-    return vscode.workspace.getConfiguration("azureTerraform").get("files") as vscode.GlobPattern;
 }
 
 // tslint:disable-next-line:no-empty
