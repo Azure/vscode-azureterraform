@@ -5,17 +5,10 @@
 
 import * as vscode from "vscode";
 
-const extensionPrefix: string = "azureTerraform";
-
 export function isTerminalSetToCloudShell(): boolean {
-    return getTerraformExtensionSetting<string>("terminal") === "cloudshell";
+    return vscode.workspace.getConfiguration().get("azureTerraform.terminal") === "cloudshell";
 }
 
 export function getSyncFileBlobPattern(): vscode.GlobPattern {
-    return getTerraformExtensionSetting<vscode.GlobPattern>("files");
-}
-
-function getTerraformExtensionSetting<T>(key: string, fsPath?: string): T | undefined {
-    const projectConfiguration: vscode.WorkspaceConfiguration = vscode.workspace.getConfiguration(extensionPrefix, fsPath ? vscode.Uri.file(fsPath) : undefined);
-    return projectConfiguration.get<T>(key);
+    return vscode.workspace.getConfiguration().get("azureTerraform.files");
 }
