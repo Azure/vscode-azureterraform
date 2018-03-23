@@ -8,7 +8,7 @@ import * as vscode from "vscode";
 const extensionPrefix: string = "azureTerraform";
 
 export function isTerminalSetToCloudShell(): boolean {
-    return getTerraformExtensionSetting<boolean>("terminal");
+    return getTerraformExtensionSetting<string>("terminal") === "cloudshell";
 }
 
 export function getSyncFileBlobPattern(): vscode.GlobPattern {
