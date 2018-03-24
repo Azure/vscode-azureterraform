@@ -8,7 +8,7 @@ import { commands, Uri, ViewColumn } from "vscode";
 import { TelemetryWrapper } from "vscode-extension-telemetry-wrapper";
 import { BaseShell } from "./baseShell";
 import { Constants } from "./constants";
-import { TerminalType, TestOption, TFTerminal } from "./shared";
+import { TestOption } from "./shared";
 import { terraformChannel } from "./terraformChannel";
 import { isServicePrincipalSetInEnv } from "./utils/azureUtils";
 import { executeCommand } from "./utils/cpUtils";
@@ -103,16 +103,14 @@ export class IntegratedShell extends BaseShell {
 
     public runTerraformCmd(tfCommand: string): void {
         this.checkCreateTerminal();
-        this.tfTerminal.terminal.show();
-        this.tfTerminal.terminal.sendText(tfCommand);
+        this.terminal.show();
+        this.terminal.sendText(tfCommand);
     }
 
     protected initShellInternal() {
-        this.tfTerminal = new TFTerminal(TerminalType.Integrated, Constants.TerraformTerminalName);
         vscode.window.onDidCloseTerminal((terminal) => {
-            if (terminal === this.tfTerminal.terminal) {
-                terraformChannel.appendLine("Terraform Terminal closed", terminal.name);
-                this.tfTerminal.terminal = null;
+            if (terminal === this.terminal) {
+                this.dispose();
             }
         });
     }
@@ -125,8 +123,8 @@ export class IntegratedShell extends BaseShell {
     }
 
     private checkCreateTerminal(): void {
-        if (!this.tfTerminal.terminal) {
-            this.tfTerminal.terminal = vscode.window.createTerminal(Constants.TerraformTerminalName);
+        if (!this.terminal) {
+            this.terminal = vscode.window.createTerminal(Constants.TerraformTerminalName);
         }
     }
 }

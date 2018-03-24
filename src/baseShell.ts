@@ -1,11 +1,11 @@
 "use strict";
 
-import { TFTerminal } from "./shared";
+import * as vscode from "vscode";
 import { terraformChannel } from "./terraformChannel";
 
 export abstract class BaseShell {
 
-    protected tfTerminal: TFTerminal;
+    public terminal: vscode.Terminal | undefined;
 
     constructor() {
         this.initShellInternal();
@@ -20,13 +20,9 @@ export abstract class BaseShell {
     }
 
     protected dispose(): void {
-        terraformChannel.appendLine("Terraform Terminal closed", this.tfTerminal.name);
-        this.tfTerminal.terminal = undefined;
-        this.tfTerminal.storageAccountKey = undefined;
-        if (this.tfTerminal.ws) {
-            this.tfTerminal.ws.close();
-            this.tfTerminal.ws = undefined;
-        }
+        terraformChannel.appendLine(`Terraform terminal: ${this.terminal.name} closed`);
+        this.terminal.dispose();
+        this.terminal = undefined;
     }
 
     protected abstract initShellInternal();

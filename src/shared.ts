@@ -2,31 +2,7 @@
 
 import * as azureStorage from "azure-storage";
 import * as path from "path";
-import * as vscode from "vscode";
 import { CloudFile } from "./cloudFile";
-
-export class TFTerminal {
-    public type: TerminalType;
-    public terminal: vscode.Terminal;
-    public name: string;
-    public ws;
-    public storageAccountKey: string;
-    public storageAccountName: string;
-    public fileShareName: string;
-    public ResourceGroup: string;
-
-    constructor(type: TerminalType, name: string) {
-        this.type = type;
-        this.name = name;
-    }
-}
-
-// tslint:disable-next-line:max-classes-per-file
-export class CSTerminal {
-    public accessToken: string;
-    public consoleURI: string;
-    public terminal: vscode.Terminal;
-}
 
 export enum TerminalType {
     Integrated = "integrated",
@@ -128,7 +104,7 @@ export async function azFilePush(
 
 function createShare(cf: CloudFile, fs: azureStorage.FileService): Promise<void> {
     return new Promise<void>((resolve, reject) => {
-        fs.createShareIfNotExists(cf.fileShareName, ((error, result, response) => {
+        fs.createShareIfNotExists(cf.fileShareName, ((error, result) => {
             if (!error) {
                 if (result && result.created) { // only log if created
                     console.log(`FileShare: ${cf.fileShareName} created.`);
@@ -149,7 +125,7 @@ function createDirectoryPath(cf: CloudFile, i: number, fs: azureStorage.FileServ
             tempDir = tempDir + dirArray[j] + "/";
 
         }
-        fs.createDirectoryIfNotExists(cf.fileShareName, tempDir, ((error, result, response) => {
+        fs.createDirectoryIfNotExists(cf.fileShareName, tempDir, ((error, result) => {
             if (!error) {
                 if (result && result.created) { // only log if created TODO: This check is buggy, open issue in Azure Storage NODE SDK.
                     console.log(`Created dir: ${tempDir}`);
@@ -165,7 +141,7 @@ function createDirectoryPath(cf: CloudFile, i: number, fs: azureStorage.FileServ
 function createFile(cf: CloudFile, fs: azureStorage.FileService): Promise<void> {
     return new Promise<void>((resolve, reject) => {
         const fileName = path.basename(cf.localUri);
-        fs.createFileFromLocalFile(cf.fileShareName, cf.cloudShellDir, fileName, cf.localUri, (error, result, response) => {
+        fs.createFileFromLocalFile(cf.fileShareName, cf.cloudShellDir, fileName, cf.localUri, (error) => {
             if (!error) {
                 console.log(`File synced to cloud: ${fileName}`);
                 resolve();
@@ -179,7 +155,7 @@ function createFile(cf: CloudFile, fs: azureStorage.FileService): Promise<void> 
 function readFile(cf: CloudFile, fs: azureStorage.FileService): Promise<void> {
     return new Promise<void>((resolve, reject) => {
         const fileName = path.basename(cf.cloudShellUri);
-        fs.getFileToLocalFile(cf.fileShareName, cf.cloudShellDir, fileName, cf.localUri, (error, result, response) => {
+        fs.getFileToLocalFile(cf.fileShareName, cf.cloudShellDir, fileName, cf.localUri, (error) => {
             if (!error) {
                 console.log(`File synced to local workspace: ${cf.localUri}`);
                 resolve();
@@ -193,7 +169,7 @@ function readFile(cf: CloudFile, fs: azureStorage.FileService): Promise<void> {
 function deleteFile(cf: CloudFile, fs: azureStorage.FileService): Promise<void> {
     return new Promise<void>((resolve, reject) => {
         const fileName = path.basename(cf.localUri);
-        fs.deleteFileIfExists(cf.fileShareName, cf.cloudShellDir, fileName, (error, result, response) => {
+        fs.deleteFileIfExists(cf.fileShareName, cf.cloudShellDir, fileName, (error, result) => {
             if (!error) {
                 if (result) {
                     console.log(`File deleted from cloudshell: ${cf.cloudShellUri}`);
