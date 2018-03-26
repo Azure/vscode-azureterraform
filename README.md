@@ -12,7 +12,7 @@ This extension requires:
 
 - [Terraform](https://www.terraform.io/downloads.html)
 - [Node.js 6.0+](https://nodejs.org) if you are using Cloud Shell.
-- [GraphViz dot](http://www.graphviz.org) if you are using the visualize feature.
+- [GraphViz](http://www.graphviz.org) if you are using the visualize feature.
 
 > NOTE: Please make sure these requirements are in your PATH environment variable.
 
