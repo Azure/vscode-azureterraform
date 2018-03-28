@@ -102,15 +102,19 @@ export class AzureCloudShell extends BaseShell {
         }
     }
 
+    public dispose(): void {
+        super.dispose();
+        this.cloudShell = undefined;
+        this.resourceGroup = undefined;
+        this.storageAccountName = undefined;
+        this.storageAccountKey = undefined;
+        this.fileShareName = undefined;
+    }
+
     protected initShellInternal() {
         vscode.window.onDidCloseTerminal(async (terminal) => {
             if (terminal === this.terminal) {
                 this.dispose();
-                this.cloudShell = undefined;
-                this.resourceGroup = undefined;
-                this.storageAccountName = undefined;
-                this.storageAccountKey = undefined;
-                this.fileShareName = undefined;
             }
         });
     }

@@ -20,11 +20,7 @@ export abstract class BaseShell {
 
     public abstract runTerraformTests(testType: string, workingDirectory: string);
 
-    protected isWindows(): boolean {
-        return process.platform === "win32";
-    }
-
-    protected dispose(): void {
+    public dispose(): void {
         terraformChannel.appendLine(`Terraform terminal: ${this.terminal.name} closed`);
         this.terminal.dispose();
         this.terminal = undefined;
