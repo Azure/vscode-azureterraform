@@ -12,6 +12,7 @@ import { BaseShell } from "./baseShell";
 import { AzureCloudShell } from "./cloudShell";
 import { IntegratedShell } from "./integratedShell";
 import { getSyncFileBlobPattern, isTerminalSetToCloudShell } from "./utils/settingUtils";
+import { checkTerraformInstalled } from "./utils/terraformUtils";
 import { DialogOption } from "./utils/uiUtils";
 
 let cloudShell: AzureCloudShell;
@@ -31,6 +32,7 @@ function getShell(): BaseShell {
 }
 
 export async function activate(ctx: vscode.ExtensionContext) {
+    await checkTerraformInstalled();
     cloudShell = new AzureCloudShell();
     integratedShell = new IntegratedShell();
 
