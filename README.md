@@ -10,9 +10,9 @@ The VSCode Azure Terraform extension is designed to increase developer productiv
 
 This extension requires:
 
-- [Terraform](https://www.terraform.io/downloads.html)
-- [Node.js 6.0+](https://nodejs.org) if you are using Cloud Shell.
-- [GraphViz](http://www.graphviz.org) if you are using the visualize feature.
+- [Terraform](https://www.terraform.io/downloads.html) - If you are executing terraform commands in integrated teminal.
+- [Node.js 6.0+](https://nodejs.org) - If you are using Cloud Shell.
+- [GraphViz](http://www.graphviz.org) - If you are using the visualize feature.
 
 > NOTE: Please make sure these requirements are in your PATH environment variable.
 
