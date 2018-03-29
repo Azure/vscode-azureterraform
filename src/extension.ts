@@ -32,7 +32,7 @@ function getShell(): BaseShell {
 }
 
 export async function activate(ctx: vscode.ExtensionContext) {
-    checkTerraformInstalled();
+    await checkTerraformInstalled();
     cloudShell = new AzureCloudShell();
     integratedShell = new IntegratedShell();
 
