@@ -9,7 +9,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 - Leverage Azure Account extension to provision Cloud Shell. ([#145](https://github.com/Azure/vscode-azureterraform/issues/145))
 
 ### Fixed
-- Fix a Cloud Shell error when websocket is closed. ([#144](https://github.com/Azure/vscode-azureterraform/issues/144))
+- Fix the Cloud Shell cannot be connected error if last session is closed because of socket timeout. ([#144](https://github.com/Azure/vscode-azureterraform/issues/144))
 
 ## [0.1.0]
 ### Added
