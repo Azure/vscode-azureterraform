@@ -8,58 +8,37 @@
 import * as _ from "lodash";
 import * as vscode from "vscode";
 import { TelemetryWrapper } from "vscode-extension-telemetry-wrapper";
-import { BaseShell } from "./baseShell";
-import { AzureCloudShell } from "./cloudShell";
-import { IntegratedShell } from "./integratedShell";
+import { terraformShellManager } from "./terraformShellManager";
 import { getSyncFileBlobPattern, isTerminalSetToCloudShell } from "./utils/settingUtils";
 import { checkTerraformInstalled } from "./utils/terraformUtils";
 import { DialogOption } from "./utils/uiUtils";
 
-let cloudShell: AzureCloudShell;
-let integratedShell: IntegratedShell;
-
-function getShell(): BaseShell {
-    const isCloudShell: boolean = isTerminalSetToCloudShell();
-    const session = TelemetryWrapper.currentSession();
-    if (session && session.extraProperties) {
-        session.extraProperties.isCloudShell = isCloudShell;
-    }
-
-    if (isCloudShell) {
-        return cloudShell;
-    }
-    return integratedShell;
-}
-
 export async function activate(ctx: vscode.ExtensionContext) {
     await checkTerraformInstalled();
-    cloudShell = new AzureCloudShell();
-    integratedShell = new IntegratedShell();
-
     await TelemetryWrapper.initilizeFromJsonFile(ctx.asAbsolutePath("./package.json"));
 
     ctx.subscriptions.push(TelemetryWrapper.registerCommand("azureTerraform.init", () => {
-        getShell().runTerraformCmd("terraform init");
+        terraformShellManager.getShell().runTerraformCmd("terraform init");
     }));
 
     ctx.subscriptions.push(TelemetryWrapper.registerCommand("azureTerraform.plan", () => {
-        getShell().runTerraformCmd("terraform plan");
+        terraformShellManager.getShell().runTerraformCmd("terraform plan");
     }));
 
     ctx.subscriptions.push(TelemetryWrapper.registerCommand("azureTerraform.apply", () => {
-        getShell().runTerraformCmd("terraform apply");
+        terraformShellManager.getShell().runTerraformCmd("terraform apply");
     }));
 
     ctx.subscriptions.push(TelemetryWrapper.registerCommand("azureTerraform.destroy", () => {
-        getShell().runTerraformCmd("terraform destroy");
+        terraformShellManager.getShell().runTerraformCmd("terraform destroy");
     }));
 
     ctx.subscriptions.push(TelemetryWrapper.registerCommand("azureTerraform.refresh", () => {
-        getShell().runTerraformCmd("terraform refresh");
+        terraformShellManager.getShell().runTerraformCmd("terraform refresh");
     }));
 
     ctx.subscriptions.push(TelemetryWrapper.registerCommand("azureTerraform.validate", () => {
-        getShell().runTerraformCmd("terraform validate");
+        terraformShellManager.getShell().runTerraformCmd("terraform validate");
     }));
 
     ctx.subscriptions.push(TelemetryWrapper.registerCommand("azureTerraform.visualize", async () => {
@@ -73,7 +52,7 @@ export async function activate(ctx: vscode.ExtensionContext) {
                 return;
             }
         }
-        await integratedShell.visualize();
+        await terraformShellManager.getIntegratedShell().visualize();
     }));
 
     ctx.subscriptions.push(TelemetryWrapper.registerCommand("azureTerraform.push", async () => {
@@ -83,12 +62,13 @@ export async function activate(ctx: vscode.ExtensionContext) {
                 return;
             }
             const tfFiles: vscode.Uri[] = await vscode.workspace.findFiles(getSyncFileBlobPattern());
-            await cloudShell.pushFiles(tfFiles);
+            await terraformShellManager.getCloudShell().pushFiles(tfFiles);
         } else {
             vscode.window.showErrorMessage("Push function only available when using cloudshell.");
         }
     }));
 }
 
-// tslint:disable-next-line:no-empty
-export function deactivate(): void { }
+export function deactivate(): void {
+    terraformShellManager.dispose();
+ }
