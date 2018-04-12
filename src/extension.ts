@@ -56,16 +56,15 @@ export async function activate(ctx: vscode.ExtensionContext) {
     }));
 
     ctx.subscriptions.push(TelemetryWrapper.registerCommand("azureTerraform.push", async () => {
-        if (isTerminalSetToCloudShell()) {
-            if (_.isEmpty(vscode.workspace.workspaceFolders)) {
-                vscode.window.showInformationMessage("Please open a workspace in VS Code first.");
-                return;
-            }
-            const tfFiles: vscode.Uri[] = await vscode.workspace.findFiles(getSyncFileBlobPattern());
-            await terraformShellManager.getCloudShell().pushFiles(tfFiles);
-        } else {
+        if (!isTerminalSetToCloudShell()) {
             vscode.window.showErrorMessage("Push function only available when using cloudshell.");
+            return;
         }
+        if (_.isEmpty(vscode.workspace.workspaceFolders)) {
+            vscode.window.showInformationMessage("Please open a workspace in VS Code first.");
+            return;
+        }
+        await terraformShellManager.getCloudShell().pushFiles(await vscode.workspace.findFiles(getSyncFileBlobPattern()));
     }));
 }
 
