@@ -42,7 +42,6 @@ export class AzureCloudShell extends BaseShell {
             } catch (error) {
                 terraformChannel.appendLine(error);
                 await promptForOpenOutputChannel("Failed to push files to the cloud. Please open the output channel for more details.", DialogType.error);
-
             }
         }
     }
