@@ -8,6 +8,7 @@
 import * as _ from "lodash";
 import * as vscode from "vscode";
 import { TelemetryWrapper } from "vscode-extension-telemetry-wrapper";
+import { TerraformCommand } from "./shared";
 import { terraformShellManager } from "./terraformShellManager";
 import { getSyncFileBlobPattern, isTerminalSetToCloudShell } from "./utils/settingUtils";
 import { checkTerraformInstalled } from "./utils/terraformUtils";
@@ -18,27 +19,27 @@ export async function activate(ctx: vscode.ExtensionContext) {
     await TelemetryWrapper.initilizeFromJsonFile(ctx.asAbsolutePath("./package.json"));
 
     ctx.subscriptions.push(TelemetryWrapper.registerCommand("azureTerraform.init", () => {
-        terraformShellManager.getShell().runTerraformCmd("terraform init");
+        terraformShellManager.getShell().runTerraformCmd(TerraformCommand.Init);
     }));
 
     ctx.subscriptions.push(TelemetryWrapper.registerCommand("azureTerraform.plan", () => {
-        terraformShellManager.getShell().runTerraformCmd("terraform plan");
+        terraformShellManager.getShell().runTerraformCmd(TerraformCommand.Plan);
     }));
 
     ctx.subscriptions.push(TelemetryWrapper.registerCommand("azureTerraform.apply", () => {
-        terraformShellManager.getShell().runTerraformCmd("terraform apply");
+        terraformShellManager.getShell().runTerraformCmd(TerraformCommand.Apply);
     }));
 
     ctx.subscriptions.push(TelemetryWrapper.registerCommand("azureTerraform.destroy", () => {
-        terraformShellManager.getShell().runTerraformCmd("terraform destroy");
+        terraformShellManager.getShell().runTerraformCmd(TerraformCommand.Destroy);
     }));
 
     ctx.subscriptions.push(TelemetryWrapper.registerCommand("azureTerraform.refresh", () => {
-        terraformShellManager.getShell().runTerraformCmd("terraform refresh");
+        terraformShellManager.getShell().runTerraformCmd(TerraformCommand.Refresh);
     }));
 
     ctx.subscriptions.push(TelemetryWrapper.registerCommand("azureTerraform.validate", () => {
-        terraformShellManager.getShell().runTerraformCmd("terraform validate");
+        terraformShellManager.getShell().runTerraformCmd(TerraformCommand.Validate);
     }));
 
     ctx.subscriptions.push(TelemetryWrapper.registerCommand("azureTerraform.visualize", async () => {

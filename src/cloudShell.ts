@@ -13,7 +13,7 @@ import { TelemetryWrapper } from "vscode-extension-telemetry-wrapper";
 import { AzureAccount, CloudShell } from "./azure-account.api";
 import { BaseShell } from "./baseShell";
 import { aciConfig, Constants, exportContainerCmd, exportTestScript } from "./constants";
-import { azFilePush, escapeFile, TestOption } from "./shared";
+import { azFilePush, escapeFile, TerraformCommand, TestOption } from "./shared";
 import { terraformChannel } from "./terraformChannel";
 import { getStorageAccountforCloudShell, IStorageAccount } from "./utils/clouShellUtils";
 import { DialogOption, DialogType, promptForOpenOutputChannel } from "./utils/uiUtils";
@@ -121,17 +121,20 @@ export class AzureCloudShell extends BaseShell {
     protected async runTFCommand(command: string, workdir: string): Promise<boolean> {
         if (this.terminal) {
             this.terminal.show();
-            if (await this.cloudShell.waitForConnection()) {
-                if (workdir) {
-                    this.terminal.sendText(`cd "${workdir}"`);
-                }
-                this.terminal.sendText(`${command}`);
-                return true;
-            } else {
+            if (!await this.cloudShell.waitForConnection()) {
                 vscode.window.showErrorMessage("Establish connection to Cloud Shell failed, please try again later.");
                 TelemetryWrapper.error("connectFail");
                 return false;
             }
+
+            if (workdir) {
+                this.terminal.sendText(`cd "${workdir}"`);
+            }
+            if (this.isCombinedWithPush(command)) {
+                await vscode.commands.executeCommand("azureTerraform.push");
+            }
+            this.terminal.sendText(`${command}`);
+            return true;
         }
         TelemetryWrapper.error("sendToTerminalFail");
         return false;
@@ -165,14 +168,6 @@ export class AzureCloudShell extends BaseShell {
 
             terraformChannel.appendLine("Cloudshell terminal opened.");
 
-            const choice: vscode.MessageItem = await vscode.window.showInformationMessage(
-                "Would you like to push the terraform project files in current workspace to Cloud Shell?",
-                DialogOption.ok,
-                DialogOption.cancel,
-            );
-            if (choice === DialogOption.ok) {
-                await vscode.commands.executeCommand("azureTerraform.push");
-            }
             return true;
         }
 
@@ -190,6 +185,18 @@ export class AzureCloudShell extends BaseShell {
                 this.fileShareName,
                 file,
             );
+        }
+    }
+
+    private isCombinedWithPush(command: string): boolean {
+        switch (command) {
+            case TerraformCommand.Init:
+            case TerraformCommand.Plan:
+            case TerraformCommand.Apply:
+                return true;
+
+            default:
+                return false;
         }
     }
 
