@@ -193,6 +193,7 @@ export class AzureCloudShell extends BaseShell {
             case TerraformCommand.Init:
             case TerraformCommand.Plan:
             case TerraformCommand.Apply:
+            case TerraformCommand.Validate:
                 return true;
 
             default:
