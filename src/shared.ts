@@ -26,6 +26,15 @@ export enum TestOption {
     custom = "custom",
 }
 
+export enum TerraformCommand {
+    Init = "terraform init",
+    Plan = "terraform plan",
+    Apply = "terraform apply",
+    Destroy = "terraform destroy",
+    Refresh = "terraform refresh",
+    Validate = "terraform validate",
+}
+
 export function escapeFile(data: string): string {
     return data.replace(/"/g, '\\"').replace(/\$/g, "\\\$");
 }
