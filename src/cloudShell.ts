@@ -15,7 +15,7 @@ import { BaseShell } from "./baseShell";
 import { aciConfig, Constants, exportContainerCmd, exportTestScript } from "./constants";
 import { azFilePush, escapeFile, TerraformCommand, TestOption } from "./shared";
 import { terraformChannel } from "./terraformChannel";
-import { getStorageAccountforCloudShell, IStorageAccount } from "./utils/clouShellUtils";
+import { getStorageAccountforCloudShell, IStorageAccount } from "./utils/cloudShellUtils";
 import { DialogOption, DialogType, promptForOpenOutputChannel } from "./utils/uiUtils";
 import { selectWorkspaceFolder } from "./utils/workspaceUtils";
 
