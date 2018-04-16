@@ -86,7 +86,7 @@ export class AzureCloudShell extends BaseShell {
 
             const sentToTerminal: boolean = await this.runTFCommand(
                 `source ${createAciScript} && terraform fmt && terraform init && terraform apply -auto-approve && terraform taint azurerm_container_group.TFTest && \
-                echo "\nRun the following command to get the logs from the ACI container: az container logs -g ${resourceGroup} -n ${aciName}\n"`,
+                echo "\nRun the following command to get the logs from the ACI container: az container logs -g ${resourceGroup} -n ${aciGroup}\n"`,
                 `${Constants.clouddrive}/${setupFilesFolder}`,
             );
             if (sentToTerminal) {
