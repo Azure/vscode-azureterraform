@@ -20,6 +20,7 @@ import { executeCommand } from "./utils/cpUtils";
 import { isDockerInstalled, runCustomCommandInDocker, runE2EInDocker, runLintInDocker } from "./utils/dockerUtils";
 import { drawGraph } from "./utils/dotUtils";
 import { isDotInstalled } from "./utils/dotUtils";
+import * as settingUtils from "./utils/settingUtils";
 import { DialogType, promptForOpenOutputChannel } from "./utils/uiUtils";
 import { selectWorkspaceFolder } from "./utils/workspaceUtils";
 
@@ -65,7 +66,7 @@ export class IntegratedShell extends BaseShell {
             TelemetryWrapper.error("dockerNotInstalled");
             return;
         }
-        const containerName: string = vscode.workspace.getConfiguration("azureTerraform").get("test-container");
+        const containerName: string = settingUtils.getImageNameForTest();
 
         terraformChannel.appendLine("Checking Azure Service Principal environment variables...");
         if (!isServicePrincipalSetInEnv()) {
