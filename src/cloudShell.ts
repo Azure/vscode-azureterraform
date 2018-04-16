@@ -16,6 +16,7 @@ import { aciConfig, Constants, exportContainerCmd, exportTestScript } from "./co
 import { azFilePush, escapeFile, TerraformCommand, TestOption } from "./shared";
 import { terraformChannel } from "./terraformChannel";
 import { getStorageAccountforCloudShell, IStorageAccount } from "./utils/cloudShellUtils";
+import * as settingUtils from "./utils/settingUtils";
 import { DialogOption, DialogType, promptForOpenOutputChannel } from "./utils/uiUtils";
 import { selectWorkspaceFolder } from "./utils/workspaceUtils";
 
@@ -54,22 +55,22 @@ export class AzureCloudShell extends BaseShell {
             const localPath: string = path.join(workingDirectory, ".TFTesting");
             const createAciScript: string = "createacitest.sh";
             const containerCommandScript: string = "containercmd.sh";
-            const resourceGroup: string = vscode.workspace.getConfiguration("azureTerraform").get("aci-ResGroup");
-            const aciName: string = vscode.workspace.getConfiguration("azureTerraform").get("aci-name");
-            const aciGroup: string = vscode.workspace.getConfiguration("azureTerraform").get("aci-group");
+            const resourceGroup: string = settingUtils.getResourceGroupForTest();
+            const aciName: string = settingUtils.getAciNameForTest();
+            const aciGroup: string = settingUtils.getAciGroupForTest();
 
-            const TFConfiguration = escapeFile(aciConfig(
+            const tfConfiguration = escapeFile(aciConfig(
                 resourceGroup,
                 aciName,
                 aciGroup,
                 this.storageAccountName,
                 this.fileShareName,
-                vscode.workspace.getConfiguration("azureTerraform").get("test-location"),
-                vscode.workspace.getConfiguration("azureTerraform").get("test-container"),
+                settingUtils.getLocationForTest(),
+                settingUtils.getImageNameForTest(),
                 workspaceName,
             ));
 
-            const shellscript = exportTestScript(TFConfiguration, this.resourceGroup, this.storageAccountName, setupFilesFolder);
+            const shellscript = exportTestScript(tfConfiguration, this.resourceGroup, this.storageAccountName, setupFilesFolder);
 
             await Promise.all([
                 fsExtra.outputFile(path.join(localPath, createAciScript), shellscript),
@@ -80,6 +81,8 @@ export class AzureCloudShell extends BaseShell {
                 azFilePush(workspaceName, this.storageAccountName, this.storageAccountKey, this.fileShareName, path.join(localPath, createAciScript)),
                 azFilePush(workspaceName, this.storageAccountName, this.storageAccountKey, this.fileShareName, path.join(localPath, containerCommandScript)),
             ]);
+
+            await vscode.commands.executeCommand("azureTerraform.push");
 
             const sentToTerminal: boolean = await this.runTFCommand(
                 `source ${createAciScript} && terraform fmt && terraform init && terraform apply -auto-approve && terraform taint azurerm_container_group.TFTest && \

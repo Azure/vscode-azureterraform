@@ -9,10 +9,12 @@ import * as _ from "lodash";
 import * as vscode from "vscode";
 import { TelemetryWrapper } from "vscode-extension-telemetry-wrapper";
 import { TerraformCommand } from "./shared";
+import { TestOption } from "./shared";
 import { terraformShellManager } from "./terraformShellManager";
 import { getSyncFileBlobPattern, isTerminalSetToCloudShell } from "./utils/settingUtils";
 import { checkTerraformInstalled } from "./utils/terraformUtils";
 import { DialogOption } from "./utils/uiUtils";
+import { selectWorkspaceFolder } from "./utils/workspaceUtils";
 
 export async function activate(ctx: vscode.ExtensionContext) {
     await checkTerraformInstalled();
@@ -54,6 +56,21 @@ export async function activate(ctx: vscode.ExtensionContext) {
             }
         }
         await terraformShellManager.getIntegratedShell().visualize();
+    }));
+
+    ctx.subscriptions.push(vscode.commands.registerCommand("azureTerraform.exectest", async () => {
+        const pick: string = await vscode.window.showQuickPick(
+            [TestOption.lint, TestOption.e2e, TestOption.custom],
+            { placeHolder: "Select the type of test that you want to run" },
+        );
+        if (!pick) {
+            return;
+        }
+        const workingDirectory: string = await selectWorkspaceFolder();
+        if (!workingDirectory) {
+            return;
+        }
+        await terraformShellManager.getShell().runTerraformTests(pick, workingDirectory);
     }));
 
     ctx.subscriptions.push(TelemetryWrapper.registerCommand("azureTerraform.push", async () => {

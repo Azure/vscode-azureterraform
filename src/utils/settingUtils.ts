@@ -12,3 +12,23 @@ export function isTerminalSetToCloudShell(): boolean {
 export function getSyncFileBlobPattern(): vscode.GlobPattern {
     return vscode.workspace.getConfiguration().get("azureTerraform.files");
 }
+
+export function getResourceGroupForTest(): string {
+    return vscode.workspace.getConfiguration().get("azureTerraform.aci-ResGroup");
+}
+
+export function getAciNameForTest(): string {
+    return vscode.workspace.getConfiguration().get("azureTerraform.aci-name");
+}
+
+export function getAciGroupForTest(): string {
+    return vscode.workspace.getConfiguration().get("azureTerraform.aci-group");
+}
+
+export function getLocationForTest(): string {
+    return vscode.workspace.getConfiguration().get("azureTerraform.test-location");
+}
+
+export function getImageNameForTest(): string {
+    return vscode.workspace.getConfiguration().get("azureTerraform.test-container");
+}
