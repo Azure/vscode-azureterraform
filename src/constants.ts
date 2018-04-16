@@ -95,14 +95,5 @@ echo "Starting to Run test task..."
 ${containerCommand}
 echo "Container test operation completed - read the logs for status"`;
 
-// `#!/bin/bash
-
-// echo "Initializing environment..."
-// mkdir /root/.azure
-// cp /module/${moduleDir}/.TFTesting/.azure/*.json /root/.azure
-// cat /root/.azure/accessTokens.json
-// cat /root/.azure/accessProfile.json
-// `;
-
     return containerScript;
 }
