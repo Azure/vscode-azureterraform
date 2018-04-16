@@ -73,6 +73,8 @@ export function exportTestScript(TFConfiguration: string, resoureGroupName: stri
 
         mkdir -p $HOME/clouddrive/${testDirectory}/.azure
 
+        az account list --refresh &> /dev/null
+
         cp $HOME/.azure/*.json $HOME/clouddrive/${testDirectory}/.azure
 
     `;
