@@ -55,27 +55,27 @@
                     "default": "**/*.{rb,sh,tf,tfvars,txt,yml}",
                     "description": "Indicates the files that should be synchronized to Azure Cloud Shell using the glob pattern string. By default: '**/*.{tf,txt,yml,tfvars,rb}'."
                 },
-                "azureTerraform.test-container": {
+                "azureTerraform.test.imageName": {
                    "type": "string",
                    "default": "microsoft/terraform-test",
                    "description": "Indicates the container that you want to use to run the tests. By default: 'microsoft/terraform-test'."
                 },
-                "azureTerraform.aci-name": {
+                "azureTerraform.test.aciName": {
                     "type": "string",
-                    "default": "terraformtesting",
-                    "description": "Indicates the name of the Azure Container Instance to use for testing. By default: 'terraformtesting'."
+                    "default": "tf-test-aci",
+                    "description": "Indicates the name of the Azure Container Instance to use for testing. By default: 'tf-test-aci'."
                 },
-                "azureTerraform.aci-ResGroup": {
+                "azureTerraform.test.aciResourceGroup": {
                     "type": "string",
-                    "default": "TerraformTestRG",
-                    "description": "Indicates the name of the Resource Group to use for the ACI instance. By default: 'TerrafornTestRG'."
+                    "default": "tfTestResourceGroup",
+                    "description": "Indicates the name of the Resource Group to use for the ACI instance. By default: 'tfTestResourceGroup'."
                 },
-                "azureTerraform.aci-group": {
+                "azureTerraform.aciContainerGroup": {
                     "type": "string",
-                    "default": "TerraformTesting",
-                    "description": "Indicates the name of the Container Group that host the ACI instance. By default: 'TerrafornTesting'."
+                    "default": "tfTestContainerGroup",
+                    "description": "Indicates the name of the Container Group that host the ACI instance. By default: 'tfTestContainerGroup'."
                 },
-                "azureTerraform.test-location": {
+                "azureTerraform.test.location": {
                     "type": "string",
                     "default": "westus",
                     "description": "Indicates the location where to deploy the test container instance. By default: 'westus'."
@@ -85,47 +85,47 @@
         "commands": [
             {
                 "command": "azureTerraform.plan",
-                "title": "plan",
+                "title": "Plan",
                 "category": "Azure Terraform"
             },
             {
                 "command": "azureTerraform.apply",
-                "title": "apply",
+                "title": "Apply",
                 "category": "Azure Terraform"
             },
             {
                 "command": "azureTerraform.init",
-                "title": "init",
+                "title": "Init",
                 "category": "Azure Terraform"
             },
             {
                 "command": "azureTerraform.validate",
-                "title": "validate",
+                "title": "Validate",
                 "category": "Azure Terraform"
             },
             {
                 "command": "azureTerraform.refresh",
-                "title": "refresh",
+                "title": "Refresh",
                 "category": "Azure Terraform"
             },
             {
                 "command": "azureTerraform.destroy",
-                "title": "destroy",
+                "title": "Destroy",
                 "category": "Azure Terraform"
             },
             {
                 "command": "azureTerraform.visualize",
-                "title": "visualize",
+                "title": "Visualize",
                 "category": "Azure Terraform"
             },
             {
                 "command": "azureTerraform.exectest",
-                "title": "execute test",
+                "title": "Execute Test",
                 "category": "Azure Terraform"
             },
             {
                 "command": "azureTerraform.push",
-                "title": "push",
+                "title": "Push",
                 "category": "Azure Terraform"
             }
         ]
