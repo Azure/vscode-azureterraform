@@ -14,21 +14,21 @@ export function getSyncFileBlobPattern(): vscode.GlobPattern {
 }
 
 export function getResourceGroupForTest(): string {
-    return vscode.workspace.getConfiguration().get("azureTerraform.aci-ResGroup");
+    return vscode.workspace.getConfiguration().get("azureTerraform.test.aciResourceGroup");
 }
 
 export function getAciNameForTest(): string {
-    return vscode.workspace.getConfiguration().get("azureTerraform.aci-name");
+    return vscode.workspace.getConfiguration().get("azureTerraform.test.aciName");
 }
 
 export function getAciGroupForTest(): string {
-    return vscode.workspace.getConfiguration().get("azureTerraform.aci-group");
+    return vscode.workspace.getConfiguration().get("azureTerraform.aciContainerGroup");
 }
 
 export function getLocationForTest(): string {
-    return vscode.workspace.getConfiguration().get("azureTerraform.test-location");
+    return vscode.workspace.getConfiguration().get("azureTerraform.test.location");
 }
 
 export function getImageNameForTest(): string {
-    return vscode.workspace.getConfiguration().get("azureTerraform.test-container");
+    return vscode.workspace.getConfiguration().get("azureTerraform.test.imageName");
 }
