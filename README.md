@@ -65,9 +65,9 @@ Open the Command Palette (`Command`+`Shift`+`P` on macOS and `Ctrl`+`Shift`+`P` 
   <tr>
     <td>Azure Terraform: Execute Test</td>
     <td>
-      Runs one of the following test against the current module using a test container: <br>
+      Run one of the following test against the current module using a test container: <br>
       <ul>
-        <li>lint: This command checks the formating of the code of the Terraform module.</li>
+        <li>lint: This command will check the formating of the code of the Terraform module.</li>
         <li>e2e: This command will deploy the current module with the settings specified in the .tfvars file, verify that the deployment pass the controls and destroy the resources that have been created.</li>
       </ul>
     </td>
