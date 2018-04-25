@@ -2,7 +2,7 @@
     "name": "vscode-azureterraform",
     "displayName": "Azure Terraform",
     "description": "VS Code extension for developing with Terraform on Azure",
-    "version": "0.1.1",
+    "version": "0.2.0",
     "publisher": "ms-azuretools",
     "aiKey": "ae482601-060f-4c71-8567-ebd5085483c9",
     "icon": "images/terraform.png",
@@ -56,9 +56,9 @@
                     "description": "Indicates the files that should be synchronized to Azure Cloud Shell using the glob pattern string. By default: '**/*.{tf,txt,yml,tfvars,rb}'."
                 },
                 "azureTerraform.test.imageName": {
-                   "type": "string",
-                   "default": "microsoft/terraform-test",
-                   "description": "Indicates the container that you want to use to run the tests. By default: 'microsoft/terraform-test'."
+                    "type": "string",
+                    "default": "microsoft/terraform-test",
+                    "description": "Indicates the container that you want to use to run the tests. By default: 'microsoft/terraform-test'."
                 },
                 "azureTerraform.test.aciName": {
                     "type": "string",

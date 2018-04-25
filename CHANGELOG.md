@@ -4,6 +4,13 @@ All notable changes to the "Azure Terraform" extension will be documented in thi
 		
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [0.2.0]
+### Added
+- Support linting and end to end test for terraform module. ([#166](https://github.com/Azure/vscode-azureterraform/issues/166))
+
+### Changed
+- Combine push command with init, plan, apply and validate. ([#148](https://github.com/Azure/vscode-azureterraform/issues/148))
+
 ## [0.1.1]
 ### Changed
 - Leverage Azure Account extension to provision Cloud Shell. ([#145](https://github.com/Azure/vscode-azureterraform/issues/145))

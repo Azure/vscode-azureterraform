@@ -62,13 +62,28 @@ Open the Command Palette (`Command`+`Shift`+`P` on macOS and `Ctrl`+`Shift`+`P` 
     <td>Azure Terraform: push</td>
     <td>Push workspace files that meet the filter <code>azureTerraform.files</code> setting in your configuration to Cloud Shell.</td>
   </tr>
+  <tr>
+    <td>Azure Terraform: Execute Test</td>
+    <td>
+      Run one of the following test against the current module using a test container: <br>
+      <ul>
+        <li>lint: This command will check the formating of the code of the Terraform module.</li>
+        <li>e2e: This command will deploy the current module with the settings specified in the .tfvars file, verify that the deployment pass the controls and destroy the resources that have been created.</li>
+      </ul>
+    </td>
+  </tr>
   </tbody>
 </table>
 
 ## Extension Settings
 
-- `azureTerraform.terminal` - Specifies terminal used to run Terraform commands. Valid settings are `cloudshell` or `integrated`
-- `azureTerraform.files` - Indicates the files that should be synchronized to Azure CloudShell using the glob pattern string, for example `**/*.{tf,txt,yml,tfvars,rb}`
+- `azureTerraform.terminal` - Specifies terminal used to run Terraform commands. Valid settings are `cloudshell` or `integrated`.
+- `azureTerraform.files` - Indicates the files that should be synchronized to Azure CloudShell using the glob pattern string. By default `**/*.{rb,sh,tf,tfvars,txt,yml}`.
+- `azureTerraform.test.imageName` - Indicates the container to use to run the tests. By default: `microsoft/terraform-test`.
+- `"azureTerraform.test.aciName` - Indicates the name of the Azure Container Instance to use for testing. By default: `tf-test-aci`.
+- `azureTerraform.test.aciResourceGroup` - Indicates the name of the Resource Group to use for the ACI instance. By default: `tfTestResourceGroup`.
+- `azureTerraform.aciContainerGroup` - Indicates the name of the Container Group that host the ACI instance. By default: `tfTestContainerGroup`
+- `azureTerraform.test.location` - Indicates the location where to deploy the test container instance. By default: `westus`.
 
 ## Release Notes
 
