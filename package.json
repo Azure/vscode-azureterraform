@@ -4,7 +4,7 @@
     "description": "VS Code extension for developing with Terraform on Azure",
     "version": "0.2.0",
     "publisher": "ms-azuretools",
-    "aiKey": "ae482601-060f-4c71-8567-ebd5085483c9",
+    "aiKey": "AIF-d9b70cd4-b9f9-4d70-929b-a071c400b217",
     "icon": "images/terraform.png",
     "repository": {
         "type": "git",
