@@ -158,7 +158,7 @@
         "ms-rest-azure": "^2.5.5",
         "opn": "5.1.0",
         "request-promise": "4.2.1",
-        "vscode-extension-telemetry-wrapper": "^0.2.1"
+        "vscode-extension-telemetry-wrapper": "0.2.2"
     },
     "extensionDependencies": [
         "ms-vscode.azure-account"
