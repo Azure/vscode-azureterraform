@@ -147,18 +147,18 @@
         "@types/semver": "^5.4.0",
         "tslint": "^5.8.0",
         "typescript": "^2.6.1",
-        "vscode": "^1.1.6"
+        "vscode": "^1.1.18"
     },
     "dependencies": {
         "azure-arm-resource": "^2.0.0-preview",
-        "azure-storage": "^2.8.0",
+        "azure-storage": "^2.10.1",
         "fs-extra": "^4.0.2",
-        "lodash": "^4.17.4",
+        "lodash": "^4.17.10",
         "ms-rest": "^2.3.2",
-        "ms-rest-azure": "^2.5.5",
+        "ms-rest-azure": "^2.5.7",
         "opn": "5.1.0",
         "request-promise": "4.2.1",
-        "vscode-extension-telemetry-wrapper": "0.2.2"
+        "vscode-extension-telemetry-wrapper": "0.2.4"
     },
     "extensionDependencies": [
         "ms-vscode.azure-account"
