@@ -11,7 +11,7 @@
         "url": "https://github.com/Azure/vscode-azureterraform.git"
     },
     "engines": {
-        "vscode": "^1.18.0"
+        "vscode": "^1.31.0"
     },
     "preview": true,
     "categories": [
@@ -149,7 +149,7 @@
         "node.extend": ">=1.1.7",
         "tslint": "^5.8.0",
         "typescript": "^2.6.1",
-        "vscode": "^1.1.18"
+        "vscode": "^1.1.33"
     },
     "dependencies": {
         "azure-arm-resource": "^2.0.0-preview",
@@ -160,7 +160,6 @@
         "ms-rest": "^2.3.2",
         "ms-rest-azure": "^2.5.7",
         "node.extend": ">=1.1.7",
-        "opn": "5.1.0",
         "request-promise": "4.2.1",
         "vscode-extension-telemetry-wrapper": "0.2.4"
     },

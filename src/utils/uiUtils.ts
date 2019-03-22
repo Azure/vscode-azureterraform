@@ -5,27 +5,26 @@
 
 "use strict";
 
-import * as opn from "opn";
-import * as vscode from "vscode";
+import { env, MessageItem, OpenDialogOptions, Uri, window, workspace } from "vscode";
 import { terraformChannel } from "../terraformChannel";
 
 export async function openUrlHint(message: string, url: string): Promise<void> {
-    const response = await vscode.window.showInformationMessage(message, DialogOption.learnMore, DialogOption.cancel);
+    const response = await window.showInformationMessage(message, DialogOption.learnMore, DialogOption.cancel);
     if (response === DialogOption.learnMore && url) {
-        opn(url);
+        env.openExternal(Uri.parse(url));
     }
 }
 
-export async function showFolderDialog(): Promise<vscode.Uri | undefined> {
-    const defaultUri: vscode.Uri | undefined = vscode.workspace.rootPath ? vscode.Uri.file(vscode.workspace.rootPath) : undefined;
-    const options: vscode.OpenDialogOptions = {
+export async function showFolderDialog(): Promise<Uri | undefined> {
+    const defaultUri: Uri | undefined = workspace.rootPath ? Uri.file(workspace.rootPath) : undefined;
+    const options: OpenDialogOptions = {
         canSelectFiles: false,
         canSelectFolders: true,
         canSelectMany: false,
         openLabel: "Select",
         defaultUri,
     };
-    const result: vscode.Uri[] | undefined = await vscode.window.showOpenDialog(options);
+    const result: Uri[] | undefined = await window.showOpenDialog(options);
     if (!result || result.length === 0) {
         return undefined;
     }
@@ -33,16 +32,16 @@ export async function showFolderDialog(): Promise<vscode.Uri | undefined> {
 }
 
 export async function promptForOpenOutputChannel(message: string, type: DialogType): Promise<void> {
-    let result: vscode.MessageItem;
+    let result: MessageItem;
     switch (type) {
         case DialogType.info:
-            result = await vscode.window.showInformationMessage(message, DialogOption.open, DialogOption.cancel);
+            result = await window.showInformationMessage(message, DialogOption.open, DialogOption.cancel);
             break;
         case DialogType.warning:
-            result = await vscode.window.showWarningMessage(message, DialogOption.open, DialogOption.cancel);
+            result = await window.showWarningMessage(message, DialogOption.open, DialogOption.cancel);
             break;
         case DialogType.error:
-            result = await vscode.window.showErrorMessage(message, DialogOption.open, DialogOption.cancel);
+            result = await window.showErrorMessage(message, DialogOption.open, DialogOption.cancel);
             break;
         default:
             break;
@@ -54,10 +53,10 @@ export async function promptForOpenOutputChannel(message: string, type: DialogTy
 }
 
 export namespace DialogOption {
-    export const ok: vscode.MessageItem = { title: "OK" };
-    export const cancel: vscode.MessageItem = { title: "Cancel", isCloseAffordance: true };
-    export const open: vscode.MessageItem = { title: "Open" };
-    export const learnMore: vscode.MessageItem = { title: "Learn More" };
+    export const ok: MessageItem = { title: "OK" };
+    export const cancel: MessageItem = { title: "Cancel", isCloseAffordance: true };
+    export const open: MessageItem = { title: "Open" };
+    export const learnMore: MessageItem = { title: "Learn More" };
 }
 
 export enum DialogType {
