@@ -143,12 +143,13 @@
         "@types/fs-extra": "^5.0.0",
         "@types/keytar": "^4.0.1",
         "@types/lodash": "^4.14.121",
-        "@types/mocha": "^2.2.42",
+        "@types/mocha": "^5.2.7",
         "@types/node": "^7.0.43",
         "@types/semver": "^5.4.0",
-        "tslint": "^5.8.0",
+        "tslint": "^5.18.0",
         "typescript": "^2.6.1",
-        "vscode": "^1.1.34"
+        "vscode": "^1.1.35",
+        "diff": ">=3.5.0"
     },
     "dependencies": {
         "azure-arm-resource": "^2.0.0-preview",
