@@ -14,14 +14,11 @@ import { TelemetryWrapper } from "vscode-extension-telemetry-wrapper";
 import { BaseShell } from "./baseShell";
 import { Constants } from "./constants";
 import { TestOption } from "./shared";
-import { terraformChannel } from "./terraformChannel";
-import { isServicePrincipalSetInEnv } from "./utils/azureUtils";
 import { executeCommand } from "./utils/cpUtils";
 import { isDockerInstalled, runCustomCommandInDocker, runE2EInDocker, runLintInDocker } from "./utils/dockerUtils";
 import { drawGraph } from "./utils/dotUtils";
 import { isDotInstalled } from "./utils/dotUtils";
 import * as settingUtils from "./utils/settingUtils";
-import { DialogType, promptForOpenOutputChannel } from "./utils/uiUtils";
 import { selectWorkspaceFolder } from "./utils/workspaceUtils";
 
 export class IntegratedShell extends BaseShell {
@@ -68,22 +65,15 @@ export class IntegratedShell extends BaseShell {
         }
         const containerName: string = settingUtils.getImageNameForTest();
 
-        terraformChannel.appendLine("Checking Azure Service Principal environment variables...");
-        if (!isServicePrincipalSetInEnv()) {
-            TelemetryWrapper.error("servicePrincipalEnvInvalid");
-            return;
-        }
-
-        let executeResult: boolean = false;
         switch (TestType) {
             case TestOption.lint:
-                executeResult = await runLintInDocker(
+                await runLintInDocker(
                     workingDirectory + ":/tf-test/module",
                     containerName,
                 );
                 break;
             case TestOption.e2e:
-                executeResult = await runE2EInDocker(
+                await runE2EInDocker(
                     workingDirectory + ":/tf-test/module",
                     containerName,
                 );
@@ -97,13 +87,10 @@ export class IntegratedShell extends BaseShell {
                 if (!cmd) {
                     return;
                 }
-                executeResult = await runCustomCommandInDocker(cmd, containerName);
+                await runCustomCommandInDocker(cmd, containerName);
                 break;
             default:
                 break;
-        }
-        if (executeResult) {
-            await promptForOpenOutputChannel("The tests finished. Please open the output channel for more details.", DialogType.info);
         }
     }
 
