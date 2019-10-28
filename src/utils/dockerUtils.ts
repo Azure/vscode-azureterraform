@@ -6,6 +6,7 @@
 "use strict";
 
 import { executeCommand } from "./cpUtils";
+import { terraformShellManager } from "../terraformShellManager";
 import { DialogType, openUrlHint, promptForOpenOutputChannel } from "./uiUtils";
 
 export async function isDockerInstalled(): Promise<boolean> {
@@ -23,21 +24,8 @@ export async function runLintInDocker(volumn: string, containerName: string): Pr
         if (!await pullLatestImage(containerName)) {
             return false;
         }
-        await executeCommand(
-            "docker",
-            [
-                "run",
-                "-v",
-                volumn,
-                "--rm",
-                containerName,
-                "rake",
-                "-f",
-                "../Rakefile",
-                "build",
-            ],
-            { shell: true },
-        );
+        const cmd: string = `docker run -v ${volumn} --rm ${containerName} rake -f ../Rakefile build`
+        terraformShellManager.getIntegratedShell().runTerraformCmd(cmd)
         return true;
     } catch (error) {
         promptForOpenOutputChannel("Failed to run lint task in Docker. Please open the output channel for more details.", DialogType.error);
@@ -50,32 +38,16 @@ export async function runE2EInDocker(volumn: string, containerName: string): Pro
         if (!await pullLatestImage(containerName)) {
             return false;
         }
-        await executeCommand(
-            "docker",
-            [
-                "run",
-                "-v",
-                volumn,
-                "-e",
-                "ARM_CLIENT_ID",
-                "-e",
-                "ARM_TENANT_ID",
-                "-e",
-                "ARM_SUBSCRIPTION_ID",
-                "-e",
-                "ARM_CLIENT_SECRET",
-                "-e",
-                "ARM_TEST_LOCATION",
-                "-e",
-                "ARM_TEST_LOCATION_ALT",
-                "--rm",
-                containerName,
-                "/bin/bash",
-                "-c",
-                `"ssh-keygen -t rsa -b 2048 -C terraformTest -f /root/.ssh/id_rsa -N ''; rake -f ../Rakefile e2e"`,
-            ],
-            { shell: true },
-        );
+        const cmd: string = `docker run -v ${volumn} `
+                            + `-e ARM_CLIENT_ID `
+                            + `-e ARM_TENANT_ID ` 
+                            + `-e ARM_SUBSCRIPTION_ID ` 
+                            + `-e ARM_CLIENT_SECRET `
+                            + `-e ARM_TEST_LOCATION ` 
+                            + `-e ARM_TEST_LOCATION_ALT `
+                            + `--rm ${containerName} /bin/bash -c `
+                            + `"ssh-keygen -t rsa -b 2048 -C terraformTest -f /root/.ssh/id_rsa -N ''; rake -f ../Rakefile e2e"`
+        terraformShellManager.getIntegratedShell().runTerraformCmd(cmd)
         return true;
     } catch (error) {
         promptForOpenOutputChannel("Failed to run end to end tests in Docker. Please open the output channel for more details.", DialogType.error);
