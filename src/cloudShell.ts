@@ -13,7 +13,7 @@ import { TelemetryWrapper } from "vscode-extension-telemetry-wrapper";
 import { AzureAccount, CloudShell } from "./azure-account.api";
 import { BaseShell } from "./baseShell";
 import { aciConfig, Constants, exportContainerCmd, exportTestScript } from "./constants";
-import { azFilePush, escapeFile, TerraformCommand, TestOption } from "./shared";
+import { azFileDelete, azFilePush, escapeFile, TerraformCommand, TestOption } from "./shared";
 import { terraformChannel } from "./terraformChannel";
 import { getStorageAccountforCloudShell, IStorageAccount } from "./utils/cloudShellUtils";
 import * as settingUtils from "./utils/settingUtils";
@@ -43,6 +43,32 @@ export class AzureCloudShell extends BaseShell {
             } catch (error) {
                 terraformChannel.appendLine(error);
                 await promptForOpenOutputChannel("Failed to push files to the cloud. Please open the output channel for more details.", DialogType.error);
+            }
+        }
+    }
+
+    public async deleteFiles(files: vscode.Uri[]): Promise<void> {
+        const RETRY_TIMES = 3;
+
+        if (!await this.connectedToCloudShell()) {
+            terraformChannel.appendLine(`cloud shell can not be opened, file deleting operation is not synced`);
+            return;
+        }
+
+        for (const file of files.map((a) => a.fsPath)) {
+            for (let i = 0; i < RETRY_TIMES; i++) {
+                try {
+                    terraformChannel.appendLine(`Deleting file ${file} from cloud shell`);
+                    await azFileDelete(
+                        vscode.workspace.getWorkspaceFolder(vscode.Uri.file(file)).name,
+                        this.storageAccountName,
+                        this.storageAccountKey,
+                        this.fileShareName,
+                        file);
+                    break;
+                } catch (err) {
+                    terraformChannel.appendLine(err);
+                }
             }
         }
     }
