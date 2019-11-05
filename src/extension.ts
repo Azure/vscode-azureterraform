@@ -16,9 +16,12 @@ import { checkTerraformInstalled } from "./utils/terraformUtils";
 import { DialogOption } from "./utils/uiUtils";
 import { selectWorkspaceFolder } from "./utils/workspaceUtils";
 
+let fileWatcher: vscode.FileSystemWatcher;
+
 export async function activate(ctx: vscode.ExtensionContext) {
     await checkTerraformInstalled();
     await TelemetryWrapper.initilizeFromJsonFile(ctx.asAbsolutePath("./package.json"));
+    initFileWatcher(ctx);
 
     ctx.subscriptions.push(TelemetryWrapper.registerCommand("azureTerraform.init", () => {
         terraformShellManager.getShell().runTerraformCmd(TerraformCommand.Init);
@@ -88,4 +91,18 @@ export async function activate(ctx: vscode.ExtensionContext) {
 
 export function deactivate(): void {
     terraformShellManager.dispose();
- }
+    if (fileWatcher) {
+        fileWatcher.dispose();
+    }
+}
+
+function initFileWatcher(ctx: vscode.ExtensionContext): void {
+    fileWatcher = vscode.workspace.createFileSystemWatcher(getSyncFileBlobPattern());
+    ctx.subscriptions.push(
+        fileWatcher.onDidDelete((deletedUri) => {
+            if (isTerminalSetToCloudShell()) {
+                terraformShellManager.getCloudShell().deleteFiles([deletedUri]);
+            }
+        }),
+    );
+}
