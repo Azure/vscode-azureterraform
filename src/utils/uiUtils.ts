@@ -9,6 +9,15 @@ import * as opn from "opn";
 import * as vscode from "vscode";
 import { terraformChannel } from "../terraformChannel";
 
+export async function openUrlHintOrNotShowAgain(message: string, url: string, notShowCallback: () => void): Promise<void> {
+    const response = await vscode.window.showInformationMessage(message, DialogOption.learnMore, DialogOption.notShownAgain);
+    if (response === DialogOption.learnMore && url) {
+        opn(url);
+    } else if (response === DialogOption.notShownAgain) {
+        notShowCallback();
+    }
+}
+
 export async function openUrlHint(message: string, url: string): Promise<void> {
     const response = await vscode.window.showInformationMessage(message, DialogOption.learnMore, DialogOption.cancel);
     if (response === DialogOption.learnMore && url) {
@@ -58,6 +67,7 @@ export namespace DialogOption {
     export const cancel: vscode.MessageItem = { title: "Cancel", isCloseAffordance: true };
     export const open: vscode.MessageItem = { title: "Open" };
     export const learnMore: vscode.MessageItem = { title: "Learn More" };
+    export const notShownAgain: vscode.MessageItem = { title: "Don't show again" };
 }
 
 export enum DialogType {
