@@ -4,6 +4,10 @@ All notable changes to the "Azure Terraform" extension will be documented in thi
 		
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [0.2.5]
+### Fixed
+- fix some bugs: delete files is not synced and so on
+
 ## [0.2.0]
 ### Added
 - Support linting and end to end test for terraform module. ([#166](https://github.com/Azure/vscode-azureterraform/issues/166))
