@@ -16,16 +16,18 @@
     },
     "preview": true,
     "categories": [
+        "Programming Languages",
         "Azure",
         "Other"
     ],
     "keywords": [
-        "cloudshell",
-        "devops",
         "terraform",
         "azure"
+        "cloudshell",
+        "devops",
     ],
     "activationEvents": [
+        "onLanguage:terraform",
         "workspaceContains:**/*.tf",
         "onCommand:azureTerraform.init",
         "onCommand:azureTerraform.plan",
@@ -88,6 +90,27 @@
                 }
             }
         },
+        "languages": [
+            {
+                "id": "terraform",
+                "aliases": [
+                    "terraform",
+                    "Terraform"
+                ],
+                "extensions": [
+                    ".tf",
+                    ".tfvars"
+                ],
+                "configuration": "./language-configuration.json"
+            }
+        ],
+        "grammars": [
+            {
+                "language": "terraform",
+                "scopeName": "source.terraform",
+                "path": "./syntaxes/terraform.tmLanguage.json"
+            }
+        ],
         "commands": [
             {
                 "command": "azureTerraform.plan",

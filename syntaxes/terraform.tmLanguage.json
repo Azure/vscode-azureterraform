@@ -1,0 +1,15 @@
+{
+  "name": "terraform",
+  "patterns": [
+    {
+      "begin": "#|//",
+      "comment": "Comments",
+      "end": "$\\n?",
+      "name": "comment.line.number-sign.terraform"
+    }
+  ],
+  "repository": {
+      
+  },
+  "scopeName": "source.terraform"
+}
