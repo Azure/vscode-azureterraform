@@ -3,9 +3,45 @@
   "patterns": [
     {
       "begin": "#|//",
-      "comment": "Comments",
+      "comment": "Line Comments",
       "end": "$\\n?",
       "name": "comment.line.number-sign.terraform"
+    },
+    {
+      "begin": "/\\*",
+      "comment": "Block Comments",
+      "end": "\\*/",
+      "name": "comment.block.documentation.terraform"
+    },
+    {
+      "match": "(resource|data)\\s+(\")?(\\w+)(\")?\\s+(\")?([\\w\\-]+)(\")?\\s+({)",
+      "name": "meta.block.terraform",
+      "captures": {
+        "1": {
+          "name": "keyword.terraform"
+        },
+        "2": { 
+          "name": "string.terraform punctuation.definition.string.begin.terraform"
+        },
+        "3": {
+          "name": "string.quoted.terraform"
+        },
+        "4": {
+          "name": "string.terraform punctuation.definition.string.end.terraform"
+        },
+        "5": { 
+          "name": "string.terraform punctuation.definition.string.begin.terraform"
+        },
+        "6": { 
+          "name": "string.quoted.terraform"
+        },
+        "7": { 
+          "name": "string.terraform punctuation.definition.string.end.terraform"
+        },
+        "8": {
+          "name": "punctuation.definition.tag.terraform"
+        }
+      }
     }
   ],
   "repository": {

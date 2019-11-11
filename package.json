@@ -22,9 +22,9 @@
     ],
     "keywords": [
         "terraform",
-        "azure"
+        "azure",
         "cloudshell",
-        "devops",
+        "devops"
     ],
     "activationEvents": [
         "onLanguage:terraform",
