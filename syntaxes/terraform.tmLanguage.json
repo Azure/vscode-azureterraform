@@ -29,6 +29,10 @@
       "name": "constant.numeric.terraform"
     },
     {
+      "match": "^\\s*}",
+      "name": "punctuation.definition.tag.terraform"
+    },
+    {
       "match": "(resource|data)\\s+(\")?(\\w+)(\")?\\s+(\")?([\\w\\-]+)(\")?\\s+({)",
       "name": "meta.block.terraform",
       "captures": {
@@ -39,7 +43,7 @@
           "name": "string.terraform punctuation.definition.string.begin.terraform"
         },
         "3": {
-          "name": "string.quoted.terraform"
+          "name": "string.quoted.terraform meta.resource.terraform"
         },
         "4": {
           "name": "string.terraform punctuation.definition.string.end.terraform"
@@ -57,10 +61,79 @@
           "name": "punctuation.definition.tag.terraform"
         }
       }
+    },
+    {
+      "captures": {
+        "1": {
+          "name": "support.variable.terraform"
+        },
+        "2": {
+          "name": "keyword.operator.arithmetic.terraform"
+        }
+      },
+      "comment": "Value assignments",
+      "match": "([\\w-]+)\\s*(=)\\s*"
+    },
+    {
+      "include": "#string"
     }
   ],
   "repository": {
-      
+    "string": {
+      "begin": "\\\"",
+      "end": "\\\"",
+      "beginCaptures": {
+        "0": {
+          "name": "string.terraform punctuation.definition.string.begin.terraform"
+        }
+      },
+      "endCaptures": {
+        "0": {
+          "name": "string.terraform punctuation.definition.string.end.terraform"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#interpolation"
+        },
+        {
+          "match": "([\\w\\-\\._]+)",
+          "name": "string.quoted.double.terraform"
+        }
+      ]
+    },
+    "interpolation": {
+      "begin": "\\$\\{",
+      "end": "\\}",
+      "beginCaptures": {
+        "0": { "name": "punctuation.paren.open entity.tag.embedded.start.terraform" }
+      },
+      "endCaptures": {
+        "0": { "name": "punctuation.paren.close entity.tag.embedded.end.terraform" }
+      },
+      "name": "interpolation.terraform",
+      "patterns": [
+        {
+          "include": "$self"
+        },
+        {
+          "captures": {
+            "0": {
+              "name": "keyword.control.period.terraform"
+            }
+          },
+          "match": "(\\.)"
+        },
+        {
+          "captures": {
+            "0": {
+              "name": "support.variable.terraform"
+            }
+          },
+          "match": "([\\w-]+)"
+        }
+      ]
+    }
   },
   "scopeName": "source.terraform"
 }
