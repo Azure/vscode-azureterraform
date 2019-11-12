@@ -14,6 +14,21 @@
       "name": "comment.block.documentation.terraform"
     },
     {
+      "comment": "Language constants (true, false, yes, no, on, off)",
+      "match": "\\b(true|false|yes|no|on|off)\\b",
+      "name": "constant.language.terraform"
+    },
+    {
+      "comment": "Primitive types",
+      "match": "\\b(string|number|bool)\\b",
+      "name": "support.type.primitive.terraform"
+    },
+    {
+      "comment": "Numbers",
+      "match": "\\b([0-9]+)\\b",
+      "name": "constant.numeric.terraform"
+    },
+    {
       "match": "(resource|data)\\s+(\")?(\\w+)(\")?\\s+(\")?([\\w\\-]+)(\")?\\s+({)",
       "name": "meta.block.terraform",
       "captures": {
