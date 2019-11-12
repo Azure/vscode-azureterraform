@@ -63,6 +63,26 @@
       }
     },
     {
+      "match": "(provider|provisioner|variable|output|module|atlas)\\s+(\")?([\\w\\-]+)(\")?\\s+({)",
+      "captures": {
+        "1": {
+          "name": "storage.type.function.terraform"
+        },
+        "2": {
+          "name": "string.terraform punctuation.definition.string.begin.terraform"
+        },
+        "3": {
+          "name": "string.quoted.terraform"
+        },
+        "4": {
+          "name": "string.terraform punctuation.definition.string.end.terraform"
+        },
+        "5": {
+          "name": "punctuation.definition.tag.terraform"
+        }
+      }
+    },
+    {
       "captures": {
         "1": {
           "name": "support.variable.terraform"
@@ -71,11 +91,14 @@
           "name": "keyword.operator.arithmetic.terraform"
         }
       },
-      "comment": "Value assignments",
+      "comment": "Highlight variables on the left side of equal sign",
       "match": "([\\w-]+)\\s*(=)\\s*"
     },
     {
       "include": "#string"
+    },
+    {
+      "include": "#interpolation"
     }
   ],
   "repository": {
