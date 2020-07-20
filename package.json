@@ -160,7 +160,7 @@
         "azure-arm-resource": "^2.0.0-preview",
         "azure-storage": "^2.10.1",
         "fs-extra": "^4.0.2",
-        "lodash": "^4.17.13",
+        "lodash": "^4.17.19",
         "ms-rest": "^2.3.2",
         "ms-rest-azure": "^2.5.7",
         "opn": "5.1.0",
