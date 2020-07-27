@@ -7,7 +7,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [0.3.1]
 ### Fixed
-- fix some security issue
+- fix some security issues
   - [#220](https://github.com/Azure/vscode-azureterraform/pull/220)
 
 ## [0.3.0]
@@ -36,4 +36,3 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 ### Added
 - Support Terraform commands: init, plan, apply, validate, refresh and destroy.
 - Support visualizing the terraform module.
-
