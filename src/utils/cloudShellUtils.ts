@@ -6,7 +6,7 @@
 "use strict";
 
 import * as request from "request-promise";
-import { TelemetryWrapper } from "vscode-extension-telemetry-wrapper";
+import * as TelemetryWrapper from "vscode-extension-telemetry-wrapper";
 import { AzureSession, CloudShell } from "../azure-account.api";
 
 export interface IStorageAccount {
@@ -21,7 +21,7 @@ export async function getStorageAccountforCloudShell(cloudShell: CloudShell): Pr
     const token: IToken = await acquireToken(session);
     const userSettings: IUserSettings | undefined = await getUserSettings(token.accessToken, session.environment.resourceManagerEndpointUrl);
     if (!userSettings) {
-        TelemetryWrapper.error("getUserSettingsFail");
+        TelemetryWrapper.sendError(Error("getUserSettingsFail"));
         return;
     }
     const storageProfile: any = userSettings.storageProfile;
@@ -29,7 +29,7 @@ export async function getStorageAccountforCloudShell(cloudShell: CloudShell): Pr
     const storageAccountKey: string | undefined = await getStorageAccountKey(token.accessToken, storageAccountSettings[1], storageAccountSettings[3], storageAccountSettings[7]);
 
     if (!storageAccountKey) {
-        TelemetryWrapper.error("getStorageAccountKeyFail");
+        TelemetryWrapper.sendError(Error("getStorageAccountKeyFail"));
         return;
     }
 

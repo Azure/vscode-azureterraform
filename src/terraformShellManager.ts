@@ -5,7 +5,7 @@
 
 "use strict";
 
-import { TelemetryWrapper } from "vscode-extension-telemetry-wrapper";
+import * as TelemetryWrapper from "vscode-extension-telemetry-wrapper";
 import { BaseShell } from "./baseShell";
 import { AzureCloudShell } from "./cloudShell";
 import { IntegratedShell } from "./integratedShell";
@@ -24,11 +24,8 @@ class TerraformShellManager implements ITerraformShellManager {
 
     public getShell(): BaseShell {
         const isCloudShell: boolean = isTerminalSetToCloudShell();
-        const session = TelemetryWrapper.currentSession();
-        if (session && session.extraProperties) {
-            session.extraProperties.isCloudShell = isCloudShell;
-        }
 
+        TelemetryWrapper.addContextProperty("isCloudShell", isCloudShell.toString())
         if (isCloudShell) {
             return this.cloudShell;
         }
