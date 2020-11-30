@@ -25,7 +25,7 @@ class TerraformShellManager implements ITerraformShellManager {
     public getShell(): BaseShell {
         const isCloudShell: boolean = isTerminalSetToCloudShell();
 
-        TelemetryWrapper.addContextProperty("isCloudShell", isCloudShell.toString())
+        TelemetryWrapper.addContextProperty("isCloudShell", isCloudShell.toString());
         if (isCloudShell) {
             return this.cloudShell;
         }
