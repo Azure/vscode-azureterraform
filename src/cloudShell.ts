@@ -9,7 +9,7 @@ import * as fsExtra from "fs-extra";
 import * as path from "path";
 import { MessageItem } from "vscode";
 import * as vscode from "vscode";
-import { TelemetryWrapper } from "vscode-extension-telemetry-wrapper";
+import * as TelemetryWrapper from "vscode-extension-telemetry-wrapper";
 import { AzureAccount, CloudShell } from "./azure-account.api";
 import { BaseShell } from "./baseShell";
 import { aciConfig, Constants, exportContainerCmd, exportTestScript } from "./constants";
@@ -152,7 +152,7 @@ export class AzureCloudShell extends BaseShell {
             this.terminal.show();
             if (!await this.cloudShell.waitForConnection()) {
                 vscode.window.showErrorMessage("Establish connection to Cloud Shell failed, please try again later.");
-                TelemetryWrapper.error("connectFail");
+                TelemetryWrapper.sendError(Error("connectFail"));
                 return false;
             }
 
@@ -165,7 +165,7 @@ export class AzureCloudShell extends BaseShell {
             this.terminal.sendText(`${command}`);
             return true;
         }
-        TelemetryWrapper.error("sendToTerminalFail");
+        TelemetryWrapper.sendError(Error("sendToTerminalFail"));
         return false;
     }
 
