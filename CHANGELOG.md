@@ -4,6 +4,11 @@ All notable changes to the "Azure Terraform" extension will be documented in thi
 		
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [0.3.2]
+### Fixed
+- fix dependency issues
+  - [#212](https://github.com/Azure/vscode-azureterraform/issues/212)
+  - [#222](https://github.com/Azure/vscode-azureterraform/issues/222)
 
 ## [0.3.1]
 ### Fixed
