@@ -159,7 +159,7 @@
     },
     "dependencies": {
         "azure-arm-resource": "^2.0.0-preview",
-        "azure-storage": "^2.10.1",
+        "azure-storage": "^2.10.7",
         "fs-extra": "^4.0.2",
         "lodash": "^4.17.21",
         "ms-rest": "^2.3.2",
