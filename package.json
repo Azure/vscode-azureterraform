@@ -165,7 +165,7 @@
         "ms-rest": "^2.3.2",
         "ms-rest-azure": "^2.5.7",
         "opn": "5.1.0",
-        "request-promise": "^0.0.1",
+        "request-promise-native": "^1.0.9",
         "vscode-extension-telemetry-wrapper": "^0.8.0"
     },
     "extensionDependencies": [
