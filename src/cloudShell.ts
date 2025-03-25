@@ -178,7 +178,7 @@ export class AzureCloudShell extends BaseShell {
         const response: MessageItem = await vscode.window.showWarningMessage(message, DialogOption.ok, DialogOption.cancel);
         if (response === DialogOption.ok) {
             const accountAPI: AzureAccount = vscode.extensions
-                .getExtension<AzureAccount>("ms-vscode.azure-account")!.exports;
+                .getExtension<AzureAccount>("ms-azuretools.vscode-azureresourcegroups")!.exports;
 
             this.cloudShell =  accountAPI.createCloudShell("Linux");
 
