@@ -10,7 +10,7 @@ import * as settingUtils from "./settingUtils";
 import { openUrlHintOrNotShowAgain } from "./uiUtils";
 
 export async function checkTerraformInstalled(): Promise<void> {
-    if (settingUtils.isTerminalSetToCloudShell() || !settingUtils.getCheckTerraformCmd()) {
+    if (!settingUtils.getCheckTerraformCmd()) {
         return;
     }
     try {

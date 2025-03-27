@@ -26,16 +26,7 @@
         "azure"
     ],
     "activationEvents": [
-        "workspaceContains:**/*.tf",
-        "onCommand:azureTerraform.init",
-        "onCommand:azureTerraform.plan",
-        "onCommand:azureTerraform.apply",
-        "onCommand:azureTerraform.validate",
-        "onCommand:azureTerraform.refresh",
-        "onCommand:azureTerraform.destroy",
-        "onCommand:azureTerraform.visualize",
-        "onCommand:azureTerraform.exectest",
-        "onCommand:azureTerraform.push"
+        "workspaceContains:**/*.tf"
     ],
     "main": "./out/extension",
     "contributes": {
@@ -167,8 +158,5 @@
         "opn": "5.1.0",
         "request-promise-native": "^1.0.9",
         "vscode-extension-telemetry-wrapper": "^0.8.0"
-    },
-    "extensionDependencies": [
-        "ms-azuretools.vscode-azureresourcegroups"
-    ]
+    }
 }
