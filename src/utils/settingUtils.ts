@@ -6,7 +6,13 @@
 import * as vscode from "vscode";
 
 export function isTerminalSetToCloudShell(): boolean {
-    return vscode.workspace.getConfiguration().get("azureTerraform.terminal") === "cloudshell";
+    if (vscode.workspace.getConfiguration().get("azureTerraform.terminal") !== "cloudshell") {
+        vscode.window.showInformationMessage(
+            "Cloud Shell is no longer supported by Azure Terraform extension due to deprecation of Azure Account extension. Defaulting to integrated terminal.",
+        );
+    }
+
+    return false;
 }
 
 export function getSyncFileBlobPattern(): vscode.GlobPattern {

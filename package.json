@@ -44,12 +44,12 @@
             "properties": {
                 "azureTerraform.terminal": {
                     "type": "string",
-                    "default": "cloudshell",
+                    "default": "integrated",
                     "enum": [
                         "cloudshell",
                         "integrated"
                     ],
-                    "description": "Specifies terminal used to run Terraform commands. Valid settings are `cloudshell` or `integrated`."
+                    "description": "Specifies terminal used to run Terraform commands. Valid setting is `integrated`."
                 },
                 "azureTerraform.checkTerraformCmd": {
                     "type": "boolean",
@@ -167,8 +167,5 @@
         "opn": "5.1.0",
         "request-promise-native": "^1.0.9",
         "vscode-extension-telemetry-wrapper": "^0.8.0"
-    },
-    "extensionDependencies": [
-        "ms-azuretools.vscode-azureresourcegroups"
-    ]
+    }
 }

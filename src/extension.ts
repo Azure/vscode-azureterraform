@@ -78,7 +78,7 @@ export async function activate(ctx: vscode.ExtensionContext) {
 
     ctx.subscriptions.push(TelemetryWrapper.instrumentOperationAsVsCodeCommand("azureTerraform.push", async () => {
         if (!isTerminalSetToCloudShell()) {
-            vscode.window.showErrorMessage("Push function only available when using cloudshell.");
+            vscode.window.showErrorMessage("Push function only available when using cloudshell. Which is not currently supported.");
             return;
         }
         if (_.isEmpty(vscode.workspace.workspaceFolders)) {
