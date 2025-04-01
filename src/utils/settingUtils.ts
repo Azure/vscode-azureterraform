@@ -10,6 +10,7 @@ export function isTerminalSetToCloudShell(): boolean {
         vscode.window.showInformationMessage(
             "Cloud Shell is no longer supported by Azure Terraform extension due to deprecation of Azure Account extension. Defaulting to integrated terminal.",
         );
+        vscode.workspace.getConfiguration().update("azureTerraform.terminal", "integrated");
     }
 
     return false;
