@@ -177,6 +177,7 @@ export class AzureCloudShell extends BaseShell {
         const message = "Do you want to open CloudShell?";
         const response: MessageItem = await vscode.window.showWarningMessage(message, DialogOption.ok, DialogOption.cancel);
         if (response === DialogOption.ok) {
+            // TODO: Azure Account API is deprecated and need to be replaced once support for Azure Account API is migrated.
             const accountAPI: AzureAccount = vscode.extensions
                 .getExtension<AzureAccount>("ms-vscode.azure-account")!.exports;
 

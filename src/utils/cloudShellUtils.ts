@@ -5,7 +5,7 @@
 
 "use strict";
 
-import * as request from "request-promise";
+import * as request from "request-promise-native";
 import * as TelemetryWrapper from "vscode-extension-telemetry-wrapper";
 import { AzureSession, CloudShell } from "../azure-account.api";
 
