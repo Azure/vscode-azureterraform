@@ -1,6 +1,4 @@
 # Azure Terraform
-[![Build Status](https://travis-ci.org/Azure/vscode-azureterraform.svg?branch=master)](https://travis-ci.org/Azure/vscode-azureterraform)
-[![Release Status](https://vsmarketplacebadge.apphb.com/version-short/ms-azuretools.vscode-azureterraform.svg)](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-azureterraform)
 
 The VSCode Azure Terraform extension is designed to increase developer productivity authoring, testing and using Terraform with Azure. The extension provides terraform command support and resource graph visualization.
 
