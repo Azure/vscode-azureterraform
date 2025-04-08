@@ -8,15 +8,17 @@
 import * as _ from "lodash";
 import * as vscode from "vscode";
 import * as TelemetryWrapper from "vscode-extension-telemetry-wrapper";
-import { TerraformCommand } from "./shared";
-import { TestOption } from "./shared";
-import { terraformShellManager } from "./terraformShellManager";
-import { getSyncFileBlobPattern, isTerminalSetToCloudShell } from "./utils/settingUtils";
-import { checkTerraformInstalled } from "./utils/terraformUtils";
-import { DialogOption } from "./utils/uiUtils";
-import { selectWorkspaceFolder } from "./utils/workspaceUtils";
+import { Executable, LanguageClient, LanguageClientOptions, ServerOptions } from "vscode-languageclient/node";
+import {TerraformCommand} from "./shared";
+import {TestOption} from "./shared";
+import {terraformShellManager} from "./terraformShellManager";
+import {getSyncFileBlobPattern, isTerminalSetToCloudShell} from "./utils/settingUtils";
+import {checkTerraformInstalled} from "./utils/terraformUtils";
+import {DialogOption} from "./utils/uiUtils";
+import {selectWorkspaceFolder} from "./utils/workspaceUtils";
 
 let fileWatcher: vscode.FileSystemWatcher;
+let lspClient: LanguageClient;
 
 export async function activate(ctx: vscode.ExtensionContext) {
     await checkTerraformInstalled();
@@ -64,7 +66,7 @@ export async function activate(ctx: vscode.ExtensionContext) {
     ctx.subscriptions.push(vscode.commands.registerCommand("azureTerraform.exectest", async () => {
         const pick: string = await vscode.window.showQuickPick(
             [TestOption.lint, TestOption.e2e, TestOption.custom],
-            { placeHolder: "Select the type of test that you want to run" },
+            {placeHolder: "Select the type of test that you want to run"},
         );
         if (!pick) {
             return;
@@ -87,12 +89,18 @@ export async function activate(ctx: vscode.ExtensionContext) {
         }
         await terraformShellManager.getCloudShell().pushFiles(await vscode.workspace.findFiles(getSyncFileBlobPattern()));
     }));
+
+    lspClient = setupLanguageClient(ctx);
 }
 
 export function deactivate(): void {
     terraformShellManager.dispose();
     if (fileWatcher) {
         fileWatcher.dispose();
+    }
+
+    if (lspClient) {
+        lspClient.stop();
     }
 }
 
@@ -105,4 +113,37 @@ function initFileWatcher(ctx: vscode.ExtensionContext): void {
             }
         }),
     );
+}
+
+function setupLanguageClient(ctx: vscode.ExtensionContext): LanguageClient {
+    const executable: Executable = {
+        command: ctx.asAbsolutePath("./azurerm-lsp"),
+        args: ["serve"],
+    };
+
+    const serverOptions: ServerOptions = {
+        run: executable,
+        debug: executable,
+    };
+
+    const clientOptions: LanguageClientOptions = {
+        documentSelector: [{scheme: "file", language: "terraform"}],
+        outputChannel: vscode.window.createOutputChannel("AzureRM LSP"),
+        synchronize: {
+            fileEvents: vscode.workspace.createFileSystemWatcher("**/*.tf"),
+        },
+    };
+
+    const client = new LanguageClient("azurerm", serverOptions, clientOptions);
+
+    client.start().catch((err) => {
+        vscode.window.showErrorMessage(`Failed to start AzureRM LSP client: ${err.message}`);
+        console.error("Failed to start AzureRM LSP client:", err);
+    });
+
+    client.onDidChangeState((event) => {
+        console.log(`Client: ${event.newState}`);
+    });
+
+    return client;
 }
