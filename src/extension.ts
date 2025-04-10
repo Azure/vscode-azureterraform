@@ -11,6 +11,7 @@ import * as TelemetryWrapper from "vscode-extension-telemetry-wrapper";
 import { Executable, LanguageClient, LanguageClientOptions, ServerOptions } from "vscode-languageclient/node";
 import {TerraformCommand} from "./shared";
 import {TestOption} from "./shared";
+import {ShouldShowSurvey, ShowSurvey} from "./survey";
 import {terraformShellManager} from "./terraformShellManager";
 import {getSyncFileBlobPattern, isTerminalSetToCloudShell} from "./utils/settingUtils";
 import {checkTerraformInstalled} from "./utils/terraformUtils";
@@ -90,7 +91,15 @@ export async function activate(ctx: vscode.ExtensionContext) {
         await terraformShellManager.getCloudShell().pushFiles(await vscode.workspace.findFiles(getSyncFileBlobPattern()));
     }));
 
+    ctx.subscriptions.push(TelemetryWrapper.instrumentOperationAsVsCodeCommand("azureTerraform.showSurvey", async () => {
+        await ShowSurvey();
+    }));
+
     lspClient = setupLanguageClient(ctx);
+
+    if (await ShouldShowSurvey()) {
+        await ShowSurvey();
+    }
 }
 
 export function deactivate(): void {
@@ -100,7 +109,7 @@ export function deactivate(): void {
     }
 
     if (lspClient) {
-        lspClient.stop();
+        lspClient.dispose();
     }
 }
 

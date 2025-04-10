@@ -35,7 +35,8 @@
         "onCommand:azureTerraform.destroy",
         "onCommand:azureTerraform.visualize",
         "onCommand:azureTerraform.exectest",
-        "onCommand:azureTerraform.push"
+        "onCommand:azureTerraform.push",
+        "onCommand:azureTerraform.showSurvey"
     ],
     "main": "./out/extension",
     "contributes": {
@@ -85,6 +86,18 @@
                     "type": "string",
                     "default": "westus",
                     "description": "Indicates the location where to deploy the test container instance. By default: 'westus'."
+                },
+                "azureTerraform.survey": {
+                    "surveyPromptDate": {
+                        "type": "string",
+                        "default": "none",
+                        "description": "Date of the AzureRM survey will be prompted to the user"
+                    },
+                    "surveyPromptIgnoredCount": {
+                        "type": "number",
+                        "default": 0,
+                        "description": "Number of times the survey prompt has been ignored"
+                    }
                 }
             }
         },
@@ -133,6 +146,10 @@
                 "command": "azureTerraform.push",
                 "title": "Push",
                 "category": "Azure Terraform"
+            },
+            {
+                "command": "azureTerraform.showSurvey",
+                "title": "Terraform AzureRM Provider: Show Survey"
             }
         ]
     },

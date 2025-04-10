@@ -4,13 +4,14 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as vscode from "vscode";
+import {ConfigurationTarget} from "vscode";
 
 export function isTerminalSetToCloudShell(): boolean {
     if (vscode.workspace.getConfiguration().get("azureTerraform.terminal") === "cloudshell") {
         vscode.window.showInformationMessage(
             "Cloud Shell is no longer supported by Azure Terraform extension due to deprecation of Azure Account extension. Defaulting to integrated terminal.",
         );
-        vscode.workspace.getConfiguration().update("azureTerraform.terminal", "integrated");
+        vscode.workspace.getConfiguration().update("azureTerraform.terminal", "integrated", ConfigurationTarget.Global);
     }
 
     return false;
@@ -46,4 +47,12 @@ export function getCheckTerraformCmd(): boolean {
 
 export function setCheckTerraformCmd(checked: boolean): void {
     vscode.workspace.getConfiguration().update("azureTerraform.checkTerraformCmd", checked);
+}
+
+export function getSurvey(): any {
+    return vscode.workspace.getConfiguration().get("azureTerraform.survey");
+}
+
+export function setSurvey(survey: any): void {
+    vscode.workspace.getConfiguration().update("azureTerraform.survey" , survey, ConfigurationTarget.Global);
 }
