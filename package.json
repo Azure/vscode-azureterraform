@@ -206,7 +206,7 @@
         "ms-rest-azure": "^2.5.7",
         "opn": "5.1.0",
         "request-promise-native": "^1.0.9",
-        "vscode-extension-telemetry-wrapper": "^0.8.0",
-        "vscode-languageclient": "^9.0.1"
+        "vscode-languageclient": "^9.0.1",
+        "vscode-extension-telemetry-wrapper": "^0.8.0"
     }
 }
