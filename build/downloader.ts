@@ -44,7 +44,7 @@ function getArch(arch: string) {
 }
 
 async function getRelease(): Promise<Release> {
-  const response = await axios.get('https://api.github.com/repos/Azure/azapi-lsp/releases', {
+  const response = await axios.get('https://api.github.com/repos/Azure/azurerm-lsp/releases', {
     headers: {},
   });
   if (response.status == 200 && response.data.length != 0) {
@@ -70,7 +70,7 @@ async function run(platform: string, architecture: string) {
   const repoDir = cwd.replace(buildDir, '');
   const installPath = path.join(repoDir, 'bin');
   if (fs.existsSync(installPath)) {
-    console.log('azapi-lsp path exists. Exiting');
+    console.log('azurerm-lsp path exists. Exiting');
     return;
   }
 
@@ -89,13 +89,13 @@ async function run(platform: string, architecture: string) {
   }
 
   if (!build) {
-    throw new Error(`Install error: no matching azapi-lsp binary for ${os}/${arch}`);
+    throw new Error(`Install error: no matching azurerm-lsp binary for ${os}/${arch}`);
   }
 
   console.log(build);
 
   // download zip
-  const zipfile = path.resolve(installPath, `azapi-lsp_${release.version}.zip`);
+  const zipfile = path.resolve(installPath, `azurerm-lsp_${release.version}.zip`);
   await axios.get(build!.downloadUrl, { responseType: 'stream' }).then(function (response) {
     const fileWritePipe = fs.createWriteStream(zipfile);
     response.data.pipe(fileWritePipe);
@@ -107,7 +107,7 @@ async function run(platform: string, architecture: string) {
 
   // unzip
   const fileExtension = os === 'windows' ? '.exe' : '';
-  const binaryName = path.resolve(installPath, `azapi-lsp${fileExtension}`);
+  const binaryName = path.resolve(installPath, `azurerm-lsp${fileExtension}`);
   const fileReadStream = fs.createReadStream(zipfile);
   const unzipPipe = unzip.Extract({ path: installPath });
   fileReadStream.pipe(unzipPipe);
