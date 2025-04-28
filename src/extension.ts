@@ -126,7 +126,7 @@ function initFileWatcher(ctx: vscode.ExtensionContext): void {
 
 function setupLanguageClient(ctx: vscode.ExtensionContext): LanguageClient {
     const executable: Executable = {
-        command: ctx.asAbsolutePath("./azurerm-lsp"),
+        command: ctx.asAbsolutePath("./bin/azurerm-lsp"),
         args: ["serve"],
     };
 

@@ -3,7 +3,6 @@ import {getSurvey, setSurvey} from "./utils/settingUtils";
 
 export async function ShouldShowSurvey(): Promise<boolean> {
     let currentConfig: any = getSurvey();
-    console.log("currentConfig", currentConfig);
     if (
         !currentConfig ||
         !currentConfig.surveyPromptDate ||
@@ -45,7 +44,7 @@ export async function ShowSurvey(): Promise<void> {
 
     switch (selected) {
         case "Yes":
-            vscode.commands.executeCommand("vscode.open", vscode.Uri.parse("https://aka.ms/AzAPI2025"));
+            vscode.commands.executeCommand("vscode.open", vscode.Uri.parse("https://microsoft.qualtrics.com/jfe/form/SV_cImsrdNc4uF3LBc"));
             // reset the survey prompt date and ignored count, remind after 180 days
             currentConfig.surveyPromptIgnoredCount = 0;
             nextPromptDate.setDate(nextPromptDate.getDate() + 180);
@@ -71,4 +70,3 @@ export async function ShowSurvey(): Promise<void> {
     }
     await setSurvey(currentConfig);
 }
-

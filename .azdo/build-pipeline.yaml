@@ -1,0 +1,146 @@
+trigger: none
+
+parameters:
+  - name: version
+    displayName: 'Release Version (e.g. v0.1.0)'
+    type: string
+    default: 'v1.15.0'
+  - name: azurermRef
+    displayName: "The Git ref of the github.com/Azure/vscode-azureterraform to checkout"
+    type: string
+    default: refs/heads/main
+
+pool:
+  name: pool-ubuntu-2004
+
+stages:
+  - stage: Build
+    displayName: 'Build'
+    jobs:
+      - job: package
+        displayName: 'Package & Signing'
+        strategy:
+          matrix:
+            win32-x64:
+              vsce_target: win32-x64
+              ls_target: windows_amd64
+              npm_config_arch: x64
+            win32-arm64:
+              vsce_target: win32-arm64
+              ls_target: windows_arm64
+              npm_config_arch: arm
+            linux-x64:
+              vsce_target: linux-x64
+              ls_target: linux_amd64
+              npm_config_arch: x64
+            linux-arm64:
+              vsce_target: linux-arm64
+              ls_target: linux_arm64
+              npm_config_arch: arm64
+            linux-armhf:
+              vsce_target: linux-armhf
+              ls_target: linux_arm
+              npm_config_arch: arm
+            darwin-x64:
+              vsce_target: darwin-x64
+              ls_target: darwin_amd64
+              npm_config_arch: x64
+            darwin-arm64:
+              vsce_target: darwin-arm64
+              ls_target: darwin_arm64
+              npm_config_arch: arm64
+        steps:
+          - task: NodeTool@0
+            inputs:
+              versionSpec: '23.x'
+            displayName: 'Install Node.js'
+
+          - script: npm ci
+            displayName: 'Install dependencies'
+            env:
+              npm_config_arch: $(npm_config_arch)
+
+          - script: npm run package -- --target=$(vsce_target)
+            displayName: 'Package VSIX'
+            env:
+              ls_target: $(ls_target)
+
+          - script: mkdir -p ./output && cp ./vscode-azureterraform-${vsce_target}-${VERSION#v}.vsix ./output/extension.vsix
+            displayName: 'Prepare for signing'
+            env:
+              VERSION: ${{ parameters.version }}
+              vsce_target: $(vsce_target)
+
+          - script: npx @vscode/vsce@latest generate-manifest -i ./output/extension.vsix -o ./output/extension.manifest
+            displayName: 'Generate extension manifest'
+            env:
+              vsce_target: $(vsce_target)
+
+          - script: cp ./output/extension.manifest ./output/extension.signature.p7s
+            displayName: 'Prepare manifest for signing'
+            env:
+              vsce_target: $(vsce_target)
+
+          - task: UseDotNet@2
+            displayName: "Install .NET SDK"
+            inputs:
+              packageType: "sdk"
+              version: "6.x"
+
+          - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@5
+            inputs:
+              ConnectedServiceName: '$(ESRPServiceConnectionName)'
+              AppRegistrationClientId: '$(ESRPAppClientId)'
+              AppRegistrationTenantId: '$(ESRPAppTenantId)'
+              AuthAKVName: '$(ESRPKVName)'
+              AuthCertName: '$(ESRPAuthCertName)'
+              AuthSignCertName: '$(ESRPSignCertName)'
+              Pattern: 'extension.signature.p7s'
+              FolderPath: './output'
+              signConfigType: inlineSignParams
+              inlineOperation: |
+                [
+                  {
+                    "keyCode": "CP-401405",
+                    "operationSetCode": "VSCodePublisherSign",
+                    "parameters" : [],
+                    "toolName": "sign",
+                    "toolVersion": "1.0"
+                  }
+                ]
+              SessionTimeout: 90
+              MaxConcurrency: 25
+              MaxRetryAttempts: 5
+              PendingAnalysisWaitTimeoutMinutes: 5
+            displayName: 'Sign extension'
+
+          - script: mkdir -p ./dist && zip -j ./dist/$(vsce_target).zip ./output/*
+            displayName: 'Package for uploading'
+            env:
+              vsce_target: $(vsce_target)
+
+          - task: PublishPipelineArtifact@1
+            displayName: "Publish Pipline Artifact"
+            inputs:
+              targetPath: "$(system.defaultWorkingDirectory)/dist"
+              publishLocation: 'pipeline'
+
+  - stage: Release
+    jobs:
+      - job: release
+        displayName: 'Github Release'
+        steps:
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              path: $(system.defaultWorkingDirectory)/dist
+          - task: GitHubRelease@1
+            displayName: "Draft Github Release"
+            inputs:
+              gitHubConnection: "vscode-azureterraform2azurerm"
+              repositoryName: "Azure/vscode-azureterraform"
+              action: "create"
+              target: ${{ parameters.azurermRef }}
+              tagPattern: '^v\d+\.\d+\.\d+.*'
+              assets: "./dist/*/*.zip"
+              isDraft: true
+              addChangeLog: false
