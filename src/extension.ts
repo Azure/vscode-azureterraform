@@ -138,9 +138,6 @@ function setupLanguageClient(ctx: vscode.ExtensionContext): LanguageClient {
     const clientOptions: LanguageClientOptions = {
         documentSelector: [{scheme: "file", language: "terraform"}],
         outputChannel: vscode.window.createOutputChannel("AzureRM LSP"),
-        synchronize: {
-            fileEvents: vscode.workspace.createFileSystemWatcher("**/*.tf"),
-        },
     };
 
     const client = new LanguageClient("azurerm", serverOptions, clientOptions);

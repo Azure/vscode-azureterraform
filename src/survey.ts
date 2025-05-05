@@ -3,6 +3,7 @@ import {getSurvey, setSurvey} from "./utils/settingUtils";
 
 export async function ShouldShowSurvey(): Promise<boolean> {
     let currentConfig: any = getSurvey();
+
     if (
         !currentConfig ||
         !currentConfig.surveyPromptDate ||
