@@ -136,7 +136,7 @@ stages:
           - task: GitHubRelease@1
             displayName: "Draft Github Release"
             inputs:
-              gitHubConnection: "vscode-azureterraform2azurerm"
+              gitHubConnection: "Azure"
               repositoryName: "Azure/vscode-azureterraform"
               action: "create"
               target: ${{ parameters.azurermRef }}
