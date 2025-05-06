@@ -2,10 +2,6 @@ import { GenericResourceExpanded } from "@azure/arm-resources";
 import { AzureSubscription } from "@microsoft/vscode-azext-azureauth";
 import axios, { AxiosError } from "axios";
 import * as vscode from "vscode";
-import * as path from "path";
-import * as fse from "fs-extra";
-import { executeCommand } from "./utils/cpUtils"; // Assuming cpUtils exists
-import { selectWorkspaceFolder } from "./utils/workspaceUtils"; // Assuming workspaceUtils exists
 import { getAccessTokenFromSubscription } from "./auth";
 
 interface IExportRequestBody {
@@ -297,97 +293,43 @@ export async function ExportSingleResource(
 /**
  * Exports all resources within a specified Azure resource group to Terraform.
  */
-// Define provider type locally or import
-type TerraformProviderType = 'azurerm' | 'azapi';
-
-// Update runAztfExport to accept and use providerType
-async function runAztfExport(
-    subscription: AzureSubscription,
-    commandArgs: string[],
-    providerType: TerraformProviderType, // Add providerType parameter
-    targetFolder: string
-): Promise<void> {
-
-    const baseCommand = "aztfexport";
-    const fullArgs = [...commandArgs];
-
-    // *** IMPORTANT: Verify this flag with `aztfexport --help` ***
-    // Add the provider flag based on the selected providerType
-    // Example: --provider=value. Adjust if the flag name is different.
-    fullArgs.push(`--provider=${providerType}`);
-
-    // Add non-interactive flag
-    fullArgs.push("--non-interactive");
-
-    // Ensure target directory exists
-    await fse.ensureDir(targetFolder);
-
-    try {
-        await vscode.window.withProgress({
-            location: vscode.ProgressLocation.Notification,
-            title: `Running aztfexport (${providerType})...`, // Include provider in title
-            cancellable: false
-        }, async (progress) => {
-            progress.report({ message: "Executing command..." });
-            await executeCommand(baseCommand, fullArgs, {
-                shell: true,
-                cwd: targetFolder,
-            });
-            progress.report({ message: "Export complete.", increment: 100 });
-        });
-
-        vscode.window.showInformationMessage(`Terraform configuration exported successfully to ${targetFolder} using the ${providerType} provider.`);
-        vscode.commands.executeCommand('revealInFinder', vscode.Uri.file(targetFolder));
-
-    } catch (error: any) {
-        vscode.window.showErrorMessage(`aztfexport command failed: ${error.message || error}. Check terminal output for details.`);
-        console.error("aztfexport error:", error);
-    }
-}
-
-// Update ExportResourceGroup signature and call
 export async function ExportResourceGroup(
     subscription: AzureSubscription,
     resources: GenericResourceExpanded[],
     resourceGroupName: string,
-    providerType: TerraformProviderType // Add providerType parameter
 ): Promise<void> {
-    const targetFolder = await selectWorkspaceFolder("Select a folder to export the Resource Group configuration");
-    if (!targetFolder) return;
+    const operationType = `resource group '${resourceGroupName}'`;
+    await vscode.window.withProgress({
+        location: vscode.ProgressLocation.Notification,
+        title: `Exporting Azure resource group to Terraform`,
+        cancellable: true, // Allow cancellation during polling
+    }, async (progress, token) => {
+        try {
+            if (!resourceGroupName) {
+                throw new Error("Resource group name is required for exporting an entire group.");
+            }
+            if (resources.length === 0) {
+                // Report progress instead of just showing info message
+                progress.report({ message: `Resource group '${resourceGroupName}' is empty. Nothing to export.`, increment: 100 });
+                vscode.window.showInformationMessage(`Resource group '${resourceGroupName}' is empty. Nothing to export.`);
+                return;
+            }
 
-    const commandArgs = ["rg", resourceGroupName];
-    // Pass providerType to the runner function
-    await runAztfExport(subscription, commandArgs, providerType, targetFolder);
-}
+            progress.report({ message: `Preparing export for ${resources.length} resources in ${operationType}...` });
 
-// Update ExportSingleResource signature and call
-export async function ExportSingleResource(
-    subscription: AzureSubscription,
-    resource: GenericResourceExpanded,
-    providerType: TerraformProviderType // Add providerType parameter
-): Promise<void> {
-    if (!resource.id) {
-        vscode.window.showErrorMessage("Cannot export resource: Resource ID is missing.");
-        return;
-    }
-    const targetFolder = await selectWorkspaceFolder(`Select a folder to export the configuration for resource: ${resource.name}`);
-    if (!targetFolder) return;
+            const requestBody: IExportRequestBody = {
+                type: "ExportResourceGroup",
+                targetProvider: "azurerm",
+                resourceGroupName,
+            };
 
-    const commandArgs = ["resource", resource.id];
-    // Pass providerType to the runner function
-    await runAztfExport(subscription, commandArgs, providerType, targetFolder);
-}
-
-// Update ExportResourceById signature and call
-export async function ExportResourceById(
-    subscription: AzureSubscription,
-    resourceId: string,
-    providerType: TerraformProviderType // Add providerType parameter
-): Promise<void> {
-     const targetFolder = await selectWorkspaceFolder(`Select a folder to export the configuration for resource ID: ${resourceId}`);
-    if (!targetFolder) return;
-
-    const commandArgs = ["resource", resourceId];
-    // Pass providerType to the runner function
-    await runAztfExport(subscription, commandArgs, providerType, targetFolder);
+            // Call the function that handles polling
+            const finalPollingData = await requestTerraformExportWithPolling(subscription, requestBody, progress, token, operationType);
+             // Handle the successful result
+            await handleExportSuccess(finalPollingData, operationType);
+        } catch (error) {
+             // Handle errors from preparation or polling
+            handleExportError(error, operationType);
+        }
+    });
 }
