@@ -212,10 +212,12 @@ export async function activate(ctx: vscode.ExtensionContext) {
 
         if (selectedResourceOrGroupPick.isGroupExport) {
             vscode.window.showInformationMessage(`Starting export for all resources in group: ${selectedGroupPick.groupName}`);
-            await ExportResourceGroup(subscription, selectedGroupPick.resources, selectedGroupPick.groupName);
+            const targetProvider = await promptForTargetProvider();
+            await ExportResourceGroup(subscription, selectedGroupPick.resources, selectedGroupPick.groupName, targetProvider);
         } else if (selectedResourceOrGroupPick.resource?.id) {
             vscode.window.showInformationMessage(`Starting export for resource: ${selectedResourceOrGroupPick.resource.name}`);
-            await ExportSingleResource(subscription, selectedResourceOrGroupPick.resource);
+            const targetProvider = await promptForTargetProvider();
+            await ExportSingleResource(subscription, selectedResourceOrGroupPick.resource, targetProvider);
         } else {
              vscode.window.showErrorMessage("Invalid selection or the selected resource is missing a required ID.");
         }
@@ -226,6 +228,20 @@ export async function activate(ctx: vscode.ExtensionContext) {
     if (await ShouldShowSurvey()) {
         await ShowSurvey();
     }
+}
+
+async function promptForTargetProvider(): Promise<string> {
+    const providerPicks: vscode.QuickPickItem[] = [
+        { label: "azurerm", description: "AzureRM Provider" },
+        { label: "azapi", description: "Azure API Provider" },
+    ];
+
+    const selectedProvider = await vscode.window.showQuickPick(providerPicks, {
+        placeHolder: "Select the target provider for the export",
+        ignoreFocusOut: true,
+    });
+
+    return selectedProvider ? selectedProvider.label : "azurerm";
 }
 
 export function deactivate(): void {

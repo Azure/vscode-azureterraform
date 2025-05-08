@@ -6,7 +6,7 @@ import { getAccessTokenFromSubscription } from "./auth";
 
 interface IExportRequestBody {
     type: "ExportResource" | "ExportResourceGroup";
-    targetProvider: "azurerm";
+    targetProvider: string;
     resourceIds?: string[];
     resourceGroupName?: string;
     resourceName?: string;
@@ -257,6 +257,7 @@ function handleExportError(error: any, operationDescription: string): void {
 export async function ExportSingleResource(
     subscription: AzureSubscription,
     resource: GenericResourceExpanded,
+    targetProvider: string,
 ): Promise<void> {
     const operationType = `resource '${resource.name || "unnamed-resource"}'`;
     await vscode.window.withProgress({
@@ -273,7 +274,7 @@ export async function ExportSingleResource(
 
             const requestBody: IExportRequestBody = {
                 type: "ExportResource",
-                targetProvider: "azurerm",
+                targetProvider: targetProvider,
                 resourceIds: [resource.id],
                 resourceName: resource.name || "unnamed-resource",
             };
@@ -297,6 +298,7 @@ export async function ExportResourceGroup(
     subscription: AzureSubscription,
     resources: GenericResourceExpanded[],
     resourceGroupName: string,
+    targetProvider: string,
 ): Promise<void> {
     const operationType = `resource group '${resourceGroupName}'`;
     await vscode.window.withProgress({
@@ -319,7 +321,7 @@ export async function ExportResourceGroup(
 
             const requestBody: IExportRequestBody = {
                 type: "ExportResourceGroup",
-                targetProvider: "azurerm",
+                targetProvider: targetProvider,
                 resourceGroupName,
             };
 
