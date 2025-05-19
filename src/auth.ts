@@ -5,11 +5,6 @@ import * as vscode from "vscode";
 
 let currentSubscription: AzureSubscription | undefined;
 
-export function clearAzureSessionSelection(): void {
-    currentSubscription = undefined;
-    vscode.window.showInformationMessage("Cleared current Azure subscription selection.");
-}
-
 export async function selectSubscription(): Promise<AzureSubscription | undefined> {
     const provider = new VSCodeAzureSubscriptionProvider();
 
@@ -41,7 +36,13 @@ export async function selectSubscription(): Promise<AzureSubscription | undefine
             progress.report({ message: "Already signed in. Fetching subscriptions..." });
         }
 
-        const subscriptions = await provider.getSubscriptions(false);
+        let subscriptions: AzureSubscription[] | undefined;
+        try {
+            subscriptions = await provider.getSubscriptions(false);
+        } catch (error) {
+            vscode.window.showErrorMessage(`Error fetching subscriptions: ${error.message || error}`);
+            return;
+        }
 
         if (!subscriptions || subscriptions.length === 0) {
             vscode.window.showErrorMessage("No Azure subscriptions found for this account.");
@@ -58,7 +59,7 @@ export async function selectSubscription(): Promise<AzureSubscription | undefine
             isSignOut: false,
         }));
 
-        subPicks.unshift({ label: "$(sign-out) Sign out and select account", description: "", subscription: null, isSignOut: true });
+        subPicks.unshift({ label: "$(sign-out) Sign into another account", description: "", subscription: null, isSignOut: true });
 
         const selectedSubPick = await vscode.window.showQuickPick(subPicks, {
             placeHolder: "Select the Azure subscription",
@@ -74,7 +75,8 @@ export async function selectSubscription(): Promise<AzureSubscription | undefine
 
         if (selectedSubPick.isSignOut) {
             vscode.window.showInformationMessage("Signing out of Azure account...");
-            await provider.signIn();
+            currentSubscription = undefined;
+            await selectSubscription();
             return;
         }
 
@@ -89,32 +91,6 @@ export async function selectSubscription(): Promise<AzureSubscription | undefine
         return undefined;
     }
 }
-
-export async function ensureSubscriptionSelected(): Promise<AzureSubscription | undefined> {
-    if (!currentSubscription) {
-        vscode.window.showInformationMessage("Azure subscription not selected. Please choose.");
-        await selectSubscription();
-    }
-
-    if (!currentSubscription) {
-         vscode.window.showWarningMessage("Operation cancelled: No Azure subscription selected.");
-    }
-    return currentSubscription;
-}
-
-
-export async function findSubscriptionById(subscriptionId: string): Promise<AzureSubscription | undefined> {
-    const provider = new VSCodeAzureSubscriptionProvider();
-    // Sign-in check might be needed if called independently
-    if (!await provider.isSignedIn()) {
-        // Optionally prompt for sign-in here or return undefined
-        return undefined;
-    }
-    // Fetch *all* subscriptions, ignoring filters, to find the one matching the ID
-    const allSubscriptions = await provider.getSubscriptions(false);
-    return allSubscriptions.find((sub) => sub.subscriptionId === subscriptionId);
-}
-
 
 export async function listAzureResourcesGrouped(credential: TokenCredential, subscriptionId: string): Promise<Map<string, GenericResourceExpanded[]>> {
     const groupedResources = new Map<string, GenericResourceExpanded[]>();
