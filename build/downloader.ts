@@ -119,7 +119,7 @@ async function run(platform: string, architecture: string) {
     fileReadStream.on('error', reject);
   });
 
-  fs.rmdirSync(zipfile);
+  fs.unlinkSync(zipfile);
 }
 
 let os = process.platform.toString();
