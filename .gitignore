@@ -3,3 +3,8 @@ node_modules
 .vscode-test/
 *.vsix
 .idea
+
+
+bin
+azurerm-lsp
+azurerm-lsp.exe

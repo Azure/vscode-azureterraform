@@ -5,18 +5,22 @@
 
 "use strict";
 
+import { GenericResourceExpanded } from "@azure/arm-resources";
 import * as _ from "lodash";
 import * as vscode from "vscode";
 import * as TelemetryWrapper from "vscode-extension-telemetry-wrapper";
 import { Executable, LanguageClient, LanguageClientOptions, ServerOptions } from "vscode-languageclient/node";
-import {TerraformCommand} from "./shared";
-import {TestOption} from "./shared";
-import {ShouldShowSurvey, ShowSurvey} from "./survey";
-import {terraformShellManager} from "./terraformShellManager";
-import {getSyncFileBlobPattern, isTerminalSetToCloudShell} from "./utils/settingUtils";
-import {checkTerraformInstalled} from "./utils/terraformUtils";
-import {DialogOption} from "./utils/uiUtils";
-import {selectWorkspaceFolder} from "./utils/workspaceUtils";
+import { listAzureResourcesGrouped, selectSubscription } from "./auth";
+import { TerraformCommand } from "./shared";
+import { TestOption } from "./shared";
+import { ShouldShowSurvey, ShowSurvey } from "./survey";
+import { ExportResourceGroup, ExportSingleResource } from "./terraformExport";
+import { terraformShellManager } from "./terraformShellManager";
+import {getIconForResourceType} from "./utils/icon";
+import { getSyncFileBlobPattern, isTerminalSetToCloudShell } from "./utils/settingUtils";
+import { checkTerraformInstalled } from "./utils/terraformUtils";
+import { DialogOption } from "./utils/uiUtils";
+import { selectWorkspaceFolder } from "./utils/workspaceUtils";
 
 let fileWatcher: vscode.FileSystemWatcher;
 let lspClient: LanguageClient;
@@ -95,11 +99,148 @@ export async function activate(ctx: vscode.ExtensionContext) {
         await ShowSurvey();
     }));
 
+    ctx.subscriptions.push(TelemetryWrapper.instrumentOperationAsVsCodeCommand("azureTerraform.selectSubscription", async () => {
+        const subscription = await selectSubscription();
+        if (subscription) {
+             vscode.window.showInformationMessage(`Set active Azure subscription to: ${subscription.name}`);
+        }
+    }));
+
+    ctx.subscriptions.push(TelemetryWrapper.instrumentOperationAsVsCodeCommand("azureTerraform.exportResource", async () => {
+        const subscription = await selectSubscription();
+        if (!subscription) {
+            // Message already shown by ensureTenantAndSubscriptionSelected if cancelled/failed
+            return;
+        }
+
+        // Get credential from the validated subscription object
+        const credential = subscription.credential;
+        if (!credential) {
+             vscode.window.showErrorMessage("Could not get credentials for the selected subscription.");
+             return;
+        }
+
+        const groupedResources = await listAzureResourcesGrouped(credential, subscription.subscriptionId);
+
+        if (!groupedResources || groupedResources.size === 0) {
+            vscode.window.showInformationMessage(`No resource groups with exportable resources found in subscription "${subscription.name}".`);
+            return;
+        }
+
+        // --- Level 1: Select Resource Group ---
+        const groupPicks: Array<vscode.QuickPickItem & { groupName: string; resources: GenericResourceExpanded[]; isChangeSubscription?: boolean }> =
+            [
+                {
+                    label: `$(symbol-namespace) Select another subscription`,
+                    groupName: "",
+                    resources: [],
+                    isChangeSubscription: true,
+                },
+            ].concat(
+                Array.from(groupedResources.entries()).map(([groupName, resources]) => ({
+                    label: `$(symbol-namespace) ${groupName}`,
+                    detail: `$(location) Location: ${resources[0]?.location || "N/A"} | $(list-unordered) Resources: ${resources.length}`,
+                    groupName,
+                    resources,
+                    isChangeSubscription: false,
+                })),
+        );
+
+        const selectedGroupPick = await vscode.window.showQuickPick(groupPicks, {
+            placeHolder: "Select the Resource Group containing the resource(s) to export",
+            matchOnDetail: true,
+            ignoreFocusOut: true,
+        });
+
+        if (!selectedGroupPick) {
+            vscode.window.showInformationMessage("Resource group selection cancelled.");
+            return;
+        }
+
+        if (selectedGroupPick.isChangeSubscription) {
+            await selectSubscription();
+            await vscode.commands.executeCommand("azureTerraform.exportResource");
+            return;
+        }
+
+        type ResourcePickItem = vscode.QuickPickItem & ({ resource: GenericResourceExpanded; isGroupExport?: false; isChangeSubscription?: boolean } | { resource?: undefined; isGroupExport: true; isChangeSubscription?: false; })
+
+        const resourcePicks: ResourcePickItem[] = [
+            // Option to select another subscription
+            {
+                label: `$(symbol-namespace) Select another subscription`,
+                description: "",
+                detail: "",
+                resource: undefined,
+                isGroupExport: false,
+                isChangeSubscription: true,
+            },
+            // Option to export the entire group
+            {
+                label: `$(folder-opened) Export ALL resources in group '${selectedGroupPick.groupName}'`,
+                description: `(${selectedGroupPick.resources.length} resources)`,
+                detail: `Exports the entire resource group configuration.`,
+                isGroupExport: true,
+            },
+            ...selectedGroupPick.resources.map((res): ResourcePickItem => ({
+                label: `${getIconForResourceType(res.type)} ${res.name || "Unnamed Resource"}`,
+                description: res.type || "Unknown Type",
+                detail: `$(location) Location: ${res.location || "N/A"} | $(key) ID: ${res.id || "N/A"}`,
+                resource: res,
+                isGroupExport: false,
+            })),
+        ];
+
+        const selectedResourceOrGroupPick = await vscode.window.showQuickPick<ResourcePickItem>(resourcePicks, {
+            placeHolder: `Select a resource OR export all from group "${selectedGroupPick.groupName}"`,
+            matchOnDescription: true,
+            matchOnDetail: true,
+            ignoreFocusOut: true,
+        });
+
+        if (!selectedResourceOrGroupPick) {
+             vscode.window.showInformationMessage("Resource selection cancelled.");
+             return;
+        }
+
+        if (selectedResourceOrGroupPick.isChangeSubscription) {
+            await selectSubscription();
+            await vscode.commands.executeCommand("azureTerraform.exportResource");
+            return;
+        }
+
+        if (selectedResourceOrGroupPick.isGroupExport) {
+            vscode.window.showInformationMessage(`Starting export for all resources in group: ${selectedGroupPick.groupName}`);
+            const targetProvider = await promptForTargetProvider();
+            await ExportResourceGroup(subscription, selectedGroupPick.resources, selectedGroupPick.groupName, targetProvider);
+        } else if (selectedResourceOrGroupPick.resource?.id) {
+            vscode.window.showInformationMessage(`Starting export for resource: ${selectedResourceOrGroupPick.resource.name}`);
+            const targetProvider = await promptForTargetProvider();
+            await ExportSingleResource(subscription, selectedResourceOrGroupPick.resource, targetProvider);
+        } else {
+             vscode.window.showErrorMessage("Invalid selection or the selected resource is missing a required ID.");
+        }
+    }));
+
     lspClient = setupLanguageClient(ctx);
 
     if (await ShouldShowSurvey()) {
         await ShowSurvey();
     }
+}
+
+async function promptForTargetProvider(): Promise<string> {
+    const providerPicks: vscode.QuickPickItem[] = [
+        { label: "azurerm", description: "AzureRM Provider" },
+        { label: "azapi", description: "Azure API Provider" },
+    ];
+
+    const selectedProvider = await vscode.window.showQuickPick(providerPicks, {
+        placeHolder: "Select the target provider for the export",
+        ignoreFocusOut: true,
+    });
+
+    return selectedProvider ? selectedProvider.label : "azurerm";
 }
 
 export function deactivate(): void {
