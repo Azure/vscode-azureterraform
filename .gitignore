@@ -8,3 +8,4 @@ node_modules
 bin
 azurerm-lsp
 azurerm-lsp.exe
+.DS_Store

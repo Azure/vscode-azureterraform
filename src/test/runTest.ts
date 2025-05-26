@@ -1,23 +1,34 @@
-import * as path from "path";
+import * as path from 'path';
+import { runTests } from '@vscode/test-electron';
+import { TestOptions } from '@vscode/test-electron/out/runTest';
 
-import { runTests } from "vscode-test";
+async function main(): Promise<void> {
+  // The folder containing the Extension Manifest package.json
+  // Passed to `--extensionDevelopmentPath`
+  // this is also the process working dir, even if vscode opens another folder
+  const extensionDevelopmentPath = path.resolve(__dirname, '../../');
 
-async function main() {
-	try {
-		// The folder containing the Extension Manifest package.json
-		// Passed to `--extensionDevelopmentPath`
-		const extensionDevelopmentPath = path.resolve(__dirname, "../../");
+  // The path to the extension test runner script
+  // Passed to --extensionTestsPath
+  const extensionTestsPath = path.resolve(__dirname, './integration/index');
 
-		// The path to the extension test script
-		// Passed to --extensionTestsPath
-		const extensionTestsPath = path.resolve(__dirname, "./suite/index");
+  // common options for all runners
+  const options: TestOptions = {
+    extensionDevelopmentPath,
+    extensionTestsPath,
+    launchArgs: ['testFixture', '--disable-extensions', '--disable-workspace-trust'],
+  };
 
-		// Download VS Code, unzip it and run the integration test
-		await runTests({ extensionDevelopmentPath, extensionTestsPath });
-	} catch (err) {
-		console.error("Failed to run tests");
-		process.exit(1);
-	}
+  try {
+    // Download VS Code, unzip it and run the integration test
+    // start in the fixtures folder to prevent the language server from walking all the
+    // project root folders, like node_modules
+    await runTests(options);
+  } catch (err) {
+    console.error(err);
+    console.error('Failed to run tests');
+    process.exitCode = 1;
+  }
 }
 
 main();

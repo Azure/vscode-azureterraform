@@ -12,38 +12,42 @@ import { IntegratedShell } from "./integratedShell";
 import { isTerminalSetToCloudShell } from "./utils/settingUtils";
 
 export interface ITerraformShellManager {
-    getShell(): BaseShell;
-    getCloudShell(): AzureCloudShell;
-    getIntegratedShell(): IntegratedShell;
-    dispose(): void;
+  getShell(): BaseShell;
+  getCloudShell(): AzureCloudShell;
+  getIntegratedShell(): IntegratedShell;
+  dispose(): void;
 }
 
 class TerraformShellManager implements ITerraformShellManager {
-    private readonly cloudShell = new AzureCloudShell();
-    private readonly integratedShell = new IntegratedShell();
+  private readonly cloudShell = new AzureCloudShell();
+  private readonly integratedShell = new IntegratedShell();
 
-    public getShell(): BaseShell {
-        const isCloudShell: boolean = isTerminalSetToCloudShell();
+  public getShell(): BaseShell {
+    const isCloudShell: boolean = isTerminalSetToCloudShell();
 
-        TelemetryWrapper.addContextProperty("isCloudShell", isCloudShell.toString());
-        if (isCloudShell) {
-            return this.cloudShell;
-        }
-        return this.integratedShell;
+    TelemetryWrapper.addContextProperty(
+      "isCloudShell",
+      isCloudShell.toString()
+    );
+    if (isCloudShell) {
+      return this.cloudShell;
     }
+    return this.integratedShell;
+  }
 
-    public getCloudShell(): AzureCloudShell {
-        return this.cloudShell;
-    }
+  public getCloudShell(): AzureCloudShell {
+    return this.cloudShell;
+  }
 
-    public getIntegratedShell(): IntegratedShell {
-        return this.integratedShell;
-    }
+  public getIntegratedShell(): IntegratedShell {
+    return this.integratedShell;
+  }
 
-    public dispose(): void {
-        this.cloudShell.dispose();
-        this.integratedShell.dispose();
-    }
+  public dispose(): void {
+    this.cloudShell.dispose();
+    this.integratedShell.dispose();
+  }
 }
 
-export const terraformShellManager: ITerraformShellManager = new TerraformShellManager();
+export const terraformShellManager: ITerraformShellManager =
+  new TerraformShellManager();
