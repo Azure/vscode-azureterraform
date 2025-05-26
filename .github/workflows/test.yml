@@ -30,7 +30,7 @@ jobs:
         vscode:
           - 'stable'
         os:
-          - windows-latest
+          - ubuntu-latest
     runs-on: ${{ matrix.os }}
     timeout-minutes: 10
 
