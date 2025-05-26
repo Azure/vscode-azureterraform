@@ -25,8 +25,8 @@ interface IPollingStatusResponse {
     properties?: {
         configuration?: string;
         import?: string;
-        skippedResources?: any;
-        errors?: any;
+        skippedResources?: Array<{ id?: string; reason?: string; [key: string]: any }>; // More specific type
+        errors?: Array<{ code?: string; message?: string; target?: string; [key: string]: any }>; // More specific type
     };
 }
 
@@ -68,11 +68,18 @@ async function requestTerraformExportWithPolling(
 
     if (response.status === 200) {
         progress.report({ message: `Export for ${operationDescription} completed synchronously.`, increment: 100 });
+        // Ensure structure aligns with IPollingStatusResponse for consistent handling in handleExportSuccess
         return {
-            status: "Succeeded",
+            status: "Succeeded", // Explicitly set status
+            id: response.data?.id, // Pass along if available
+            name: response.data?.name, // Pass along if available
+            startTime: response.data?.startTime, // Pass along if available
+            endTime: response.data?.endTime, // Pass along if available
             properties: {
-                configuration: response?.data?.properties?.configuration,
-                import: response?.data?.properties?.import,
+                configuration: response.data?.properties?.configuration,
+                import: response.data?.properties?.import,
+                skippedResources: response.data?.properties?.skippedResources || [], // Default to empty array
+                errors: response.data?.properties?.errors || [], // Default to empty array
             },
         };
     }
@@ -111,8 +118,12 @@ async function requestTerraformExportWithPolling(
                     return pollResponse.data;
                 } else if (operationStatus === "Failed") {
                     const errorDetails = pollResponse.data?.error?.message || "Unknown error during async operation.";
-                    // Provide more specific error from polling response
-                    throw new Error(`Export operation for ${operationDescription} failed on Azure: ${errorDetails}`);
+                    // Attempt to get more specific errors from properties if available
+                    let detailedErrorsMessage = "";
+                    if (pollResponse.data?.properties?.errors && Array.isArray(pollResponse.data.properties.errors) && pollResponse.data.properties.errors.length > 0) {
+                        detailedErrorsMessage = pollResponse.data.properties.errors.map(e => `${e.code || "Error"}: ${e.message || "Details not provided"}`).join("; ");
+                    }
+                    throw new Error(`Export operation for ${operationDescription} failed on Azure: ${errorDetails}${detailedErrorsMessage ? `. Details: ${detailedErrorsMessage}` : ""}`);
                 } else if (operationStatus === "Canceled") {
                      throw new Error(`Export operation for ${operationDescription} was canceled on the server.`);
                 }
@@ -146,8 +157,9 @@ async function requestTerraformExportWithPolling(
 async function handleExportSuccess(pollingResult: IPollingStatusResponse, operationDescription: string): Promise<void> {
     const terraformConfig = pollingResult.properties?.configuration;
     const importBlock = pollingResult.properties?.import;
-    const skippedResources = pollingResult.properties?.skippedResources;
-    const errors = pollingResult.properties?.errors;
+    // Ensure skippedResources and errors are arrays for consistent processing
+    const skippedResources = Array.isArray(pollingResult.properties?.skippedResources) ? pollingResult.properties.skippedResources : [];
+    const errors = Array.isArray(pollingResult.properties?.errors) ? pollingResult.properties.errors : [];
 
     if (!terraformConfig) {
         vscode.window.showWarningMessage(`Export for ${operationDescription} completed, but the response did not contain Terraform configuration.`);
@@ -161,14 +173,14 @@ async function handleExportSuccess(pollingResult: IPollingStatusResponse, operat
     commentBlock += `# Start Time: ${pollingResult.startTime || "N/A"}\n`;
     commentBlock += `# End Time: ${pollingResult.endTime || "N/A"}\n`;
 
-    if (skippedResources && (!Array.isArray(skippedResources) || skippedResources.length > 0)) {
+    if (skippedResources.length > 0) {
         commentBlock += `# Skipped Resources: ${JSON.stringify(skippedResources)}\n`;
     } else {
         commentBlock += `# Skipped Resources: None\n`;
     }
 
-    if (errors && (!Array.isArray(errors) || errors.length > 0)) {
-        commentBlock += `# Errors Encountered: ${JSON.stringify(errors)}\n`;
+    if (errors.length > 0) {
+        commentBlock += `# Errors Encountered (non-fatal or informational): ${JSON.stringify(errors)}\n`;
     } else {
         commentBlock += `# Errors Encountered: None\n`;
     }
@@ -192,11 +204,13 @@ async function handleExportSuccess(pollingResult: IPollingStatusResponse, operat
         vscode.window.showInformationMessage(`Terraform export for ${operationDescription} complete. Snippet opened in a new tab.`);
 
         // Optionally show warnings if resources were skipped or non-fatal errors occurred
-        if (skippedResources && (!Array.isArray(skippedResources) || skippedResources.length > 0)) {
+        if (skippedResources.length > 0) {
              vscode.window.showWarningMessage(`Some resources were skipped during the export for ${operationDescription}. See comments in the generated file.`);
         }
-        if (errors && (!Array.isArray(errors) || errors.length > 0)) {
-             vscode.window.showWarningMessage(`Some non-fatal errors occurred during the export for ${operationDescription}. See comments in the generated file.`);
+        // Note: 'errors' here are from the 'properties' block, typically non-fatal if status is 'Succeeded'.
+        // Fatal errors would have thrown an exception earlier.
+        if (errors.length > 0) {
+             vscode.window.showWarningMessage(`Some non-fatal issues or informational messages were reported during the export for ${operationDescription}. See comments in the generated file.`);
         }
 
     } catch (error) {
@@ -210,45 +224,48 @@ async function handleExportSuccess(pollingResult: IPollingStatusResponse, operat
 function handleExportError(error: any, operationDescription: string): void {
     console.error(`Terraform Export Error (${operationDescription}):`, error);
     let userMessage = `Failed to export ${operationDescription}.`;
-    let detailedMessage = error instanceof Error ? error.message : String(error);
+    let detailedMessage = error instanceof Error ? error.message : String(error); // Default to error.message
 
     if (axios.isAxiosError(error)) {
         const axiosError = error as AxiosError<any>;
         userMessage = `Network or API error during export for ${operationDescription}.`;
-        detailedMessage = `Request to ${axiosError.config?.url} failed`;
+        detailedMessage = `Request to ${axiosError.config?.url || "Azure API"} failed`;
         if (axiosError.response) {
-            // Got a response from the server (4xx, 5xx)
             detailedMessage += ` with status ${axiosError.response.status}.`;
             const responseData = axiosError.response.data;
-            // Try to extract Azure's specific error format
-            const azureError = responseData?.error?.message || responseData?.Message; // Check common Azure error formats
-            if (azureError) {
-                detailedMessage += ` Azure Error: ${azureError}`;
-            } else if (typeof responseData === "string" && responseData.length < 200) { // Show short string errors
+            const azureError = responseData?.error?.message || responseData?.Message; 
+            let specificDetails = "";
+            // Check for Azure's structured error details within properties.errors as well
+            if (responseData?.properties?.errors && Array.isArray(responseData.properties.errors) && responseData.properties.errors.length > 0) {
+                 specificDetails = responseData.properties.errors.map((e: any) => `${e.code || "Error"}: ${e.message || "Details not provided"}`).join("; ");
+            } else if (azureError) {
+                specificDetails = azureError;
+            }
+
+            if (specificDetails) {
+                detailedMessage += ` Azure Error: ${specificDetails}`;
+            } else if (typeof responseData === "string" && responseData.length < 200 && responseData.length > 0) {
                  detailedMessage += ` Details: ${responseData}`;
             } else {
-                 detailedMessage += ` Check the console log for full response details.`;
-                 console.error("Full Axios Error Response:", axiosError.response);
+                 detailedMessage += ` Check the extension's output channel or console log for full response details.`;
+                 console.error("Full Axios Error Response Data:", responseData);
             }
         } else if (axiosError.request) {
-            // Request was made, but no response received (network issue, timeout)
-            detailedMessage += `. No response received from the server. Check network connection or Azure status.`;
+            detailedMessage += `. No response received. Check network or Azure service status.`;
         } else {
-            // Error setting up the request
-            detailedMessage += `. Error setting up the request: ${axiosError.message}`;
+            detailedMessage += `. Error setting up request: ${axiosError.message}`;
         }
     } else if (error instanceof Error) {
-        // Handle specific errors thrown within our code (timeout, cancellation, polling failure)
-        userMessage = `Export process for ${operationDescription} failed.`;
-        detailedMessage = error.message;
+        // This will now catch errors thrown from polling logic with more details
+        userMessage = `Export process for ${operationDescription} encountered an issue.`;
+        // detailedMessage is already set from error.message which should be more specific now
     } else {
-        // Fallback for unexpected error types
-         userMessage = `An unexpected error occurred during export for ${operationDescription}.`;
-         detailedMessage = `Check the console log for details.`;
+         userMessage = `An unexpected issue occurred during export for ${operationDescription}.`;
+         detailedMessage = `Check the extension's output channel or console log for details.`;
+         console.error("Unexpected Export Error Type:", error);
     }
 
-    // Show a more informative error message to the user
-    vscode.window.showErrorMessage(`${userMessage} ${detailedMessage}`, { modal: false }); // Don't block UI with modal
+    vscode.window.showErrorMessage(`${userMessage} ${detailedMessage}`, { modal: false });
 }
 
 /**
