@@ -12,7 +12,7 @@
     },
     "license": "MIT",
     "engines": {
-        "vscode": "^1.30.0"
+        "vscode": "^1.61.0"
     },
     "preview": true,
     "categories": [
