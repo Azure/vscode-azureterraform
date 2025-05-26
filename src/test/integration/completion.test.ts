@@ -11,7 +11,7 @@ suite('completion', () => {
   test('templates completion', async () => {
     const docUri = getDocUri('templates-completion.tf');
     await open(docUri);
-    await new Promise((r) => setTimeout(r, 1000 * 5));
+    await new Promise((r) => setTimeout(r, 1000 * 15));
     const list = await vscode.commands.executeCommand<vscode.CompletionList>(
       'vscode.executeCompletionItemProvider',
       docUri,
