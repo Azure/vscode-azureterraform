@@ -35,7 +35,7 @@ let reporter: TelemetryReporter;
 let clientHandler: ClientHandler;
 
 export async function activate(ctx: vscode.ExtensionContext) {
-  const manifest = ctx.extension.packageJSON
+  const manifest = ctx.extension.packageJSON;
   reporter = new TelemetryReporter(manifest.appInsightsConnectionString);
   await checkTerraformInstalled();
   await TelemetryWrapper.initializeFromJsonFile(
@@ -378,7 +378,8 @@ export async function activate(ctx: vscode.ExtensionContext) {
       "azureTerraform.enableLanguageServer",
       async () => {
         if (!enabled()) {
-          const currentConfig: any = config("azureTerraform").get("languageServer");
+          const currentConfig: any =
+            config("azureTerraform").get("languageServer");
           currentConfig.external = true;
           await config("azureTerraform").update(
             "languageServer",
@@ -396,7 +397,8 @@ export async function activate(ctx: vscode.ExtensionContext) {
       "azureTerraform.disableLanguageServer",
       async () => {
         if (enabled()) {
-          const currentConfig: any = config("azureTerraform").get("languageServer");
+          const currentConfig: any =
+            config("azureTerraform").get("languageServer");
           currentConfig.external = false;
           await config("azureTerraform").update(
             "languageServer",

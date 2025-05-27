@@ -32,9 +32,10 @@ export class TelemetryFeature implements StaticFeature {
   getState(): FeatureState {
     return {
       kind: "static",
-    }
+    };
   }
   clear(): void {
+    return;
   }
 
   public fillClientCapabilities(
