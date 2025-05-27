@@ -11,6 +11,7 @@ import {
 } from "vscode-languageclient/node";
 import { ServerPath } from "./serverPath";
 import { config } from "./vscodeUtils";
+import { TelemetryFeature } from "./telemetry";
 
 export interface TerraformLanguageClient {
   client: LanguageClient;
@@ -63,6 +64,10 @@ export class ClientHandler {
 
     const id = `terraform`;
     const client = new LanguageClient(id, serverOptions, clientOptions);
+
+    if (vscode.env.isTelemetryEnabled) {
+      client.registerFeature(new TelemetryFeature(client, this.reporter));
+    }
 
     client.onDidChangeState((event) => {
       console.log(
