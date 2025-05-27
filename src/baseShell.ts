@@ -9,22 +9,23 @@ import * as vscode from "vscode";
 import { terraformChannel } from "./terraformChannel";
 
 export abstract class BaseShell {
+  public terminal: vscode.Terminal | undefined;
 
-    public terminal: vscode.Terminal | undefined;
+  constructor() {
+    this.initShellInternal();
+  }
 
-    constructor() {
-        this.initShellInternal();
-    }
+  public abstract runTerraformCmd(tfCommand: string);
 
-    public abstract runTerraformCmd(tfCommand: string);
+  public abstract runTerraformTests(testType: string, workingDirectory: string);
 
-    public abstract runTerraformTests(testType: string, workingDirectory: string);
+  public dispose(): void {
+    terraformChannel.appendLine(
+      `Terraform terminal: ${this.terminal.name} closed`
+    );
+    this.terminal.dispose();
+    this.terminal = undefined;
+  }
 
-    public dispose(): void {
-        terraformChannel.appendLine(`Terraform terminal: ${this.terminal.name} closed`);
-        this.terminal.dispose();
-        this.terminal = undefined;
-    }
-
-    protected abstract initShellInternal();
+  protected abstract initShellInternal();
 }

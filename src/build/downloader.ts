@@ -1,7 +1,7 @@
-import * as fs from 'fs';
-import * as path from 'path';
-import * as unzip from 'unzip-stream';
-import axios from 'axios';
+import * as fs from "fs";
+import * as path from "path";
+import * as unzip from "unzip-stream";
+import axios from "axios";
 
 interface Build {
   name: string;
@@ -14,8 +14,8 @@ interface Release {
 }
 
 function getPlatform(platform: string) {
-  if (platform === 'win32') {
-    return 'windows';
+  if (platform === "win32") {
+    return "windows";
   }
   return platform;
 }
@@ -31,22 +31,25 @@ function getArch(arch: string) {
   // Windows  | windows_386   | win32_ia32         | ✅
   // Windows  | windows_amd64 | win32_x64          | ✅
   // Windows  | windows_arm64 | win32_arm64        | ✅
-  if (arch === 'ia32') {
-    return '386';
+  if (arch === "ia32") {
+    return "386";
   }
-  if (arch === 'x64') {
-    return 'amd64';
+  if (arch === "x64") {
+    return "amd64";
   }
-  if (arch === 'armhf') {
-    return 'arm';
+  if (arch === "armhf") {
+    return "arm";
   }
   return arch;
 }
 
 async function getRelease(): Promise<Release> {
-  const response = await axios.get('https://api.github.com/repos/Azure/azurerm-lsp/releases', {
-    headers: {},
-  });
+  const response = await axios.get(
+    "https://api.github.com/repos/Azure/azurerm-lsp/releases",
+    {
+      headers: {},
+    }
+  );
   if (response.status == 200 && response.data.length != 0) {
     const assets: Build[] = [];
     for (const i in response.data[0].assets) {
@@ -60,17 +63,17 @@ async function getRelease(): Promise<Release> {
       assets: assets,
     };
   }
-  throw new Error('no valid release');
+  throw new Error("no valid release");
 }
 
 async function run(platform: string, architecture: string) {
   const cwd = path.resolve(__dirname);
 
   const buildDir = path.basename(cwd);
-  const repoDir = cwd.replace(buildDir, '');
-  const installPath = path.join(repoDir, 'bin');
+  const repoDir = cwd.replace(buildDir, "");
+  const installPath = path.join(repoDir, "bin");
   if (fs.existsSync(installPath)) {
-    console.log('azurerm-lsp path exists. Exiting');
+    console.log("azurerm-lsp path exists. Exiting");
     return;
   }
 
@@ -89,34 +92,41 @@ async function run(platform: string, architecture: string) {
   }
 
   if (!build) {
-    throw new Error(`Install error: no matching azurerm-lsp binary for ${os}/${arch}`);
+    throw new Error(
+      `Install error: no matching azurerm-lsp binary for ${os}/${arch}`
+    );
   }
 
   console.log(build);
 
   // download zip
-  const zipfile = path.resolve(installPath, `azurerm-lsp_${release.version}.zip`);
-  await axios.get(build!.downloadUrl, { responseType: 'stream' }).then(function (response) {
-    const fileWritePipe = fs.createWriteStream(zipfile);
-    response.data.pipe(fileWritePipe);
-    return new Promise<void>((resolve, reject) => {
-      fileWritePipe.on('close', () => resolve());
-      response.data.on('error', reject);
+  const zipfile = path.resolve(
+    installPath,
+    `azurerm-lsp_${release.version}.zip`
+  );
+  await axios
+    .get(build!.downloadUrl, { responseType: "stream" })
+    .then(function (response) {
+      const fileWritePipe = fs.createWriteStream(zipfile);
+      response.data.pipe(fileWritePipe);
+      return new Promise<void>((resolve, reject) => {
+        fileWritePipe.on("close", () => resolve());
+        response.data.on("error", reject);
+      });
     });
-  });
 
   // unzip
-  const fileExtension = os === 'windows' ? '.exe' : '';
+  const fileExtension = os === "windows" ? ".exe" : "";
   const binaryName = path.resolve(installPath, `azurerm-lsp${fileExtension}`);
   const fileReadStream = fs.createReadStream(zipfile);
   const unzipPipe = unzip.Extract({ path: installPath });
   fileReadStream.pipe(unzipPipe);
   await new Promise<void>((resolve, reject) => {
-    unzipPipe.on('close', () => {
-      fs.chmodSync(binaryName, '755');
+    unzipPipe.on("close", () => {
+      fs.chmodSync(binaryName, "755");
       return resolve();
     });
-    fileReadStream.on('error', reject);
+    fileReadStream.on("error", reject);
   });
 
   fs.unlinkSync(zipfile);
@@ -128,7 +138,7 @@ let arch = process.arch;
 // ls_target=linux_amd64 npm run package -- --target=linux-x64
 const lsTarget = process.env.ls_target;
 if (lsTarget !== undefined) {
-  const tgt = lsTarget.split('_');
+  const tgt = lsTarget.split("_");
   os = tgt[0];
   arch = tgt[1];
 }
@@ -136,7 +146,7 @@ if (lsTarget !== undefined) {
 // npm run download:ls --target=darwin-x64
 const target = process.env.npm_config_target;
 if (target !== undefined) {
-  const tgt = target.split('-');
+  const tgt = target.split("-");
   os = tgt[0];
   arch = tgt[1];
 }

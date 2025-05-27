@@ -6,16 +6,23 @@
 "use strict";
 
 export class Constants {
-    public static TerraformTerminalName = "Terraform";
-    public static TestContainer = "microsoft/terraform-test";
-    public static clouddrive = "$HOME/clouddrive";
+  public static TerraformTerminalName = "Terraform";
+  public static TestContainer = "microsoft/terraform-test";
+  public static clouddrive = "$HOME/clouddrive";
 }
 
-export function aciConfig(resourceGroup: string, aciName: string, aciGroup: string, storageAccountName: string, storageAccountShare: string, location: string, testContainer: string, projectName: string): string {
-    let TFConfiguration: string;
-    // TODO - add a check on the location where ACI is available - if (['westus', eastus].indexOf(location) == -1) {
-
-    TFConfiguration = `variable "location" {
+export function aciConfig(
+  resourceGroup: string,
+  aciName: string,
+  aciGroup: string,
+  storageAccountName: string,
+  storageAccountShare: string,
+  location: string,
+  testContainer: string,
+  projectName: string
+): string {
+  // TODO - add a check on the location where ACI is available - if (['westus', eastus].indexOf(location) == -1) {
+  const TFConfiguration = `variable "location" {
         default = "${location}"
     }
 
@@ -59,11 +66,16 @@ resource "azurerm_container_group" "TFTest" {
     }
 }`;
 
-    return TFConfiguration;
+  return TFConfiguration;
 }
 
-export function exportTestScript(TFConfiguration: string, resoureGroupName: string, storageAccountName: string, testDirectory: string): string {
-    const testScript = `
+export function exportTestScript(
+  TFConfiguration: string,
+  resoureGroupName: string,
+  storageAccountName: string,
+  testDirectory: string
+): string {
+  const testScript = `
         #!/bin/bash
         mkdir -p $HOME/clouddrive/${testDirectory}
 
@@ -79,12 +91,14 @@ export function exportTestScript(TFConfiguration: string, resoureGroupName: stri
 
     `;
 
-    return testScript;
+  return testScript;
 }
 
-export function exportContainerCmd(moduleDir: string, containerCommand: string): string {
-    const containerScript =
-`#!/bin/bash
+export function exportContainerCmd(
+  moduleDir: string,
+  containerCommand: string
+): string {
+  const containerScript = `#!/bin/bash
 
 echo "Copying terraform project..."
 cp -a /module/${moduleDir}/. /tf-test/module/
@@ -97,5 +111,5 @@ echo "Starting to Run test task..."
 ${containerCommand}
 echo "Container test operation completed - read the logs for status"`;
 
-    return containerScript;
+  return containerScript;
 }
