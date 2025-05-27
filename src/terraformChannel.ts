@@ -11,6 +11,7 @@ export interface ITerraformChannel {
   appendLine(message: any, title?: string): void;
   append(message: any): void;
   show(): void;
+  getChannel(): vscode.OutputChannel;
 }
 
 class TerraformChannel implements ITerraformChannel {
@@ -35,6 +36,10 @@ class TerraformChannel implements ITerraformChannel {
 
   public show(): void {
     this.channel.show();
+  }
+
+  public getChannel(): vscode.OutputChannel {
+    return this.channel;
   }
 }
 

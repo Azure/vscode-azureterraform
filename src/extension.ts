@@ -9,12 +9,6 @@ import { GenericResourceExpanded } from "@azure/arm-resources";
 import * as _ from "lodash";
 import * as vscode from "vscode";
 import * as TelemetryWrapper from "vscode-extension-telemetry-wrapper";
-import {
-  Executable,
-  LanguageClient,
-  LanguageClientOptions,
-  ServerOptions,
-} from "vscode-languageclient/node";
 import { listAzureResourcesGrouped, selectSubscription } from "./auth";
 import { TerraformCommand } from "./shared";
 import { TestOption } from "./shared";
@@ -29,16 +23,29 @@ import {
 import { checkTerraformInstalled } from "./utils/terraformUtils";
 import { DialogOption } from "./utils/uiUtils";
 import { selectWorkspaceFolder } from "./utils/workspaceUtils";
+import { ClientHandler } from "./clientHandler";
+import { ServerPath } from "./serverPath";
+import { config } from "./vscodeUtils";
+import { TelemetryReporter } from "@vscode/extension-telemetry";
+import { terraformChannel } from "./terraformChannel";
 
 let fileWatcher: vscode.FileSystemWatcher;
-let lspClient: LanguageClient;
+
+let reporter: TelemetryReporter;
+let clientHandler: ClientHandler;
 
 export async function activate(ctx: vscode.ExtensionContext) {
+  const manifest = ctx.extension.packageJSON;
+  reporter = new TelemetryReporter(manifest.appInsightsConnectionString);
   await checkTerraformInstalled();
   await TelemetryWrapper.initializeFromJsonFile(
     ctx.asAbsolutePath("./package.json")
   );
   initFileWatcher(ctx);
+
+  const lsPath = new ServerPath(ctx);
+  const outputChanel = terraformChannel.getChannel();
+  clientHandler = new ClientHandler(lsPath, outputChanel, reporter);
 
   ctx.subscriptions.push(
     TelemetryWrapper.instrumentOperationAsVsCodeCommand(
@@ -366,7 +373,47 @@ export async function activate(ctx: vscode.ExtensionContext) {
     )
   );
 
-  lspClient = setupLanguageClient(ctx);
+  ctx.subscriptions.push(
+    TelemetryWrapper.instrumentOperationAsVsCodeCommand(
+      "azureTerraform.enableLanguageServer",
+      async () => {
+        if (!enabled()) {
+          const currentConfig: any =
+            config("azureTerraform").get("languageServer");
+          currentConfig.external = true;
+          await config("azureTerraform").update(
+            "languageServer",
+            currentConfig,
+            vscode.ConfigurationTarget.Global
+          );
+          startLanguageServer();
+        }
+      }
+    )
+  );
+
+  ctx.subscriptions.push(
+    TelemetryWrapper.instrumentOperationAsVsCodeCommand(
+      "azureTerraform.disableLanguageServer",
+      async () => {
+        if (enabled()) {
+          const currentConfig: any =
+            config("azureTerraform").get("languageServer");
+          currentConfig.external = false;
+          await config("azureTerraform").update(
+            "languageServer",
+            currentConfig,
+            vscode.ConfigurationTarget.Global
+          );
+          stopLanguageServer();
+        }
+      }
+    )
+  );
+
+  if (enabled()) {
+    startLanguageServer();
+  }
 
   if (await ShouldShowSurvey()) {
     await ShowSurvey();
@@ -393,8 +440,8 @@ export function deactivate(): void {
     fileWatcher.dispose();
   }
 
-  if (lspClient) {
-    lspClient.dispose();
+  if (clientHandler) {
+    clientHandler.stopClient();
   }
 }
 
@@ -411,34 +458,42 @@ function initFileWatcher(ctx: vscode.ExtensionContext): void {
   );
 }
 
-function setupLanguageClient(ctx: vscode.ExtensionContext): LanguageClient {
-  const executable: Executable = {
-    command: ctx.asAbsolutePath("./bin/azurerm-lsp"),
-    args: ["serve"],
-  };
+async function startLanguageServer() {
+  try {
+    await clientHandler.startClient();
+  } catch (error) {
+    console.log(error); // for test failure reporting
+    reporter.sendTelemetryErrorEvent("startLanguageServer", {
+      err: `${error}`,
+    });
+    if (error instanceof Error) {
+      vscode.window.showErrorMessage(
+        error instanceof Error ? error.message : error
+      );
+    } else if (typeof error === "string") {
+      vscode.window.showErrorMessage(error);
+    }
+  }
+}
 
-  const serverOptions: ServerOptions = {
-    run: executable,
-    debug: executable,
-  };
+async function stopLanguageServer() {
+  try {
+    await clientHandler.stopClient();
+  } catch (error) {
+    console.log(error); // for test failure reporting
+    reporter.sendTelemetryErrorEvent("stopLanguageServer", {
+      err: `${error}`,
+    });
+    if (error instanceof Error) {
+      vscode.window.showErrorMessage(
+        error instanceof Error ? error.message : error
+      );
+    } else if (typeof error === "string") {
+      vscode.window.showErrorMessage(error);
+    }
+  }
+}
 
-  const clientOptions: LanguageClientOptions = {
-    documentSelector: [{ scheme: "file", language: "terraform" }],
-    outputChannel: vscode.window.createOutputChannel("AzureRM LSP"),
-  };
-
-  const client = new LanguageClient("azurerm", serverOptions, clientOptions);
-
-  client.start().catch((err) => {
-    vscode.window.showErrorMessage(
-      `Failed to start AzureRM LSP client: ${err.message}`
-    );
-    console.error("Failed to start AzureRM LSP client:", err);
-  });
-
-  client.onDidChangeState((event) => {
-    console.log(`Client: ${event.newState}`);
-  });
-
-  return client;
+function enabled(): boolean {
+  return config("azureTerraform").get("languageServer.external", true);
 }
