@@ -21,7 +21,6 @@ suite('completion', () => {
     assert.ok(list);
     expect(list).not.to.be.undefined;
     expect(list.items).not.to.be.undefined;
-    // TODO: enable this when the lsp is released
-    // expect(list.items.length).to.be.greaterThanOrEqual(100);
+    expect(list.items.length).to.be.greaterThanOrEqual(100);
   });
 });

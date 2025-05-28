@@ -71,7 +71,7 @@ async function run(platform: string, architecture: string) {
 
   const buildDir = path.basename(cwd);
   const repoDir = cwd.replace(buildDir, "");
-  const installPath = path.join(repoDir, "bin");
+  const installPath = path.join(repoDir, "..", "bin");
   if (fs.existsSync(installPath)) {
     console.log("azurerm-lsp path exists. Exiting");
     return;
