@@ -1,6 +1,6 @@
-# Azure Terraform
+# Microsoft Terraform
 
-The VSCode Azure Terraform extension is designed to increase developer productivity authoring, testing and using Terraform with Azure. The extension provides terraform command support and resource graph visualization.
+The VSCode Microsoft Terraform extension is designed to increase developer productivity authoring, testing and using Terraform with Azure. The extension provides terraform command support and resource graph visualization.
 
 ![overview](https://raw.githubusercontent.com/Azure/vscode-azureterraform/master/images/overview.png)
 
@@ -39,12 +39,12 @@ Open the Command Palette (`Command`+`Shift`+`P` on macOS and `Ctrl`+`Shift`+`P` 
     <td width="35%">
       Basic commands:<br>
       <ul>
-        <li>Azure Terraform: init</li>
-        <li>Azure Terraform: plan</li>
-        <li>Azure Terraform: apply</li>
-        <li>Azure Terraform: validate</li>
-        <li>Azure Terraform: refresh</li>
-        <li>Azure Terraform: destroy</li>
+        <li>Microsoft Terraform: init</li>
+        <li>Microsoft Terraform: plan</li>
+        <li>Microsoft Terraform: apply</li>
+        <li>Microsoft Terraform: validate</li>
+        <li>Microsoft Terraform: refresh</li>
+        <li>Microsoft Terraform: destroy</li>
       </ul>
     </td>
     <td>
@@ -54,11 +54,11 @@ Open the Command Palette (`Command`+`Shift`+`P` on macOS and `Ctrl`+`Shift`+`P` 
     </td>
   </tr>
   <tr>
-    <td>Azure Terraform: visualize</td>
+    <td>Microsoft Terraform: visualize</td>
     <td>Create a visual representation of the components of the module and save it in <code>graph.png</code>.</td>
   </tr>
   <tr>
-    <td>Azure Terraform: Execute Test</td>
+    <td>Microsoft Terraform: Execute Test</td>
     <td>
       Run one of the following test against the current module using a test container: <br>
       <ul>

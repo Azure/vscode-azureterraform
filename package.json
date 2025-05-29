@@ -1,6 +1,6 @@
 {
     "name": "vscode-azureterraform",
-    "displayName": "Azure Terraform",
+    "displayName": "Microsoft Terraform",
     "description": "VS Code extension for developing with Terraform on Azure",
     "version": "0.3.5",
     "publisher": "ms-azuretools",
@@ -56,7 +56,7 @@
             }
         ],
         "configuration": {
-            "title": "Azure Terraform",
+            "title": "Microsoft Terraform",
             "properties": {
                 "azureTerraform.terminal": {
                     "type": "string",
@@ -164,64 +164,64 @@
             {
                 "command": "azureTerraform.plan",
                 "title": "Plan",
-                "category": "Azure Terraform"
+                "category": "Microsoft Terraform"
             },
             {
                 "command": "azureTerraform.apply",
                 "title": "Apply",
-                "category": "Azure Terraform"
+                "category": "Microsoft Terraform"
             },
             {
                 "command": "azureTerraform.init",
                 "title": "Init",
-                "category": "Azure Terraform"
+                "category": "Microsoft Terraform"
             },
             {
                 "command": "azureTerraform.validate",
                 "title": "Validate",
-                "category": "Azure Terraform"
+                "category": "Microsoft Terraform"
             },
             {
                 "command": "azureTerraform.refresh",
                 "title": "Refresh",
-                "category": "Azure Terraform"
+                "category": "Microsoft Terraform"
             },
             {
                 "command": "azureTerraform.destroy",
                 "title": "Destroy",
-                "category": "Azure Terraform"
+                "category": "Microsoft Terraform"
             },
             {
                 "command": "azureTerraform.visualize",
                 "title": "Visualize",
-                "category": "Azure Terraform"
+                "category": "Microsoft Terraform"
             },
             {
                 "command": "azureTerraform.exectest",
                 "title": "Execute Test",
-                "category": "Azure Terraform"
+                "category": "Microsoft Terraform"
             },
             {
                 "command": "azureTerraform.push",
                 "title": "Push",
-                "category": "Azure Terraform"
+                "category": "Microsoft Terraform"
             },
             {
                 "command": "azureTerraform.showSurvey",
-                "title": "Azure Terraform: Show Survey"
+                "title": "Microsoft Terraform: Show Survey"
             },
             {
                 "command": "azureTerraform.exportResource",
                 "title": "Export Azure Resource as Terraform",
-                "category": "Azure Terraform"
+                "category": "Microsoft Terraform"
             },
             {
                 "command": "azureTerraform.enableLanguageServer",
-                "title": "Azure Terraform: Enable Language Server"
+                "title": "Microsoft Terraform: Enable Language Server"
             },
             {
                 "command": "azureTerraform.disableLanguageServer",
-                "title": "Azure Terraform: Disable Language Server"
+                "title": "Microsoft Terraform: Disable Language Server"
             }
         ]
     },

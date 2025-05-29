@@ -6,6 +6,6 @@ node_modules
 
 
 bin
-azurerm-lsp
-azurerm-lsp.exe
+ms-terraform-lsp
+ms-terraform-lsp.exe
 .DS_Store

@@ -36,9 +36,9 @@ export class ServerPath {
     }
 
     if (process.platform === "win32") {
-      return "azurerm-lsp.exe";
+      return "ms-terraform-lsp.exe";
     }
-    return "azurerm-lsp";
+    return "ms-terraform-lsp";
   }
 
   public async resolvedPathToBinary(): Promise<string> {
