@@ -411,6 +411,24 @@ export async function activate(ctx: vscode.ExtensionContext) {
     )
   );
 
+  ctx.subscriptions.push(
+    vscode.workspace.onDidChangeConfiguration(
+      async (event: vscode.ConfigurationChangeEvent) => {
+        if (event.affectsConfiguration("azureTerraform.languageServer")) {
+          const reloadMsg =
+            "Reload VSCode window to apply language server changes";
+          const selected = await vscode.window.showInformationMessage(
+            reloadMsg,
+            "Reload"
+          );
+          if (selected === "Reload") {
+            vscode.commands.executeCommand("workbench.action.reloadWindow");
+          }
+        }
+      }
+    )
+  );
+
   if (enabled()) {
     startLanguageServer();
   }
