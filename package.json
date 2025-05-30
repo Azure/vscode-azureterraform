@@ -284,7 +284,7 @@
         "lodash": "^4.17.21",
         "mocha": "^11.0.1",
         "ms-rest": "^2.3.2",
-        "ms-rest-azure": "^2.5.7",
+        "ms-rest-azure": "^2.6.2",
         "opn": "5.1.0",
         "prettier": "^2.3.2",
         "request-promise-native": "^1.0.9",
