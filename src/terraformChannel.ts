@@ -16,7 +16,7 @@ export interface ITerraformChannel {
 
 class TerraformChannel implements ITerraformChannel {
   private readonly channel: vscode.OutputChannel =
-    vscode.window.createOutputChannel("Azure Terraform");
+    vscode.window.createOutputChannel("Microsoft Terraform");
 
   public appendLine(message: any, title?: string): void {
     if (title) {

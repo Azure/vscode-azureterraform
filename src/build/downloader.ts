@@ -45,7 +45,7 @@ function getArch(arch: string) {
 
 async function getRelease(): Promise<Release> {
   const response = await axios.get(
-    "https://api.github.com/repos/Azure/azurerm-lsp/releases",
+    "https://api.github.com/repos/Azure/ms-terraform-lsp/releases",
     {
       headers: {},
     }
@@ -73,7 +73,7 @@ async function run(platform: string, architecture: string) {
   const repoDir = cwd.replace(buildDir, "");
   const installPath = path.join(repoDir, "..", "bin");
   if (fs.existsSync(installPath)) {
-    console.log("azurerm-lsp path exists. Exiting");
+    console.log("ms-terraform-lsp path exists. Exiting");
     return;
   }
 
@@ -93,7 +93,7 @@ async function run(platform: string, architecture: string) {
 
   if (!build) {
     throw new Error(
-      `Install error: no matching azurerm-lsp binary for ${os}/${arch}`
+      `Install error: no matching ms-terraform-lsp binary for ${os}/${arch}`
     );
   }
 
@@ -102,7 +102,7 @@ async function run(platform: string, architecture: string) {
   // download zip
   const zipfile = path.resolve(
     installPath,
-    `azurerm-lsp_${release.version}.zip`
+    `ms-terraform-lsp_${release.version}.zip`
   );
   await axios
     .get(build!.downloadUrl, { responseType: "stream" })
@@ -117,7 +117,10 @@ async function run(platform: string, architecture: string) {
 
   // unzip
   const fileExtension = os === "windows" ? ".exe" : "";
-  const binaryName = path.resolve(installPath, `azurerm-lsp${fileExtension}`);
+  const binaryName = path.resolve(
+    installPath,
+    `ms-terraform-lsp${fileExtension}`
+  );
   const fileReadStream = fs.createReadStream(zipfile);
   const unzipPipe = unzip.Extract({ path: installPath });
   fileReadStream.pipe(unzipPipe);
