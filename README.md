@@ -28,15 +28,10 @@ This extension supports the following features:
 
 - On-hover documentation
 
-![demo](https://raw.githubusercontent.com/Azure/vscode-azureterraform/master/images/autocomplete.gif)
+![demo](https://raw.githubusercontent.com/Azure/vscode-azureterraform/master/images/onhover.gif)
 
 - Ingtegration with [Azure Export for Terraform](https://learn.microsoft.com/en-us/azure/developer/terraform/azure-export-for-terraform/export-terraform-overview) to Export Azure Resources As Terraform Blocks
-
-![demo](https://raw.githubusercontent.com/Azure/vscode-azureterraform/master/images/autocomplete.gif)
-
 - Integrated survey for user feedback
-
-![demo](https://raw.githubusercontent.com/Azure/vscode-azureterraform/master/images/autocomplete.gif)
 
 ## Commands
 
