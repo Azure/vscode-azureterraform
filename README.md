@@ -22,6 +22,21 @@ This extension supports the following features:
 
 - Terraform commands: init, plan, apply, validate, refresh and destroy
 - Visualize the terraform module
+- Suggest resources, properties, and values for those properties
+
+![demo](https://raw.githubusercontent.com/Azure/vscode-azureterraform/master/images/autocomplete.gif)
+
+- On-hover documentation
+
+![demo](https://raw.githubusercontent.com/Azure/vscode-azureterraform/master/images/autocomplete.gif)
+
+- Ingtegration with [Azure Export for Terraform](https://learn.microsoft.com/en-us/azure/developer/terraform/azure-export-for-terraform/export-terraform-overview) to Export Azure Resources As Terraform Blocks
+
+![demo](https://raw.githubusercontent.com/Azure/vscode-azureterraform/master/images/autocomplete.gif)
+
+- Integrated survey for user feedback
+
+![demo](https://raw.githubusercontent.com/Azure/vscode-azureterraform/master/images/autocomplete.gif)
 
 ## Commands
 
@@ -39,12 +54,12 @@ Open the Command Palette (`Command`+`Shift`+`P` on macOS and `Ctrl`+`Shift`+`P` 
     <td width="35%">
       Basic commands:<br>
       <ul>
-        <li>Microsoft Terraform: init</li>
-        <li>Microsoft Terraform: plan</li>
-        <li>Microsoft Terraform: apply</li>
-        <li>Microsoft Terraform: validate</li>
-        <li>Microsoft Terraform: refresh</li>
-        <li>Microsoft Terraform: destroy</li>
+        <li>Azure Terraform: init</li>
+        <li>Azure Terraform: plan</li>
+        <li>Azure Terraform: apply</li>
+        <li>Azure Terraform: validate</li>
+        <li>Azure Terraform: refresh</li>
+        <li>Azure Terraform: destroy</li>
       </ul>
     </td>
     <td>
@@ -54,11 +69,11 @@ Open the Command Palette (`Command`+`Shift`+`P` on macOS and `Ctrl`+`Shift`+`P` 
     </td>
   </tr>
   <tr>
-    <td>Microsoft Terraform: visualize</td>
+    <td>Azure Terraform: visualize</td>
     <td>Create a visual representation of the components of the module and save it in <code>graph.png</code>.</td>
   </tr>
   <tr>
-    <td>Microsoft Terraform: Execute Test</td>
+    <td>Azure Terraform: Execute Test</td>
     <td>
       Run one of the following test against the current module using a test container: <br>
       <ul>
@@ -66,6 +81,14 @@ Open the Command Palette (`Command`+`Shift`+`P` on macOS and `Ctrl`+`Shift`+`P` 
         <li>e2e: This command will deploy the current module with the settings specified in the .tfvars file, verify that the deployment pass the controls and destroy the resources that have been created.</li>
       </ul>
     </td>
+  </tr>
+  <tr>
+    <td>Azure Terraform: Export Azure Resource as Terraform</td>
+    <td>Export existing Azure resources as Terraform configuration blocks using Azure Export for Terraform. This helps you migrate existing Azure resources to Terraform-managed infrastructure.</td>
+  </tr>
+  <tr>
+    <td>Azure Terraform: Show Survey</td>
+    <td>Open the feedback survey to share your experience and help us improve.</td>
   </tr>
   </tbody>
 </table>
