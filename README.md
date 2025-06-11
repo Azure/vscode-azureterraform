@@ -22,6 +22,16 @@ This extension supports the following features:
 
 - Terraform commands: init, plan, apply, validate, refresh and destroy
 - Visualize the terraform module
+- Suggest resources, properties, and values for those properties
+
+![demo](https://raw.githubusercontent.com/Azure/vscode-azureterraform/master/images/autocomplete.gif)
+
+- On-hover documentation
+
+![demo](https://raw.githubusercontent.com/Azure/vscode-azureterraform/master/images/onhover.gif)
+
+- Ingtegration with [Azure Export for Terraform](https://learn.microsoft.com/en-us/azure/developer/terraform/azure-export-for-terraform/export-terraform-overview) to Export Azure Resources As Terraform Blocks
+- Integrated survey for user feedback
 
 ## Commands
 
@@ -66,6 +76,14 @@ Open the Command Palette (`Command`+`Shift`+`P` on macOS and `Ctrl`+`Shift`+`P` 
         <li>e2e: This command will deploy the current module with the settings specified in the .tfvars file, verify that the deployment pass the controls and destroy the resources that have been created.</li>
       </ul>
     </td>
+  </tr>
+  <tr>
+    <td>Microsoft Terraform: Export Azure Resource as Terraform</td>
+    <td>Export existing Azure resources as Terraform configuration blocks using Azure Export for Terraform. This helps you migrate existing Azure resources to Terraform-managed infrastructure.</td>
+  </tr>
+  <tr>
+    <td>Microsoft Terraform: Show Survey</td>
+    <td>Open the feedback survey to share your experience and help us improve.</td>
   </tr>
   </tbody>
 </table>
