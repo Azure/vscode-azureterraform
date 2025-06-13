@@ -11,9 +11,6 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 - Integration with Azure Export for Terraform to export Azure resources as Terraform blocks
 - Integrated survey for user feedback
 
-### Changed
-- Updated command section to include new features
-
 ### Fixed
 - General improvements and bug fixes
 
