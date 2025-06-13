@@ -4,6 +4,19 @@ All notable changes to the "Microsoft Terraform" extension will be documented in
 		
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [0.4.0]
+### Added
+- Suggest resources, properties, and values for those properties
+- On-hover documentation for fields
+- Integration with Azure Export for Terraform to export Azure resources as Terraform blocks
+- Integrated survey for user feedback
+
+### Changed
+- Updated command section to include new features
+
+### Fixed
+- General improvements and bug fixes
+
 ## [0.3.3]
 ### Changed
 - Removed Azure Account extension dependency
