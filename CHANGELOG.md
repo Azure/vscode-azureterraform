@@ -6,8 +6,9 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [0.4.0]
 ### Added
-- Suggest resources, properties, and values for those properties
+- Suggest azurerm provider resources, properties, and values for those properties
 - On-hover documentation for fields
+- Suggestion and on-hover features for msgraph provider
 - Integration with Azure Export for Terraform to export Azure resources as Terraform blocks
 - Integrated survey for user feedback
 
