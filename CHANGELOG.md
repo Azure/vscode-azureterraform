@@ -11,6 +11,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 - Suggestion and on-hover features for msgraph provider
 - Integration with Azure Export for Terraform to export Azure resources as Terraform blocks
 - Integrated survey for user feedback
+- Support for code actions to generate required/missing permissions for `azurerm` providers
 
 ### Fixed
 - General improvements and bug fixes
