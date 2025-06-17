@@ -23,15 +23,63 @@ This extension supports the following features:
 - Terraform commands: init, plan, apply, validate, refresh and destroy
 - Visualize the terraform module
 - Suggest resources, properties, and values for those properties
-
-![demo](https://raw.githubusercontent.com/Azure/vscode-azureterraform/master/images/autocomplete.gif)
-
 - On-hover documentation
-
-![demo](https://raw.githubusercontent.com/Azure/vscode-azureterraform/master/images/onhover.gif)
-
 - Ingtegration with [Azure Export for Terraform](https://learn.microsoft.com/en-us/azure/developer/terraform/azure-export-for-terraform/export-terraform-overview) to Export Azure Resources As Terraform Blocks
 - Integrated survey for user feedback
+
+## Guides
+
+This extension provides the following guides to help you get started:
+
+### Language features
+
+1. Input `azurerm_` in a `.tf` file to see example suggestions for `azurerm` resources.
+
+![demo](./images/autocomplete.gif)
+
+2. Hover over an `azurerm` resource or property to see its documentation.
+
+![demo](./images/onhover.gif)
+
+3. It provides value suggestions for properties of `azurerm` resources. For example, if you type `sku_name = `, it will suggest available values for the `sku_name` property of the `azurerm_automation_account` resource.
+
+![demo](./images/azurerm_value_completion.png)
+
+
+### Export Azure Resources As Terraform
+
+This feature allows you to export existing Azure resources as Terraform configuration blocks using Azure Export for Terraform. This helps you migrate existing Azure resources to Terraform-managed infrastructure.
+
+1. Open the Command Palette (`Command`+`Shift`+`P` on macOS and `Ctrl`+`Shift`+`P` on Windows/Linux).
+
+2. Search for and select the command `Microsoft Terraform: Export Azure Resource as Terraform`.
+
+3. Follow the prompts to select the Azure subscription and resource group containing the resources you want to export.
+
+![demo](./images/export_select_resource.png)
+
+4. Select the `azurerm` provider or the `azapi` provider to export the resources.
+
+5. The extension will generate the Terraform configuration blocks for the selected resources and display them in a new editor tab.
+![demo](./images/export_result.png)
+
+### Generate Required Permissions
+
+This feature help you generate the required permissions for AzureRM resources in Terraform configuration.
+
+Select some `azurerm` resources in your `.tf` file, then you can see a lightbulb icon appear next to the selected resources. Click on the lightbulb icon to see the option to generate required permissions. After clicking, the extension will generate the required permissions and display them in a new editor tab.
+
+![demo](./images/generate_permissions.gif)
+
+This feature also supports generating the missing permissions for the selected resources. Please ensure that you have logged in to Azure using the `az login` command before using this feature.
+
+A step-by-step guide can be found [here](https://github.com/Azure/ms-terraform-lsp/blob/main/docs/genearte_required_permissions_guide.md).
+
+### Survey
+
+We value your feedback! You can share your experience with the Microsoft Terraform extension by running the command `Microsoft Terraform: Show Survey` from the Command Palette. Your input helps us improve the extension and better serve your needs.
+
+![demo](./images/survey_popup.png)
 
 ## Commands
 
