@@ -430,53 +430,63 @@ export async function activate(ctx: vscode.ExtensionContext) {
   );
 
   ctx.subscriptions.push(
-  vscode.workspace.onDidChangeTextDocument(async (event: vscode.TextDocumentChangeEvent) => {
-      if (event.document.languageId !== 'terraform') {
-        return;
-      }
-
-      const lsClient = clientHandler.getClient();
-      if (!lsClient) {
-        return;
-      }
-
-      const editor = vscode.window.activeTextEditor;
-      if (
-        event.reason !== vscode.TextDocumentChangeReason.Redo &&
-        event.reason !== vscode.TextDocumentChangeReason.Undo &&
-        event.document === editor?.document &&
-        event.contentChanges.length === 1
-      ) {
-        const contentChange = event.contentChanges[0];
-
-        // Ignore deletions and trivial changes
-        if (contentChange.text.length < 2 || isEmptyOrWhitespace(contentChange.text)) {
+    vscode.workspace.onDidChangeTextDocument(
+      async (event: vscode.TextDocumentChangeEvent) => {
+        if (event.document.languageId !== "terraform") {
           return;
         }
 
-        const clipboardText = await vscode.env.clipboard.readText();
-
-        if (!areEqualIgnoringWhitespace(contentChange.text, clipboardText)) {
+        const lsClient = clientHandler.getClient();
+        if (!lsClient) {
           return;
         }
 
-        try {
-          const result: any = await lsClient.client.sendRequest('workspace/executeCommand', {
-            command: 'ms-terraform.convertJsonToAzapi',
-            arguments: [`jsonContent=${clipboardText}`],
-          });
+        const editor = vscode.window.activeTextEditor;
+        if (
+          event.reason !== vscode.TextDocumentChangeReason.Redo &&
+          event.reason !== vscode.TextDocumentChangeReason.Undo &&
+          event.document === editor?.document &&
+          event.contentChanges.length === 1
+        ) {
+          const contentChange = event.contentChanges[0];
 
-          await editor.edit((editBuilder) => {
-            const startPoint = contentChange.range.start;
-            const endPoint = editor.selection.active;
-            const replaceRange = new vscode.Range(startPoint, endPoint);
-            editBuilder.replace(replaceRange, result.hclcontent);
-          });
-        } catch (error) {
-          outputChannel.appendLine(`Error converting JSON to AzApi: ${error}`);
+          // Ignore deletions and trivial changes
+          if (
+            contentChange.text.length < 2 ||
+            isEmptyOrWhitespace(contentChange.text)
+          ) {
+            return;
+          }
+
+          const clipboardText = await vscode.env.clipboard.readText();
+
+          if (!areEqualIgnoringWhitespace(contentChange.text, clipboardText)) {
+            return;
+          }
+
+          try {
+            const result: any = await lsClient.client.sendRequest(
+              "workspace/executeCommand",
+              {
+                command: "ms-terraform.convertJsonToAzapi",
+                arguments: [`jsonContent=${clipboardText}`],
+              }
+            );
+
+            await editor.edit((editBuilder) => {
+              const startPoint = contentChange.range.start;
+              const endPoint = editor.selection.active;
+              const replaceRange = new vscode.Range(startPoint, endPoint);
+              editBuilder.replace(replaceRange, result.hclcontent);
+            });
+          } catch (error) {
+            outputChannel.appendLine(
+              `Error converting JSON to AzApi: ${error}`
+            );
+          }
         }
       }
-    })
+    )
   );
 
   if (enabled()) {
@@ -575,5 +585,5 @@ function areEqualIgnoringWhitespace(a: string, b: string): boolean {
 }
 
 function removeWhitespace(s: string): string {
-  return s.replace(/\s*/g, '');
+  return s.replace(/\s*/g, "");
 }
