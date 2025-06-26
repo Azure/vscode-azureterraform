@@ -31,7 +31,7 @@ This extension supports the following features:
 
 This extension provides the following guides to help you get started:
 
-### Language features
+### Language features for AzureRM provider
 
 1. Input `azurerm_` in a `.tf` file to see example suggestions for `azurerm` resources.
 
@@ -45,6 +45,37 @@ This extension provides the following guides to help you get started:
 
 ![demo](./images/azurerm_value_completion.png)
 
+
+### Language features for AzAPI provider
+
+Completion of allowed azure resource types when input `type` in `azapi` resources
+
+![intellisense being displayed for all available types for a resource](/images/list-types-intellisense.gif)
+
+Completion of allowed azure resource properties when input `body` in `azapi` resources
+
+![intellisense being displayed for available property names and property values where applicable of an azapi resource](/images/resource-property-names-and-values.gif)
+
+Completion of required properties for any discriminated objects.
+
+![intellisense being displayed for available required property names and property values where applicable of a discriminated object](/images/discriminated-object-property-names-and-values.gif)
+
+Show hint when hover on `azapi` resources and diagnostics to indicate schema errors as you type.
+
+![hint message being displayed when hover on an azapi property](/images/hovers.gif)
+
+Paste resource JSON to the terraform configuration, it will convert to azapi configuration.
+
+![convert resource JSON to azapi configuration](/images/paste-json-as-config.png)
+
+
+Paste ARM template to the terraform configuration, it will convert to azapi configuration.
+
+![convert ARM template to azapi configuration](/images/paste-arm-templates-as-config.png)
+
+Migrate from AzureRM provider to AzApi provider. More details can be found in [Guide to migrate AzureRM resources to AzAPi in Module](https://github.com/Azure/azapi-lsp/blob/main/docs/migrate_to_azapi_in_module_guide.md)
+
+![migrate from AzureRM provider to AzApi provider](/images/migrate-to-azapi-provider.png)
 
 ### Export Azure Resources As Terraform
 
