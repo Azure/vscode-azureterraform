@@ -4,6 +4,13 @@ All notable changes to the "Microsoft Terraform" extension will be documented in
 		
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [0.5.0]
+### Added
+- Suggest azapi provider resources, properties, and values for those properties
+- On-hover documentation for azapi resources and properties
+- Code actions to migrate resources between azurerm and azapi providers
+- Copy ARM Template/Resource JSON and paste it as azapi configuration
+
 ## [0.4.0]
 ### Added
 - Suggest azurerm provider resources, properties, and values for those properties
