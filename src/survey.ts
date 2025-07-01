@@ -52,9 +52,7 @@ export async function ShowSurvey(): Promise<void> {
     case "Yes":
       vscode.commands.executeCommand(
         "vscode.open",
-        vscode.Uri.parse(
-          "https://aka.ms/AAwtkqx"
-        )
+        vscode.Uri.parse("https://aka.ms/AAwtkqx")
       );
       // reset the survey prompt date and ignored count, remind after 180 days
       currentConfig.surveyPromptIgnoredCount = 0;
