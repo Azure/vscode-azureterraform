@@ -31,7 +31,7 @@ export async function ShouldShowSurvey(): Promise<boolean> {
 
 export async function ShowSurvey(): Promise<void> {
   const reloadMsg =
-    "Looks like you are using Terraform AzureRM Provider. We’d love to hear from you! Could you help us improve product usability by filling out a 2-3 minute survey about your experience with it?";
+    "Looks like you are using Terraform Provider. We’d love to hear from you! Could you help us improve product usability by filling out a 2-3 minute survey about your experience with it?";
   const selected = await vscode.window.showInformationMessage(
     reloadMsg,
     "Yes",
@@ -53,7 +53,7 @@ export async function ShowSurvey(): Promise<void> {
       vscode.commands.executeCommand(
         "vscode.open",
         vscode.Uri.parse(
-          "https://microsoft.qualtrics.com/jfe/form/SV_cImsrdNc4uF3LBc"
+          "https://aka.ms/AAwtkqx"
         )
       );
       // reset the survey prompt date and ignored count, remind after 180 days
