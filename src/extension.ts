@@ -352,7 +352,8 @@ export async function activate(ctx: vscode.ExtensionContext) {
             subscription,
             selectedGroupPick.resources,
             selectedGroupPick.groupName,
-            targetProvider
+            targetProvider,
+            ctx.extension.packageJSON.version
           );
         } else if (selectedResourceOrGroupPick.resource?.id) {
           vscode.window.showInformationMessage(
@@ -362,7 +363,8 @@ export async function activate(ctx: vscode.ExtensionContext) {
           await ExportSingleResource(
             subscription,
             selectedResourceOrGroupPick.resource,
-            targetProvider
+            targetProvider,
+            ctx.extension.packageJSON.version
           );
         } else {
           vscode.window.showErrorMessage(
