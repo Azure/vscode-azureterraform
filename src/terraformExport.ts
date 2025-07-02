@@ -48,7 +48,8 @@ async function requestTerraformExportWithPolling(
   requestBody: IExportRequestBody,
   progress: vscode.Progress<{ message?: string; increment?: number }>,
   token: vscode.CancellationToken,
-  operationDescription: string
+  operationDescription: string,
+  extensionVersion: string
 ): Promise<IPollingStatusResponse> {
   progress.report({
     message: `Requesting access token for ${operationDescription}...`,
@@ -65,6 +66,7 @@ async function requestTerraformExportWithPolling(
   const headers = {
     Authorization: `Bearer ${accessToken.token}`,
     "Content-Type": "application/json",
+    "User-Agent": `Microsoft Terraform Extension - ${extensionVersion}`,
   };
 
   progress.report({
@@ -394,7 +396,8 @@ function handleExportError(error: any, operationDescription: string): void {
 export async function ExportSingleResource(
   subscription: AzureSubscription,
   resource: GenericResourceExpanded,
-  targetProvider: string
+  targetProvider: string,
+  extensionVersion: string
 ): Promise<void> {
   const operationType = `resource '${resource.name || "unnamed-resource"}'`;
   await vscode.window.withProgress(
@@ -426,7 +429,8 @@ export async function ExportSingleResource(
           requestBody,
           progress,
           token,
-          operationType
+          operationType,
+          extensionVersion
         );
         // Handle the successful result
         await handleExportSuccess(finalPollingData, operationType);
@@ -445,7 +449,8 @@ export async function ExportResourceGroup(
   subscription: AzureSubscription,
   resources: GenericResourceExpanded[],
   resourceGroupName: string,
-  targetProvider: string
+  targetProvider: string,
+  extensionVersion: string
 ): Promise<void> {
   const operationType = `resource group '${resourceGroupName}'`;
   await vscode.window.withProgress(
@@ -489,7 +494,8 @@ export async function ExportResourceGroup(
           requestBody,
           progress,
           token,
-          operationType
+          operationType,
+          extensionVersion
         );
         // Handle the successful result
         await handleExportSuccess(finalPollingData, operationType);
