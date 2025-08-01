@@ -24,7 +24,7 @@ This extension supports the following features:
 - Visualize the terraform module
 - Suggest resources, properties, and values for those properties
 - On-hover documentation
-- Ingtegration with [Azure Export for Terraform](https://learn.microsoft.com/en-us/azure/developer/terraform/azure-export-for-terraform/export-terraform-overview) to Export Azure Resources As Terraform Blocks
+- Integration with [Azure Export for Terraform](https://learn.microsoft.com/en-us/azure/developer/terraform/azure-export-for-terraform/export-terraform-overview) to Export Azure Resources As Terraform Blocks
 - Integrated survey for user feedback
 
 ## Guides
