@@ -5,8 +5,13 @@
 
 "use strict";
 
-import * as azureStorage from "azure-storage";
+import {
+  ShareServiceClient,
+  StorageSharedKeyCredential,
+  ShareClient,
+} from "@azure/storage-file-share";
 import * as path from "path";
+import * as fs from "fs";
 import { CloudFile } from "./cloudFile";
 
 export enum TerminalType {
@@ -46,10 +51,16 @@ export async function azFileDelete(
   fileShareName: string,
   localFileUri: string
 ): Promise<void> {
-  const fs = azureStorage.createFileService(
+  const credential = new StorageSharedKeyCredential(
     storageAccountName,
     storageAccountKey
   );
+  const serviceClient = new ShareServiceClient(
+    `https://${storageAccountName}.file.core.windows.net`,
+    credential
+  );
+  const shareClient = serviceClient.getShareClient(fileShareName);
+
   const cf = new CloudFile(
     workspaceName,
     fileShareName,
@@ -57,7 +68,7 @@ export async function azFileDelete(
     FileSystem.local
   );
 
-  await deleteFile(cf, fs);
+  await deleteFile(cf, shareClient);
 }
 
 export async function azFilePull(
@@ -67,10 +78,16 @@ export async function azFilePull(
   fileShareName: string,
   cloudShellFileName: string
 ): Promise<void> {
-  const fs = azureStorage.createFileService(
+  const credential = new StorageSharedKeyCredential(
     storageAccountName,
     storageAccountKey
   );
+  const serviceClient = new ShareServiceClient(
+    `https://${storageAccountName}.file.core.windows.net`,
+    credential
+  );
+  const shareClient = serviceClient.getShareClient(fileShareName);
+
   const cf = new CloudFile(
     workspaceName,
     fileShareName,
@@ -78,7 +95,7 @@ export async function azFilePull(
     FileSystem.cloudshell
   );
 
-  await readFile(cf, fs);
+  await readFile(cf, shareClient);
 }
 
 export async function azFilePush(
@@ -88,10 +105,16 @@ export async function azFilePush(
   fileShareName: string,
   fileName: string
 ): Promise<void> {
-  const fs = azureStorage.createFileService(
+  const credential = new StorageSharedKeyCredential(
     storageAccountName,
     storageAccountKey
   );
+  const serviceClient = new ShareServiceClient(
+    `https://${storageAccountName}.file.core.windows.net`,
+    credential
+  );
+  const shareClient = serviceClient.getShareClient(fileShareName);
+
   const cf = new CloudFile(
     workspaceName,
     fileShareName,
@@ -102,7 +125,7 @@ export async function azFilePush(
 
   // try create file share if it does not exist
   try {
-    await createShare(cf, fs);
+    await createShare(cf, shareClient);
   } catch (error) {
     console.log(`Error creating FileShare: ${cf.fileShareName}\n\n${error}`);
     return;
@@ -111,7 +134,7 @@ export async function azFilePush(
   // try create directory path if it does not exist, dirs need to be created at each level
   try {
     for (let i = 0; i < pathCount; i++) {
-      await createDirectoryPath(cf, i, fs);
+      await createDirectoryPath(cf, i, shareClient);
     }
   } catch (error) {
     console.log(`Error creating directory: ${cf.cloudShellDir}\n\n${error}`);
@@ -120,7 +143,7 @@ export async function azFilePush(
 
   // try create file if not exist
   try {
-    await createFile(cf, fs);
+    await createFile(cf, shareClient);
   } catch (error) {
     console.log(`Error creating file: ${cf.localUri}\n\n${error}`);
   }
@@ -128,121 +151,89 @@ export async function azFilePush(
   return;
 }
 
-function createShare(
+async function createShare(
   cf: CloudFile,
-  fs: azureStorage.FileService
+  shareClient: ShareClient
 ): Promise<void> {
-  return new Promise<void>((resolve, reject) => {
-    fs.createShareIfNotExists(cf.fileShareName, (error, result) => {
-      if (!error) {
-        if (result && result.created) {
-          // only log if created
-          console.log(`FileShare: ${cf.fileShareName} created.`);
-        }
-        resolve();
-      } else {
-        reject(error);
-      }
-    });
-  });
+  const response = await shareClient.createIfNotExists();
+  if (response.succeeded) {
+    console.log(`FileShare: ${cf.fileShareName} created.`);
+  }
 }
 
-function createDirectoryPath(
+async function createDirectoryPath(
   cf: CloudFile,
   i: number,
-  fs: azureStorage.FileService
+  shareClient: ShareClient
 ): Promise<void> {
-  return new Promise<void>((resolve, reject) => {
-    let tempDir = "";
-    const dirArray = cf.cloudShellDir.split(path.sep);
-    for (let j = 0; j < dirArray.length && j <= i; j++) {
-      tempDir = tempDir + dirArray[j] + "/";
-    }
-    fs.createDirectoryIfNotExists(
-      cf.fileShareName,
-      tempDir,
-      (error, result) => {
-        if (!error) {
-          if (result && result.created) {
-            // only log if created TODO: This check is buggy, open issue in Azure Storage NODE SDK.
-            console.log(`Created dir: ${tempDir}`);
-          }
-          resolve();
-        } else {
-          reject(error);
-        }
-      }
-    );
-  });
+  let tempDir = "";
+  const dirArray = cf.cloudShellDir.split(path.sep);
+  for (let j = 0; j < dirArray.length && j <= i; j++) {
+    tempDir = tempDir + dirArray[j] + "/";
+  }
+
+  const directoryClient = shareClient.getDirectoryClient(tempDir);
+  const response = await directoryClient.createIfNotExists();
+  if (response.succeeded) {
+    console.log(`Created dir: ${tempDir}`);
+  }
 }
 
-function createFile(
+async function createFile(
   cf: CloudFile,
-  fs: azureStorage.FileService
+  shareClient: ShareClient
 ): Promise<void> {
-  return new Promise<void>((resolve, reject) => {
-    const fileName = path.basename(cf.localUri);
-    fs.createFileFromLocalFile(
-      cf.fileShareName,
-      cf.cloudShellDir,
-      fileName,
-      cf.localUri,
-      (error) => {
-        if (!error) {
-          console.log(`File synced to cloud: ${fileName}`);
-          resolve();
-        } else {
-          reject(error);
-        }
-      }
-    );
-  });
+  const fileName = path.basename(cf.localUri);
+  const directoryClient = shareClient.getDirectoryClient(cf.cloudShellDir);
+  const fileClient = directoryClient.getFileClient(fileName);
+
+  // Read the local file
+  const fileContent = fs.readFileSync(cf.localUri);
+
+  // Upload the file
+  await fileClient.uploadData(fileContent);
+  console.log(`File synced to cloud: ${fileName}`);
 }
 
-function readFile(cf: CloudFile, fs: azureStorage.FileService): Promise<void> {
-  return new Promise<void>((resolve, reject) => {
-    const fileName = path.basename(cf.cloudShellUri);
-    fs.getFileToLocalFile(
-      cf.fileShareName,
-      cf.cloudShellDir,
-      fileName,
-      cf.localUri,
-      (error) => {
-        if (!error) {
-          console.log(`File synced to local workspace: ${cf.localUri}`);
-          resolve();
-        } else {
-          reject(error);
-        }
-      }
-    );
-  });
-}
-
-function deleteFile(
+async function readFile(
   cf: CloudFile,
-  fs: azureStorage.FileService
+  shareClient: ShareClient
 ): Promise<void> {
-  return new Promise<void>((resolve, reject) => {
-    const fileName = path.basename(cf.localUri);
-    fs.deleteFileIfExists(
-      cf.fileShareName,
-      cf.cloudShellDir,
-      fileName,
-      (error, result) => {
-        if (!error) {
-          if (result) {
-            console.log(`File deleted from cloudshell: ${cf.cloudShellUri}`);
-          } else {
-            console.log(
-              `File does not exist in cloudshell: ${cf.cloudShellUri}`
-            );
-          }
-          resolve();
-        } else {
-          reject(error);
-        }
+  const fileName = path.basename(cf.cloudShellUri);
+  const directoryClient = shareClient.getDirectoryClient(cf.cloudShellDir);
+  const fileClient = directoryClient.getFileClient(fileName);
+
+  const downloadResponse = await fileClient.download();
+  if (downloadResponse.readableStreamBody) {
+    const writeStream = fs.createWriteStream(cf.localUri);
+
+    await new Promise((resolve, reject) => {
+      if (downloadResponse.readableStreamBody) {
+        downloadResponse.readableStreamBody.pipe(writeStream);
+        writeStream.on("error", reject);
+        writeStream.on("finish", resolve);
+      } else {
+        reject(new Error("No readable stream body"));
       }
-    );
-  });
+    });
+
+    console.log(`File synced to local workspace: ${cf.localUri}`);
+  }
+}
+
+async function deleteFile(
+  cf: CloudFile,
+  shareClient: ShareClient
+): Promise<void> {
+  const fileName = path.basename(cf.localUri);
+  const directoryClient = shareClient.getDirectoryClient(cf.cloudShellDir);
+  const fileClient = directoryClient.getFileClient(fileName);
+
+  try {
+    await fileClient.deleteIfExists();
+    console.log(`File deleted from cloudshell: ${cf.cloudShellUri}`);
+  } catch (error) {
+    console.log(`File does not exist in cloudshell: ${cf.cloudShellUri}`);
+    throw error;
+  }
 }

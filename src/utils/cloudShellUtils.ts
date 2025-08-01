@@ -5,7 +5,7 @@
 
 "use strict";
 
-import * as request from "request-promise-native";
+import axios from "axios";
 import * as TelemetryWrapper from "vscode-extension-telemetry-wrapper";
 import { AzureSession, CloudShell } from "../azure-account.api";
 
@@ -94,24 +94,22 @@ async function getUserSettings(
   armEndpoint: string
 ): Promise<IUserSettings | undefined> {
   const targetUri = `${armEndpoint}/providers/Microsoft.Portal/userSettings/cloudconsole?api-version=${consoleApiVersion}`;
-  const response = await request({
-    uri: targetUri,
-    method: "GET",
-    headers: {
-      Accept: "application/json",
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${accessToken}`,
-    },
-    simple: false,
-    resolveWithFullResponse: true,
-    json: true,
-  });
 
-  if (response.statusCode < 200 || response.statusCode > 299) {
-    return;
+  try {
+    const response = await axios.get(targetUri, {
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      },
+      validateStatus: (status) => status >= 200 && status <= 299,
+    });
+
+    return response.data && response.data.properties;
+  } catch (error) {
+    // If the request fails or returns non-2xx status, return undefined
+    return undefined;
   }
-
-  return response.body && response.body.properties;
 }
 
 async function getStorageAccountKey(
@@ -120,26 +118,27 @@ async function getStorageAccountKey(
   resourceGroup: string,
   storageAccountName: string
 ): Promise<string | undefined> {
-  const response = await request({
-    uri: `https://management.azure.com/subscriptions/${subscriptionId}/resourceGroups/${resourceGroup}/providers/Microsoft.Storage/storageAccounts/${storageAccountName}/listKeys?api-version=2017-06-01`,
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${accessToken}`,
-    },
-    simple: false,
-    resolveWithFullResponse: true,
-    json: true,
-  });
+  try {
+    const response = await axios.post(
+      `https://management.azure.com/subscriptions/${subscriptionId}/resourceGroups/${resourceGroup}/providers/Microsoft.Storage/storageAccounts/${storageAccountName}/listKeys?api-version=2017-06-01`,
+      {},
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+        validateStatus: (status) => status >= 200 && status <= 299,
+      }
+    );
 
-  if (response.statusCode < 200 || response.statusCode > 299) {
-    return;
+    return (
+      response.data &&
+      response.data.keys &&
+      response.data.keys[0] &&
+      response.data.keys[0].value
+    );
+  } catch (error) {
+    // If the request fails or returns non-2xx status, return undefined
+    return undefined;
   }
-
-  return (
-    response.body &&
-    response.body.keys &&
-    response.body.keys[0] &&
-    response.body.keys[0].value
-  );
 }
