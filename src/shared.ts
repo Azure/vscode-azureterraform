@@ -11,6 +11,7 @@ import {
   ShareClient,
 } from "@azure/storage-file-share";
 import * as path from "path";
+import * as fs from "fs";
 import { CloudFile } from "./cloudFile";
 
 export enum TerminalType {
@@ -154,13 +155,9 @@ async function createShare(
   cf: CloudFile,
   shareClient: ShareClient
 ): Promise<void> {
-  try {
-    const response = await shareClient.createIfNotExists();
-    if (response.succeeded) {
-      console.log(`FileShare: ${cf.fileShareName} created.`);
-    }
-  } catch (error) {
-    throw error;
+  const response = await shareClient.createIfNotExists();
+  if (response.succeeded) {
+    console.log(`FileShare: ${cf.fileShareName} created.`);
   }
 }
 
@@ -175,14 +172,10 @@ async function createDirectoryPath(
     tempDir = tempDir + dirArray[j] + "/";
   }
 
-  try {
-    const directoryClient = shareClient.getDirectoryClient(tempDir);
-    const response = await directoryClient.createIfNotExists();
-    if (response.succeeded) {
-      console.log(`Created dir: ${tempDir}`);
-    }
-  } catch (error) {
-    throw error;
+  const directoryClient = shareClient.getDirectoryClient(tempDir);
+  const response = await directoryClient.createIfNotExists();
+  if (response.succeeded) {
+    console.log(`Created dir: ${tempDir}`);
   }
 }
 
@@ -194,17 +187,12 @@ async function createFile(
   const directoryClient = shareClient.getDirectoryClient(cf.cloudShellDir);
   const fileClient = directoryClient.getFileClient(fileName);
 
-  try {
-    // Read the local file
-    const fs = require("fs");
-    const fileContent = fs.readFileSync(cf.localUri);
+  // Read the local file
+  const fileContent = fs.readFileSync(cf.localUri);
 
-    // Upload the file
-    await fileClient.uploadData(fileContent);
-    console.log(`File synced to cloud: ${fileName}`);
-  } catch (error) {
-    throw error;
-  }
+  // Upload the file
+  await fileClient.uploadData(fileContent);
+  console.log(`File synced to cloud: ${fileName}`);
 }
 
 async function readFile(
@@ -215,22 +203,21 @@ async function readFile(
   const directoryClient = shareClient.getDirectoryClient(cf.cloudShellDir);
   const fileClient = directoryClient.getFileClient(fileName);
 
-  try {
-    const downloadResponse = await fileClient.download();
-    if (downloadResponse.readableStreamBody) {
-      const fs = require("fs");
-      const writeStream = fs.createWriteStream(cf.localUri);
+  const downloadResponse = await fileClient.download();
+  if (downloadResponse.readableStreamBody) {
+    const writeStream = fs.createWriteStream(cf.localUri);
 
-      await new Promise((resolve, reject) => {
-        downloadResponse.readableStreamBody!.pipe(writeStream);
+    await new Promise((resolve, reject) => {
+      if (downloadResponse.readableStreamBody) {
+        downloadResponse.readableStreamBody.pipe(writeStream);
         writeStream.on("error", reject);
         writeStream.on("finish", resolve);
-      });
+      } else {
+        reject(new Error("No readable stream body"));
+      }
+    });
 
-      console.log(`File synced to local workspace: ${cf.localUri}`);
-    }
-  } catch (error) {
-    throw error;
+    console.log(`File synced to local workspace: ${cf.localUri}`);
   }
 }
 
