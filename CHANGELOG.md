@@ -4,6 +4,11 @@ All notable changes to the "Microsoft Terraform" extension will be documented in
 		
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [0.6.0]
+### Added
+- Support auto-completion and hover documentation for Azure Verified Modules.
+- Add auto-completion and hover documentation for data sources.
+
 ## [0.5.0]
 ### Added
 - Suggest azapi provider resources, properties, and values for those properties
