@@ -10,6 +10,7 @@ import * as _ from "lodash";
 import * as vscode from "vscode";
 import * as TelemetryWrapper from "vscode-extension-telemetry-wrapper";
 import { listAzureResourcesGrouped, selectSubscription } from "./auth";
+import { runPreflightValidation } from "./preflight";
 import { TerraformCommand } from "./shared";
 import { TestOption } from "./shared";
 import { ShouldShowSurvey, ShowSurvey } from "./survey";
@@ -28,6 +29,8 @@ import { ServerPath } from "./serverPath";
 import { config } from "./vscodeUtils";
 import { TelemetryReporter } from "@vscode/extension-telemetry";
 import { terraformChannel } from "./terraformChannel";
+import { generateTerraformPlan } from "./utils/terraformPlan";
+import * as path from "path";
 
 let fileWatcher: vscode.FileSystemWatcher;
 
@@ -371,6 +374,105 @@ export async function activate(ctx: vscode.ExtensionContext) {
             "Invalid selection or the selected resource is missing a required ID."
           );
         }
+      }
+    )
+  );
+
+  ctx.subscriptions.push(
+    TelemetryWrapper.instrumentOperationAsVsCodeCommand(
+      "azureTerraform.preflight",
+      async () => {
+        // Prefer integrated terminal regardless of current terminal setting
+        if (isTerminalSetToCloudShell()) {
+          const choice: vscode.MessageItem =
+            await vscode.window.showWarningMessage(
+              "Preflight Validation only runs locally and cannot run in Cloud Shell. Run it in the integrated terminal?",
+              DialogOption.ok,
+              DialogOption.cancel
+            );
+          if (choice === DialogOption.cancel) {
+            return;
+          }
+        }
+
+        // Ask if the user already has a plan file
+        const planChoice = await vscode.window.showQuickPick(
+          [
+            { label: "Yes", description: "Use an existing plan file" },
+            { label: "No", description: "Generate a new plan file" },
+          ],
+          {
+            placeHolder: "Do you already have a Terraform plan file?",
+            ignoreFocusOut: true,
+          }
+        );
+
+        if (!planChoice) {
+          return;
+        }
+
+        var planFilePath: string | undefined;
+        if (planChoice.label === "Yes") {
+          const fileUri = await vscode.window.showOpenDialog({
+            canSelectFiles: true,
+            canSelectFolders: false,
+            canSelectMany: false,
+            openLabel: "Select plan file",
+            title: "Select a Terraform plan file",
+            filters: {
+              "All Files": ["*"],
+            },
+          });
+
+          if (!fileUri || fileUri.length === 0) {
+            return;
+          }
+
+          planFilePath = fileUri[0].fsPath;
+        } else {
+          // Generate plan in selected workspace folder and run preflight on it
+          const cwd: string = await selectWorkspaceFolder();
+          if (!cwd) {
+            return;
+          }
+          // Need subscription to provide context for generating the plan
+          const subscription = await selectSubscription();
+          if (!subscription) {
+            return;
+          }
+          // First generate the plan with subscription context
+          try {
+            planFilePath = await generateTerraformPlan(
+              cwd,
+              subscription.subscriptionId,
+              "planfile"
+            );
+            outputChannel.appendLine(`[Preflight] Plan generated at: ${planFilePath}`);
+            vscode.window.showInformationMessage(`Terraform plan generated: ${planFilePath}`);
+          } catch (err) {
+            outputChannel.appendLine(
+              `[Preflight] terraform plan failed: ${
+                err instanceof Error ? err.message : err
+              }`
+            );
+            vscode.window.showErrorMessage(
+              "terraform plan failed. See output for details."
+            );
+            return;
+          }
+        }
+
+        // Select subscription only after user confirmed the plan file
+        const subscription = await selectSubscription();
+        if (!subscription) {
+          return;
+        }
+        await runPreflightValidation(
+          subscription,
+          ctx,
+          path.dirname(planFilePath),
+          planFilePath
+        );
       }
     )
   );

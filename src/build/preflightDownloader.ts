@@ -21,16 +21,6 @@ function getPlatform(platform: string) {
 }
 
 function getArch(arch: string) {
-  // platform | terraform-ls  | extension platform | vs code editor
-  //    --    |           --  |         --         | --
-  // macOS    | darwin_amd64  | darwin_x64         | ✅
-  // macOS    | darwin_arm64  | darwin_arm64       | ✅
-  // Linux    | linux_amd64   | linux_x64          | ✅
-  // Linux    | linux_arm     | linux_armhf        | ✅
-  // Linux    | linux_arm64   | linux_arm64        | ✅
-  // Windows  | windows_386   | win32_ia32         | ✅
-  // Windows  | windows_amd64 | win32_x64          | ✅
-  // Windows  | windows_arm64 | win32_arm64        | ✅
   if (arch === "ia32") {
     return "386";
   }
@@ -44,13 +34,14 @@ function getArch(arch: string) {
 }
 
 async function getRelease(): Promise<Release> {
+  // Assumption: aztfpreflight binary is released from Azure/aztfpreflight
   const response = await axios.get(
-    "https://api.github.com/repos/Azure/ms-terraform-lsp/releases",
+    "https://api.github.com/repos/Azure/aztfpreflight/releases",
     {
       headers: {},
     }
   );
-  if (response.status == 200 && response.data.length != 0) {
+  if (response.status === 200 && response.data.length !== 0) {
     const assets: Build[] = [];
     for (const i in response.data[0].assets) {
       assets.push({
@@ -60,7 +51,7 @@ async function getRelease(): Promise<Release> {
     }
     return {
       version: response.data[0].name,
-      assets: assets,
+      assets,
     };
   }
   throw new Error("no valid release");
@@ -68,15 +59,14 @@ async function getRelease(): Promise<Release> {
 
 async function run(platform: string, architecture: string) {
   const cwd = path.resolve(__dirname);
-
   const buildDir = path.basename(cwd);
   const repoDir = cwd.replace(buildDir, "");
   const installPath = path.join(repoDir, "..", "bin");
-  const os = getPlatform(platform);
-  const fileExtension = os === "windows" ? ".exe" : "";
-  const binaryName = path.resolve(installPath, `ms-terraform-lsp${fileExtension}`);
+
+  const fileExtension = platform === "win32" ? ".exe" : "";
+  const binaryName = path.resolve(installPath, `aztfpreflight${fileExtension}`);
   if (fs.existsSync(binaryName)) {
-    console.log("ms-terraform-lsp already exists. Exiting");
+    console.log("aztfpreflight already exists. Exiting");
     return;
   }
 
@@ -85,29 +75,26 @@ async function run(platform: string, architecture: string) {
   }
 
   const release = await getRelease();
-
+  const os = getPlatform(platform);
   const arch = getArch(architecture);
+
   let build: Build | undefined;
   for (const i in release.assets) {
-    if (release.assets[i].name.endsWith(`${os}_${arch}.zip`)) {
+    const name: string = release.assets[i].name;
+    if (name.includes(`${os}_${arch}`) && name.endsWith(".zip")) {
       build = release.assets[i];
       break;
     }
   }
 
   if (!build) {
-    throw new Error(
-      `Install error: no matching ms-terraform-lsp binary for ${os}/${arch}`
-    );
+    throw new Error(`Install error: no matching aztfpreflight binary for ${os}/${arch}`);
   }
 
   console.log(build);
 
   // download zip
-  const zipfile = path.resolve(
-    installPath,
-    `ms-terraform-lsp_${release.version}.zip`
-  );
+  const zipfile = path.resolve(installPath, `aztfpreflight_${release.version}.zip`);
   await axios
     .get(build!.downloadUrl, { responseType: "stream" })
     .then(function (response) {
@@ -125,8 +112,43 @@ async function run(platform: string, architecture: string) {
   fileReadStream.pipe(unzipPipe);
   await new Promise<void>((resolve, reject) => {
     unzipPipe.on("close", () => {
-      fs.chmodSync(binaryName, "755");
-      return resolve();
+      try {
+        // After extraction, find any file that looks like the versioned aztfpreflight binary
+        let candidate: string | undefined;
+        const files = fs.readdirSync(installPath);
+        for (const f of files) {
+          const startsWithVersion = f.indexOf("aztfpreflight_v") === 0;
+          const extOk = fileExtension ? f.endsWith(fileExtension) : true;
+          if (startsWithVersion && extOk) {
+            candidate = f;
+            break;
+          }
+        }
+
+        if (candidate) {
+          const oldPath = path.resolve(installPath, candidate);
+          // rename to the canonical binary name
+          if (oldPath !== binaryName) {
+            try {
+              fs.renameSync(oldPath, binaryName);
+            } catch (err) {
+              // if rename fails (e.g. dest exists), try removing dest and renaming
+              if (fs.existsSync(binaryName)) {
+                fs.unlinkSync(binaryName);
+              }
+              fs.renameSync(oldPath, binaryName);
+            }
+          }
+        }
+
+        if (fs.existsSync(binaryName)) {
+          fs.chmodSync(binaryName, "755");
+        }
+
+        return resolve();
+      } catch (err) {
+        return reject(err);
+      }
     });
     fileReadStream.on("error", reject);
   });
@@ -137,15 +159,15 @@ async function run(platform: string, architecture: string) {
 let os = process.platform.toString();
 let arch = process.arch;
 
-// ls_target=linux_amd64 npm run package -- --target=linux-x64
-const lsTarget = process.env.ls_target;
-if (lsTarget !== undefined) {
-  const tgt = lsTarget.split("_");
+// preflight_target=linux_amd64 npm run package -- --target=linux-x64
+const preflightTarget = process.env.preflight_target;
+if (preflightTarget !== undefined) {
+  const tgt = preflightTarget.split("_");
   os = tgt[0];
   arch = tgt[1];
 }
 
-// npm run download:ls --target=darwin-x64
+// npm run download:preflight --target=darwin-x64
 const target = process.env.npm_config_target;
 if (target !== undefined) {
   const tgt = target.split("-");

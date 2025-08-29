@@ -38,7 +38,8 @@
         "onCommand:azureTerraform.exectest",
         "onCommand:azureTerraform.push",
         "onCommand:azureTerraform.showSurvey",
-        "onCommand:azureTerraform.exportResource"
+        "onCommand:azureTerraform.exportResource",
+        "onCommand:azureTerraform.preflight"
     ],
     "main": "./out/extension",
     "contributes": {
@@ -58,6 +59,12 @@
         "configuration": {
             "title": "Microsoft Terraform",
             "properties": {
+                "azureTerraform.aztfpreflight.pathToBinary": {
+                    "scope": "resource",
+                    "type": "string",
+                    "default": "",
+                    "description": "Path to aztfpreflight executable (optional). If empty, 'aztfpreflight' will be resolved from PATH."
+                },
                 "azureTerraform.terminal": {
                     "type": "string",
                     "default": "integrated",
@@ -216,6 +223,10 @@
                 "category": "Microsoft Terraform"
             },
             {
+                "command": "azureTerraform.preflight",
+                "title": "Microsoft Terraform: Preflight Validation"
+            },
+            {
                 "command": "azureTerraform.enableLanguageServer",
                 "title": "Microsoft Terraform: Enable Language Server"
             },
@@ -230,9 +241,10 @@
         "esbuild": "npm run esbuild-base -- --sourcemap",
         "esbuild-watch": "npm run esbuild-base -- --sourcemap --watch",
         "compile": "npm run esbuild",
-        "watch": "npm run download:ls && npm run esbuild-watch",
+        "watch": "npm run download:ls && npm run download:preflight && npm run esbuild-watch",
         "download:ls": "ts-node ./src/build/downloader.ts",
-        "vscode:prepublish": "npm run download:ls && npm run esbuild-base -- --minify",
+        "download:preflight": "ts-node ./src/build/preflightDownloader.ts",
+        "vscode:prepublish": "npm run download:ls && npm run download:preflight && npm run esbuild-base -- --minify",
         "package": "vsce package",
         "test-compile": "tsc -p ./",
         "pretest": "npm run download:ls && npm run test-compile && npm run lint",

@@ -12,10 +12,26 @@ import * as vscode from "vscode";
 
 let currentSubscription: AzureSubscription | undefined;
 
-export async function selectSubscription(): Promise<
-  AzureSubscription | undefined
-> {
+export async function selectSubscription(
+  forceRefresh: boolean = false
+): Promise<AzureSubscription | undefined> {
   const provider = new VSCodeAzureSubscriptionProvider();
+
+  // If a subscription was previously selected and we don't want to force a new selection,
+  // return it early (but only if the provider still reports signed-in).
+  if (!forceRefresh && currentSubscription) {
+    try {
+      const isSignedIn = await provider.isSignedIn();
+      if (isSignedIn) {
+        return currentSubscription;
+      } else {
+        // Clear cached subscription if sign-in state changed
+        currentSubscription = undefined;
+      }
+    } catch (err) {
+      // Ignore errors and continue with the full selection flow
+    }
+  }
 
   let newlySelectedSubscription: AzureSubscription | undefined;
 
