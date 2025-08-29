@@ -9,7 +9,7 @@ import { executeCommand } from "./cpUtils";
 export async function generateTerraformPlan(
   cwd: string,
   subscriptionId: string,
-  planFileName: string = "planfile"
+  planFileName = "planfile"
 ): Promise<string> {
   await vscode.window.withProgress(
     {

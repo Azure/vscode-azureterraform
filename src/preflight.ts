@@ -35,13 +35,16 @@ export async function runPreflightValidation(
   // Resolve binary using the same strategy as ServerPath
   const pfPath = new PreflightPath(context);
   const executable = await pfPath.resolvedPathToBinary();
-  const quoted = [quoteArg(executable), ...["-i", planInputPath].map(quoteArg)].join(" ");
+  const quoted = [
+    quoteArg(executable),
+    ...["-i", planInputPath].map(quoteArg),
+  ].join(" ");
   terminal.sendText(quoted, true);
 }
 
 function quoteArg(a: string): string {
   // Leave simple args unquoted, otherwise single-quote and escape embedded single quotes
-  if (/^[A-Za-z0-9._\-\/]+$/.test(a)) {
+  if (/^[A-Za-z0-9._\-/]+$/.test(a)) {
     return a;
   }
   return `'${a.replace(/'/g, "'\\''")}'`;

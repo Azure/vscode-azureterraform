@@ -411,7 +411,7 @@ export async function activate(ctx: vscode.ExtensionContext) {
           return;
         }
 
-        var planFilePath: string | undefined;
+        let planFilePath: string | undefined;
         if (planChoice.label === "Yes") {
           const fileUri = await vscode.window.showOpenDialog({
             canSelectFiles: true,
@@ -447,8 +447,12 @@ export async function activate(ctx: vscode.ExtensionContext) {
               subscription.subscriptionId,
               "planfile"
             );
-            outputChannel.appendLine(`[Preflight] Plan generated at: ${planFilePath}`);
-            vscode.window.showInformationMessage(`Terraform plan generated: ${planFilePath}`);
+            outputChannel.appendLine(
+              `[Preflight] Plan generated at: ${planFilePath}`
+            );
+            vscode.window.showInformationMessage(
+              `Terraform plan generated: ${planFilePath}`
+            );
           } catch (err) {
             outputChannel.appendLine(
               `[Preflight] terraform plan failed: ${

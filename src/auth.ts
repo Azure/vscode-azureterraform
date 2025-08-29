@@ -13,7 +13,7 @@ import * as vscode from "vscode";
 let currentSubscription: AzureSubscription | undefined;
 
 export async function selectSubscription(
-  forceRefresh: boolean = false
+  forceRefresh = false
 ): Promise<AzureSubscription | undefined> {
   const provider = new VSCodeAzureSubscriptionProvider();
 

@@ -88,13 +88,18 @@ async function run(platform: string, architecture: string) {
   }
 
   if (!build) {
-    throw new Error(`Install error: no matching aztfpreflight binary for ${os}/${arch}`);
+    throw new Error(
+      `Install error: no matching aztfpreflight binary for ${os}/${arch}`
+    );
   }
 
   console.log(build);
 
   // download zip
-  const zipfile = path.resolve(installPath, `aztfpreflight_${release.version}.zip`);
+  const zipfile = path.resolve(
+    installPath,
+    `aztfpreflight_${release.version}.zip`
+  );
   await axios
     .get(build!.downloadUrl, { responseType: "stream" })
     .then(function (response) {

@@ -74,7 +74,10 @@ async function run(platform: string, architecture: string) {
   const installPath = path.join(repoDir, "..", "bin");
   const os = getPlatform(platform);
   const fileExtension = os === "windows" ? ".exe" : "";
-  const binaryName = path.resolve(installPath, `ms-terraform-lsp${fileExtension}`);
+  const binaryName = path.resolve(
+    installPath,
+    `ms-terraform-lsp${fileExtension}`
+  );
   if (fs.existsSync(binaryName)) {
     console.log("ms-terraform-lsp already exists. Exiting");
     return;
