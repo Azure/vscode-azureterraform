@@ -7,10 +7,21 @@
 
 import * as _ from "lodash";
 import * as vscode from "vscode";
+import * as path from "path";
 import { DialogOption, showFolderDialog } from "./uiUtils";
 
 export async function selectWorkspaceFolder(): Promise<string | undefined> {
   let folder: vscode.WorkspaceFolder;
+
+  // Prefer the workspace folder that contains the currently active file
+  const activeUri = vscode.window.activeTextEditor?.document?.uri;
+  if (activeUri) {
+    // If the active document is a real file on disk, return the folder containing that file
+    if (activeUri.scheme === "file") {
+      return path.dirname(activeUri.fsPath);
+    }
+    // Otherwise fall through to existing logic
+  }
   if (!_.isEmpty(vscode.workspace.workspaceFolders)) {
     if (vscode.workspace.workspaceFolders.length > 1) {
       folder = await vscode.window.showWorkspaceFolderPick({
