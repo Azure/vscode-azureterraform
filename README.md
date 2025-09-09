@@ -106,6 +106,38 @@ This feature also supports generating the missing permissions for the selected r
 
 A step-by-step guide can be found [here](https://github.com/Azure/ms-terraform-lsp/blob/main/docs/genearte_required_permissions_guide.md).
 
+### Preflight Validation
+
+Preflight validation helps you identify potential issues in your Terraform configuration before deployment by analyzing your Terraform plan. This feature uses the `aztfpreflight` tool to validate your infrastructure changes.
+
+To use preflight validation:
+
+1. Ensure you have a valid Terraform configuration in your workspace.
+
+2. Open the Command Palette (`Command`+`Shift`+`P` on macOS and `Ctrl`+`Shift`+`P` on Windows/Linux).
+
+3. Search for and select the command `Microsoft Terraform: Preflight Validation`.
+
+4. The extension will prompt you to either:
+   - Select an existing Terraform plan file, or
+   - Generate a new plan file
+
+5. If you choose to generate a new plan file:
+   - Ensure you're authenticated to Azure using `az login` command
+
+6. The extension will:
+   - Generate a Terraform plan for your configuration
+   - Run preflight validation against the generated plan
+   - Display the validation results in the terminal
+
+The validation results will help you identify potential issues such as:
+- Azure resource configuration validation
+- Pre-deployment infrastructure checks
+- Policy compliance verification
+- Resource provisioning constraints
+
+> **Note**: Preflight validation runs locally in the integrated terminal and requires an active Azure authentication session.
+
 ### Survey
 
 We value your feedback! You can share your experience with the Microsoft Terraform extension by running the command `Microsoft Terraform: Show Survey` from the Command Palette. Your input helps us improve the extension and better serve your needs.
@@ -163,6 +195,10 @@ Open the Command Palette (`Command`+`Shift`+`P` on macOS and `Ctrl`+`Shift`+`P` 
   <tr>
     <td>Microsoft Terraform: Show Survey</td>
     <td>Open the feedback survey to share your experience and help us improve.</td>
+  </tr>
+  <tr>
+    <td>Microsoft Terraform: Preflight Validation</td>
+    <td>Run preflight validation against your Terraform plan to identify potential issues before deployment. This command generates a Terraform plan and validates it using the aztfpreflight tool.</td>
   </tr>
   </tbody>
 </table>
