@@ -459,9 +459,15 @@ export async function activate(ctx: vscode.ExtensionContext) {
                 err instanceof Error ? err.message : err
               }`
             );
-            vscode.window.showErrorMessage(
-              "terraform plan failed. See output for details."
+            const choice = await vscode.window.showErrorMessage(
+              `terraform plan failed: ${
+                err instanceof Error ? err.message : err
+              }. See output for details.`,
+              "Show Output"
             );
+            if (choice === "Show Output") {
+              outputChannel.show();
+            }
             return;
           }
         }
