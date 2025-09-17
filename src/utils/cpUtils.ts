@@ -35,7 +35,7 @@ export async function executeCommand(
       childProc.on("close", (code: number) => {
         if (code !== 0) {
           const baseMessage = `Command "${command} ${args.toString()}" failed with exit code "${code}".`;
-          const detailedMessage = errorOutput.trim() 
+          const detailedMessage = errorOutput.trim()
             ? `${baseMessage}\nError details: ${errorOutput.trim()}`
             : baseMessage;
           reject(new Error(detailedMessage));
