@@ -85,12 +85,12 @@ export async function runPreflightValidation(
           // Update progress based on parsed resources
           const currentSummary = parser.getSummary();
           const currentResourceCount = currentSummary.totalResources;
-          
+
           if (currentResourceCount > lastResourceCount) {
             lastResourceCount = currentResourceCount;
-            progress.report({ 
-              increment: 10, 
-              message: `Analyzing resources... (${currentResourceCount} processed)` 
+            progress.report({
+              increment: 10,
+              message: `Analyzing resources... (${currentResourceCount} processed)`,
             });
           }
         });
@@ -109,8 +109,11 @@ export async function runPreflightValidation(
         });
 
         child.on("close", (code) => {
-          progress.report({ increment: 90, message: "Finalizing validation..." });
-          
+          progress.report({
+            increment: 90,
+            message: "Finalizing validation...",
+          });
+
           const summary = parser.getSummary();
 
           // Show summary in output channel
@@ -129,7 +132,9 @@ export async function runPreflightValidation(
           );
 
           if (summary.errors.length > 0) {
-            outputChannel.appendLine(`\nErrors found: ${summary.errors.length}`);
+            outputChannel.appendLine(
+              `\nErrors found: ${summary.errors.length}`
+            );
             summary.errors.forEach((error, index) => {
               outputChannel.appendLine(`\nError ${index + 1}:`);
               outputChannel.appendLine(`  Message: ${error.message}`);
@@ -198,7 +203,9 @@ export async function runPreflightValidation(
                   outputChannel.show();
                 }
               });
-            reject(new Error(`Preflight validation failed with exit code ${code}`));
+            reject(
+              new Error(`Preflight validation failed with exit code ${code}`)
+            );
           }
         });
 
