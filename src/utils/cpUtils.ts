@@ -16,6 +16,7 @@ export async function executeCommand(
   return new Promise(
     (resolve: (res: string) => void, reject: (e: Error) => void): void => {
       let result = "";
+      let errorOutput = "";
       const childProc: cp.ChildProcess = cp.spawn(command, args, options);
 
       childProc.stdout.on("data", (data: string | Buffer) => {
@@ -24,18 +25,20 @@ export async function executeCommand(
         terraformChannel.append(data);
       });
 
-      childProc.stderr.on("data", (data: string | Buffer) =>
-        terraformChannel.append(data.toString())
-      );
+      childProc.stderr.on("data", (data: string | Buffer) => {
+        const errorData = data.toString();
+        errorOutput = errorOutput.concat(errorData);
+        terraformChannel.append(errorData);
+      });
 
       childProc.on("error", reject);
       childProc.on("close", (code: number) => {
         if (code !== 0) {
-          reject(
-            new Error(
-              `Command "${command} ${args.toString()}" failed with exit code "${code}".`
-            )
-          );
+          const baseMessage = `Command "${command} ${args.toString()}" failed with exit code "${code}".`;
+          const detailedMessage = errorOutput.trim()
+            ? `${baseMessage}\nError details: ${errorOutput.trim()}`
+            : baseMessage;
+          reject(new Error(detailedMessage));
         } else {
           resolve(result);
         }

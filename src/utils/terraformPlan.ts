@@ -11,15 +11,16 @@ export async function generateTerraformPlan(
   subscriptionId: string,
   planFileName = "planfile"
 ): Promise<string> {
-  await vscode.window.withProgress(
-    {
-      location: vscode.ProgressLocation.Notification,
-      title: "Generating Terraform plan",
-      cancellable: false,
-    },
-    async (progress) => {
+  const runTerraformPlan = async (
+    progress?: vscode.Progress<{ message?: string }>
+  ) => {
+    if (progress) {
       progress.report({ message: "Running terraform plan..." });
-      await executeCommand("terraform", ["plan", "-out", `./${planFileName}`], {
+    }
+    await executeCommand(
+      "terraform",
+      ["plan", "-no-color", "-out", `./${planFileName}`],
+      {
         cwd,
         env: {
           ...process.env,
@@ -27,9 +28,55 @@ export async function generateTerraformPlan(
           ARM_SKIP_PROVIDER_REGISTRATION: "true",
           ARM_SUBSCRIPTION_ID: subscriptionId,
         },
-      });
-    }
-  );
+      }
+    );
+  };
 
-  return path.join(cwd, planFileName);
+  try {
+    await vscode.window.withProgress(
+      {
+        location: vscode.ProgressLocation.Notification,
+        title: "Generating Terraform plan",
+        cancellable: false,
+      },
+      async (progress) => {
+        await runTerraformPlan(progress);
+      }
+    );
+
+    return path.join(cwd, planFileName);
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+
+    // Check if the error is about inconsistent dependency lock file
+    if (
+      errorMessage.includes("Inconsistent dependency lock file") ||
+      errorMessage.includes("terraform init")
+    ) {
+      // Run terraform init and retry
+      await vscode.window.withProgress(
+        {
+          location: vscode.ProgressLocation.Notification,
+          title: "Initializing Terraform and generating plan",
+          cancellable: false,
+        },
+        async (progress) => {
+          progress.report({ message: "Running terraform init..." });
+          await executeCommand("terraform", ["init", "-no-color", "-upgrade"], {
+            cwd,
+            env: {
+              ...process.env,
+              ARM_SUBSCRIPTION_ID: subscriptionId,
+            },
+          });
+
+          await runTerraformPlan(progress);
+        }
+      );
+
+      return path.join(cwd, planFileName);
+    } else {
+      throw error;
+    }
+  }
 }
