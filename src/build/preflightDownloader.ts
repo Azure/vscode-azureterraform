@@ -63,7 +63,8 @@ async function run(platform: string, architecture: string) {
   const repoDir = cwd.replace(buildDir, "");
   const installPath = path.join(repoDir, "..", "bin");
 
-  const fileExtension = platform === "win32" ? ".exe" : "";
+  const os = getPlatform(platform);
+  const fileExtension = os === "windows" ? ".exe" : "";
   const binaryName = path.resolve(installPath, `aztfpreflight${fileExtension}`);
   if (fs.existsSync(binaryName)) {
     console.log("aztfpreflight already exists. Exiting");
@@ -75,7 +76,6 @@ async function run(platform: string, architecture: string) {
   }
 
   const release = await getRelease();
-  const os = getPlatform(platform);
   const arch = getArch(architecture);
 
   let build: Build | undefined;
