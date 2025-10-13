@@ -164,8 +164,8 @@ async function run(platform: string, architecture: string) {
 let os = process.platform.toString();
 let arch = process.arch;
 
-// preflight_target=linux_amd64 npm run package -- --target=linux-x64
-const preflightTarget = process.env.preflight_target;
+// ls_target=linux_amd64 npm run package -- --target=linux-x64
+const preflightTarget = process.env.ls_target;
 if (preflightTarget !== undefined) {
   const tgt = preflightTarget.split("_");
   os = tgt[0];
