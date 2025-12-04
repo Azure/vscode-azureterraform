@@ -4,6 +4,11 @@ All notable changes to the "Microsoft Terraform" extension will be documented in
 		
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [0.8.0]
+### Added
+- Update ms-terraform-lsp to v0.8.0
+- Update survey link.
+
 ## [0.7.0]
 ### Added
 - Support for Terraform preflight validation command. Preflight validation runs against generated Terraform plans to identify potential issues before deployment
