@@ -2,7 +2,7 @@ import * as vscode from "vscode";
 
 export function config(
   section: string,
-  scope?: vscode.ConfigurationScope
+  scope?: vscode.ConfigurationScope,
 ): vscode.WorkspaceConfiguration {
   return vscode.workspace.getConfiguration(section, scope);
 }
@@ -20,7 +20,7 @@ export function normalizeFolderName(folderName: string): string {
 }
 
 export function getWorkspaceFolder(
-  folderName: string
+  folderName: string,
 ): vscode.WorkspaceFolder | undefined {
   return vscode.workspace.getWorkspaceFolder(vscode.Uri.parse(folderName));
 }
@@ -31,7 +31,7 @@ export function getWorkspaceFolder(
 // see also https://github.com/microsoft/vscode/issues/58869
 export function getActiveTextEditor(): vscode.TextEditor | undefined {
   return vscode.window.visibleTextEditors.find(
-    (textEditor) => !!textEditor.viewColumn
+    (textEditor) => !!textEditor.viewColumn,
   );
 }
 

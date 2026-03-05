@@ -55,7 +55,7 @@ export class IntegratedShell extends BaseShell {
     await commands.executeCommand(
       "vscode.open",
       Uri.file(path.join(cwd, IntegratedShell.GRAPH_FILE_NAME)),
-      ViewColumn.Two
+      ViewColumn.Two,
     );
   }
 
@@ -70,13 +70,13 @@ export class IntegratedShell extends BaseShell {
       case TestOption.lint:
         await runLintInDocker(
           workingDirectory + ":/tf-test/module",
-          containerName
+          containerName,
         );
         break;
       case TestOption.e2e:
         await runE2EInDocker(
           workingDirectory + ":/tf-test/module",
-          containerName
+          containerName,
         );
         break;
 
@@ -120,7 +120,7 @@ export class IntegratedShell extends BaseShell {
   private checkCreateTerminal(): void {
     if (!this.terminal) {
       this.terminal = vscode.window.createTerminal(
-        Constants.TerraformTerminalName
+        Constants.TerraformTerminalName,
       );
     }
   }

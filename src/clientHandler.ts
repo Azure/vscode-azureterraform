@@ -27,7 +27,7 @@ export class ClientHandler {
   constructor(
     private lsPath: ServerPath,
     private outputChannel: vscode.OutputChannel,
-    private reporter: TelemetryReporter
+    private reporter: TelemetryReporter,
   ) {}
 
   public async startClient(): Promise<void> {
@@ -71,7 +71,7 @@ export class ClientHandler {
 
     client.onDidChangeState((event) => {
       console.log(
-        `Client: ${State[event.oldState]} --> ${State[event.newState]}`
+        `Client: ${State[event.oldState]} --> ${State[event.newState]}`,
       );
       if (event.newState === State.Stopped) {
         this.reporter.sendRawTelemetryEvent("stopClient");
@@ -85,7 +85,7 @@ export class ClientHandler {
     const cmd = await this.lsPath.resolvedPathToBinary();
     const serverArgs = config("azureTerraform").get<string[]>(
       "languageServer.args",
-      []
+      [],
     );
     const executable: Executable = {
       command: cmd,
@@ -97,7 +97,7 @@ export class ClientHandler {
       debug: executable,
     };
     this.outputChannel.appendLine(
-      `Launching language server: ${cmd} ${serverArgs.join(" ")}`
+      `Launching language server: ${cmd} ${serverArgs.join(" ")}`,
     );
     return serverOptions;
   }

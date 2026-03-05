@@ -60,7 +60,7 @@ export class ServerPath {
       throw new Error(
         `Unable to launch language server: ${
           err instanceof Error ? err.message : err
-        }${extraHint}`
+        }${extraHint}`,
       );
     }
 

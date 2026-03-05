@@ -9,10 +9,10 @@ import { executeCommand } from "./cpUtils";
 export async function generateTerraformPlan(
   cwd: string,
   subscriptionId: string,
-  planFileName = "planfile"
+  planFileName = "planfile",
 ): Promise<string> {
   const runTerraformPlan = async (
-    progress?: vscode.Progress<{ message?: string }>
+    progress?: vscode.Progress<{ message?: string }>,
   ) => {
     if (progress) {
       progress.report({ message: "Running terraform plan..." });
@@ -28,7 +28,7 @@ export async function generateTerraformPlan(
           ARM_SKIP_PROVIDER_REGISTRATION: "true",
           ARM_SUBSCRIPTION_ID: subscriptionId,
         },
-      }
+      },
     );
   };
 
@@ -41,7 +41,7 @@ export async function generateTerraformPlan(
       },
       async (progress) => {
         await runTerraformPlan(progress);
-      }
+      },
     );
 
     return path.join(cwd, planFileName);
@@ -71,7 +71,7 @@ export async function generateTerraformPlan(
           });
 
           await runTerraformPlan(progress);
-        }
+        },
       );
 
       return path.join(cwd, planFileName);

@@ -96,10 +96,10 @@ export class PreflightLogParser {
    */
   public getSummary(): PreflightSummary {
     const successfulResources = this.resourceResults.filter(
-      (r) => r.status === "success"
+      (r) => r.status === "success",
     ).length;
     const failedResources = this.resourceResults.filter(
-      (r) => r.status === "failed"
+      (r) => r.status === "failed",
     ).length;
     const totalResources = this.resourceResults.length;
 
@@ -170,7 +170,7 @@ export class PreflightLogParser {
     // Parse resource success/failure messages
     // Handle both formats: "resource: status" and "timestamp [INFO] resource: status"
     const resourceMatch = message.match(
-      /(?:.*\[INFO\]\s+)?([^:]+):\s+(success|failed)/
+      /(?:.*\[INFO\]\s+)?([^:]+):\s+(success|failed)/,
     );
     if (resourceMatch) {
       this.resourceResults.push({

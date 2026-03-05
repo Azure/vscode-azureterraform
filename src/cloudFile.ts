@@ -21,7 +21,7 @@ export class CloudFile {
     workspaceName: string, // vscode workspace name
     fileShareName: string, // name of file share in storage account
     fileUri: string, // full path to file
-    fileSystem: FileSystem
+    fileSystem: FileSystem,
   ) {
     // env that is authoritative for file.
     // Ex. local file you want to push to cloudshell, env would be local
@@ -47,10 +47,10 @@ export class CloudFile {
     const localDir = path.dirname(
       path.relative(
         vscode.workspace.workspaceFolders.find(
-          (ws) => ws.name === this.workspaceName
+          (ws) => ws.name === this.workspaceName,
         ).uri.fsPath,
-        localPath
-      )
+        localPath,
+      ),
     );
     const cloudShellDir = this.workspaceName + "/" + localDir;
     return cloudShellDir + "/" + path.basename(localPath);
@@ -64,11 +64,11 @@ export class CloudFile {
     }
 
     const wsFolder = vscode.workspace.workspaceFolders.find(
-      (ws) => ws.name === dirArray[0]
+      (ws) => ws.name === dirArray[0],
     );
     if (wsFolder === undefined) {
       throw new RangeError(
-        "{csPath} does not contain valid workspace name in path"
+        "{csPath} does not contain valid workspace name in path",
       );
     }
 

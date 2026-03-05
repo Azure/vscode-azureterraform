@@ -27,7 +27,7 @@ class TerraformShellManager implements ITerraformShellManager {
 
     TelemetryWrapper.addContextProperty(
       "isCloudShell",
-      isCloudShell.toString()
+      isCloudShell.toString(),
     );
     if (isCloudShell) {
       return this.cloudShell;

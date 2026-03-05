@@ -57,13 +57,13 @@ export class AzureCloudShell extends BaseShell {
       try {
         await Promise.all(promises);
         vscode.window.showInformationMessage(
-          "Synced all matched files in the current workspace to CloudShell"
+          "Synced all matched files in the current workspace to CloudShell",
         );
       } catch (error) {
         terraformChannel.appendLine(error);
         await promptForOpenOutputChannel(
           "Failed to push files to the cloud. Please open the output channel for more details.",
-          DialogType.error
+          DialogType.error,
         );
       }
     }
@@ -74,7 +74,7 @@ export class AzureCloudShell extends BaseShell {
 
     if (!(await this.connectedToCloudShell())) {
       terraformChannel.appendLine(
-        `cloud shell can not be opened, file deleting operation is not synced`
+        `cloud shell can not be opened, file deleting operation is not synced`,
       );
       return;
     }
@@ -88,7 +88,7 @@ export class AzureCloudShell extends BaseShell {
             this.storageAccountName,
             this.storageAccountKey,
             this.fileShareName,
-            file
+            file,
           );
           break;
         } catch (err) {
@@ -118,15 +118,15 @@ export class AzureCloudShell extends BaseShell {
           this.fileShareName,
           settingUtils.getLocationForTest(),
           settingUtils.getImageNameForTest(),
-          workspaceName
-        )
+          workspaceName,
+        ),
       );
 
       const shellscript = exportTestScript(
         tfConfiguration,
         this.resourceGroup,
         this.storageAccountName,
-        setupFilesFolder
+        setupFilesFolder,
       );
 
       await Promise.all([
@@ -135,8 +135,8 @@ export class AzureCloudShell extends BaseShell {
           path.join(localPath, containerCommandScript),
           exportContainerCmd(
             workspaceName,
-            await this.resolveContainerCmd(testType)
-          )
+            await this.resolveContainerCmd(testType),
+          ),
         ),
       ]);
 
@@ -146,14 +146,14 @@ export class AzureCloudShell extends BaseShell {
           this.storageAccountName,
           this.storageAccountKey,
           this.fileShareName,
-          path.join(localPath, createAciScript)
+          path.join(localPath, createAciScript),
         ),
         azFilePush(
           workspaceName,
           this.storageAccountName,
           this.storageAccountKey,
           this.fileShareName,
-          path.join(localPath, containerCommandScript)
+          path.join(localPath, containerCommandScript),
         ),
       ]);
 
@@ -162,15 +162,15 @@ export class AzureCloudShell extends BaseShell {
       const sentToTerminal: boolean = await this.runTFCommand(
         `source ${createAciScript} && terraform fmt && terraform init && terraform apply -auto-approve && terraform taint azurerm_container_group.TFTest && \
                 echo "\nRun the following command to get the logs from the ACI container: az container logs -g ${resourceGroup} -n ${aciGroup}\n"`,
-        `${Constants.clouddrive}/${setupFilesFolder}`
+        `${Constants.clouddrive}/${setupFilesFolder}`,
       );
       if (sentToTerminal) {
         vscode.window.showInformationMessage(
-          `An Azure Container Instance will be created in the Resource Group '${resourceGroup}' if the command executes successfully.`
+          `An Azure Container Instance will be created in the Resource Group '${resourceGroup}' if the command executes successfully.`,
         );
       } else {
         vscode.window.showErrorMessage(
-          "Failed to send the command to terminal, please try it again."
+          "Failed to send the command to terminal, please try it again.",
         );
       }
     }
@@ -183,7 +183,7 @@ export class AzureCloudShell extends BaseShell {
         tfCommand,
         workingDirectory
           ? `${Constants.clouddrive}/${path.basename(workingDirectory)}`
-          : ""
+          : "",
       );
     }
   }
@@ -207,13 +207,13 @@ export class AzureCloudShell extends BaseShell {
 
   protected async runTFCommand(
     command: string,
-    workdir: string
+    workdir: string,
   ): Promise<boolean> {
     if (this.terminal) {
       this.terminal.show();
       if (!(await this.cloudShell.waitForConnection())) {
         vscode.window.showErrorMessage(
-          "Establish connection to Cloud Shell failed, please try again later."
+          "Establish connection to Cloud Shell failed, please try again later.",
         );
         TelemetryWrapper.sendError(Error("connectFail"));
         return false;
@@ -241,13 +241,13 @@ export class AzureCloudShell extends BaseShell {
     const response: MessageItem = await vscode.window.showWarningMessage(
       message,
       DialogOption.ok,
-      DialogOption.cancel
+      DialogOption.cancel,
     );
     if (response === DialogOption.ok) {
       // TODO: Azure Account API is deprecated and need to be replaced once support for Azure Account API is migrated.
       const accountAPI: AzureAccount =
         vscode.extensions.getExtension<AzureAccount>(
-          "ms-vscode.azure-account"
+          "ms-vscode.azure-account",
         )!.exports;
 
       this.cloudShell = accountAPI.createCloudShell("Linux");
@@ -258,7 +258,7 @@ export class AzureCloudShell extends BaseShell {
         await getStorageAccountforCloudShell(this.cloudShell);
       if (!storageAccount) {
         vscode.window.showErrorMessage(
-          "Failed to get the Storage Account information for Cloud Shell, please try again later."
+          "Failed to get the Storage Account information for Cloud Shell, please try again later.",
         );
         return false;
       }
@@ -285,7 +285,7 @@ export class AzureCloudShell extends BaseShell {
         this.storageAccountName,
         this.storageAccountKey,
         this.fileShareName,
-        file
+        file,
       );
     }
   }

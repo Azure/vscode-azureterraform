@@ -36,7 +36,7 @@ export async function ShowSurvey(): Promise<void> {
     reloadMsg,
     "Yes",
     "Not Now",
-    "Never"
+    "Never",
   );
   let currentConfig: any = getSurvey();
 
@@ -52,7 +52,7 @@ export async function ShowSurvey(): Promise<void> {
     case "Yes":
       vscode.commands.executeCommand(
         "vscode.open",
-        vscode.Uri.parse("https://aka.ms/AAywxdz")
+        vscode.Uri.parse("https://aka.ms/AAywxdz"),
       );
       // reset the survey prompt date and ignored count, remind after 180 days
       currentConfig.surveyPromptIgnoredCount = 0;

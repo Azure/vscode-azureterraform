@@ -49,14 +49,14 @@ async function requestTerraformExportWithPolling(
   progress: vscode.Progress<{ message?: string; increment?: number }>,
   token: vscode.CancellationToken,
   operationDescription: string,
-  extensionVersion: string
+  extensionVersion: string,
 ): Promise<IPollingStatusResponse> {
   progress.report({
     message: `Requesting access token for ${operationDescription}...`,
   });
   const accessToken = await getAccessTokenFromSubscription(
     subscription,
-    "https://management.azure.com/.default"
+    "https://management.azure.com/.default",
   );
   if (!accessToken) {
     throw new Error("Failed to acquire Azure access token.");
@@ -112,7 +112,7 @@ async function requestTerraformExportWithPolling(
 
     if (!locationUrl) {
       throw new Error(
-        `Export for ${operationDescription} started (202 Accepted) but no Location header received for polling.`
+        `Export for ${operationDescription} started (202 Accepted) but no Location header received for polling.`,
       );
     }
 
@@ -125,7 +125,7 @@ async function requestTerraformExportWithPolling(
     while (Date.now() < maxPollingTime) {
       if (token.isCancellationRequested) {
         throw new Error(
-          `Export operation for ${operationDescription} cancelled by user.`
+          `Export operation for ${operationDescription} cancelled by user.`,
         );
       }
 
@@ -142,7 +142,7 @@ async function requestTerraformExportWithPolling(
           {
             headers,
             timeout: 30000,
-          }
+          },
         );
 
         const operationStatus = pollResponse.data?.status;
@@ -167,18 +167,18 @@ async function requestTerraformExportWithPolling(
             detailedErrorsMessage = pollResponse.data.properties.errors
               .map(
                 (e) =>
-                  `${e.code || "Error"}: ${e.message || "Details not provided"}`
+                  `${e.code || "Error"}: ${e.message || "Details not provided"}`,
               )
               .join("; ");
           }
           throw new Error(
             `Export operation for ${operationDescription} failed on Azure: ${errorDetails}${
               detailedErrorsMessage ? `. Details: ${detailedErrorsMessage}` : ""
-            }`
+            }`,
           );
         } else if (operationStatus === "Canceled") {
           throw new Error(
-            `Export operation for ${operationDescription} was canceled on the server.`
+            `Export operation for ${operationDescription} was canceled on the server.`,
           );
         }
 
@@ -189,7 +189,7 @@ async function requestTerraformExportWithPolling(
 
         retryAfter = parseInt(
           pollResponse.headers["retry-after"] || `${retryAfter}`,
-          10
+          10,
         );
       } catch (pollError) {
         if (axios.isAxiosError(pollError)) {
@@ -198,10 +198,10 @@ async function requestTerraformExportWithPolling(
             Date.now() > maxPollingTime - 60000
           ) {
             console.warn(
-              `Polling URL for ${operationDescription} returned 404 near timeout, assuming failure.`
+              `Polling URL for ${operationDescription} returned 404 near timeout, assuming failure.`,
             );
             throw new Error(
-              `Polling for ${operationDescription} failed (URL not found near timeout).`
+              `Polling for ${operationDescription} failed (URL not found near timeout).`,
             );
           }
           // Include status code for other polling errors
@@ -209,7 +209,7 @@ async function requestTerraformExportWithPolling(
             ? ` (Status: ${pollError.response.status})`
             : "";
           throw new Error(
-            `Error during polling for ${operationDescription}${statusText}: ${pollError.message}`
+            `Error during polling for ${operationDescription}${statusText}: ${pollError.message}`,
           );
         }
         // Re-throw non-Axios errors
@@ -218,25 +218,25 @@ async function requestTerraformExportWithPolling(
     }
     // If loop finishes without success
     throw new Error(
-      `Export operation for ${operationDescription} timed out after 5 minutes.`
+      `Export operation for ${operationDescription} timed out after 5 minutes.`,
     );
   }
 
   // Fallback for unexpected status codes
   throw new Error(
-    `Unexpected initial response status for ${operationDescription}: ${response.status}`
+    `Unexpected initial response status for ${operationDescription}: ${response.status}`,
   );
 }
 
 async function handleExportSuccess(
   pollingResult: IPollingStatusResponse,
-  operationDescription: string
+  operationDescription: string,
 ): Promise<void> {
   const terraformConfig = pollingResult.properties?.configuration;
   const importBlock = pollingResult.properties?.import;
   // Ensure skippedResources and errors are arrays for consistent processing
   const skippedResources = Array.isArray(
-    pollingResult.properties?.skippedResources
+    pollingResult.properties?.skippedResources,
   )
     ? pollingResult.properties.skippedResources
     : [];
@@ -246,11 +246,11 @@ async function handleExportSuccess(
 
   if (!terraformConfig) {
     vscode.window.showWarningMessage(
-      `Export for ${operationDescription} completed, but the response did not contain Terraform configuration.`
+      `Export for ${operationDescription} completed, but the response did not contain Terraform configuration.`,
     );
     console.warn(
       "Export Success Response (missing configuration):",
-      pollingResult
+      pollingResult,
     );
     return;
   }
@@ -263,7 +263,7 @@ async function handleExportSuccess(
 
   if (skippedResources.length > 0) {
     commentBlock += `# Skipped Resources: ${JSON.stringify(
-      skippedResources
+      skippedResources,
     )}\n`;
   } else {
     commentBlock += `# Skipped Resources: None\n`;
@@ -271,7 +271,7 @@ async function handleExportSuccess(
 
   if (errors.length > 0) {
     commentBlock += `# Errors Encountered (non-fatal or informational): ${JSON.stringify(
-      errors
+      errors,
     )}\n`;
   } else {
     commentBlock += `# Errors Encountered: None\n`;
@@ -297,30 +297,30 @@ async function handleExportSuccess(
     await vscode.window.showTextDocument(doc, { preview: false });
 
     vscode.window.showInformationMessage(
-      `Terraform export for ${operationDescription} complete. Snippet opened in a new tab.`
+      `Terraform export for ${operationDescription} complete. Snippet opened in a new tab.`,
     );
 
     // Optionally show warnings if resources were skipped or non-fatal errors occurred
     if (skippedResources.length > 0) {
       vscode.window.showWarningMessage(
-        `Some resources were skipped during the export for ${operationDescription}. See comments in the generated file.`
+        `Some resources were skipped during the export for ${operationDescription}. See comments in the generated file.`,
       );
     }
     // Note: 'errors' here are from the 'properties' block, typically non-fatal if status is 'Succeeded'.
     // Fatal errors would have thrown an exception earlier.
     if (errors.length > 0) {
       vscode.window.showWarningMessage(
-        `Some non-fatal issues or informational messages were reported during the export for ${operationDescription}. See comments in the generated file.`
+        `Some non-fatal issues or informational messages were reported during the export for ${operationDescription}. See comments in the generated file.`,
       );
     }
   } catch (error) {
     const typedError = error as Error;
     console.error(
       `Failed to open exported snippet for ${operationDescription}:`,
-      typedError
+      typedError,
     );
     vscode.window.showErrorMessage(
-      `Failed to open snippet for ${operationDescription} in a new tab: ${typedError.message}. It has been copied to your clipboard instead.`
+      `Failed to open snippet for ${operationDescription} in a new tab: ${typedError.message}. It has been copied to your clipboard instead.`,
     );
     await vscode.env.clipboard.writeText(fullSnippet);
   }
@@ -351,7 +351,7 @@ function handleExportError(error: any, operationDescription: string): void {
         specificDetails = responseData.properties.errors
           .map(
             (e: any) =>
-              `${e.code || "Error"}: ${e.message || "Details not provided"}`
+              `${e.code || "Error"}: ${e.message || "Details not provided"}`,
           )
           .join("; ");
       } else if (azureError) {
@@ -397,7 +397,7 @@ export async function ExportSingleResource(
   subscription: AzureSubscription,
   resource: GenericResourceExpanded,
   targetProvider: string,
-  extensionVersion: string
+  extensionVersion: string,
 ): Promise<void> {
   const operationType = `resource '${resource.name || "unnamed-resource"}'`;
   await vscode.window.withProgress(
@@ -430,7 +430,7 @@ export async function ExportSingleResource(
           progress,
           token,
           operationType,
-          extensionVersion
+          extensionVersion,
         );
         // Handle the successful result
         await handleExportSuccess(finalPollingData, operationType);
@@ -438,7 +438,7 @@ export async function ExportSingleResource(
         // Handle errors from preparation or polling
         handleExportError(error, operationType);
       }
-    }
+    },
   );
 }
 
@@ -450,7 +450,7 @@ export async function ExportResourceGroup(
   resources: GenericResourceExpanded[],
   resourceGroupName: string,
   targetProvider: string,
-  extensionVersion: string
+  extensionVersion: string,
 ): Promise<void> {
   const operationType = `resource group '${resourceGroupName}'`;
   await vscode.window.withProgress(
@@ -463,7 +463,7 @@ export async function ExportResourceGroup(
       try {
         if (!resourceGroupName) {
           throw new Error(
-            "Resource group name is required for exporting an entire group."
+            "Resource group name is required for exporting an entire group.",
           );
         }
         if (resources.length === 0) {
@@ -473,7 +473,7 @@ export async function ExportResourceGroup(
             increment: 100,
           });
           vscode.window.showInformationMessage(
-            `Resource group '${resourceGroupName}' is empty. Nothing to export.`
+            `Resource group '${resourceGroupName}' is empty. Nothing to export.`,
           );
           return;
         }
@@ -495,7 +495,7 @@ export async function ExportResourceGroup(
           progress,
           token,
           operationType,
-          extensionVersion
+          extensionVersion,
         );
         // Handle the successful result
         await handleExportSuccess(finalPollingData, operationType);
@@ -503,6 +503,6 @@ export async function ExportResourceGroup(
         // Handle errors from preparation or polling
         handleExportError(error, operationType);
       }
-    }
+    },
   );
 }
