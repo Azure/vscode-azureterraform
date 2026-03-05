@@ -15,15 +15,15 @@ export async function runPreflightValidation(
   subscription: AzureSubscription,
   context: vscode.ExtensionContext,
   cwd: string,
-  planInputPath: string
+  planInputPath: string,
 ): Promise<PreflightSummary | undefined> {
   const accessToken = await getAccessTokenFromSubscription(
     subscription,
-    "https://management.azure.com/.default"
+    "https://management.azure.com/.default",
   );
   if (!accessToken) {
     vscode.window.showErrorMessage(
-      "Failed to acquire Azure access token for the selected subscription."
+      "Failed to acquire Azure access token for the selected subscription.",
     );
     return undefined;
   }
@@ -59,7 +59,7 @@ export async function runPreflightValidation(
         });
 
         const outputChannel = vscode.window.createOutputChannel(
-          "Terraform: Preflight"
+          "Terraform: Preflight",
         );
 
         // Handle cancellation
@@ -119,21 +119,21 @@ export async function runPreflightValidation(
           // Show summary in output channel
           outputChannel.appendLine("\n=== Preflight Validation Summary ===");
           outputChannel.appendLine(
-            `Total resources analyzed: ${summary.totalResources}`
+            `Total resources analyzed: ${summary.totalResources}`,
           );
           outputChannel.appendLine(
-            `Resources validated successfully: ${summary.successfulResources}`
+            `Resources validated successfully: ${summary.successfulResources}`,
           );
           outputChannel.appendLine(
-            `Resources failed to extract request body: ${summary.failedResources}`
+            `Resources failed to extract request body: ${summary.failedResources}`,
           );
           outputChannel.appendLine(
-            `Validation errors encountered: ${summary.errors.length}`
+            `Validation errors encountered: ${summary.errors.length}`,
           );
 
           if (summary.errors.length > 0) {
             outputChannel.appendLine(
-              `\nErrors found: ${summary.errors.length}`
+              `\nErrors found: ${summary.errors.length}`,
             );
             summary.errors.forEach((error, index) => {
               outputChannel.appendLine(`\nError ${index + 1}:`);
@@ -153,7 +153,7 @@ export async function runPreflightValidation(
               vscode.window
                 .showInformationMessage(
                   `Preflight validation successful! ${summary.successfulResources} resources validated.`,
-                  "Show Output"
+                  "Show Output",
                 )
                 .then((choice) => {
                   if (choice === "Show Output") {
@@ -171,7 +171,7 @@ export async function runPreflightValidation(
 
               if (hasFailedExtractions) {
                 issues.push(
-                  `${summary.failedResources} failed resource extraction(s)`
+                  `${summary.failedResources} failed resource extraction(s)`,
                 );
               }
 
@@ -196,7 +196,7 @@ export async function runPreflightValidation(
             vscode.window
               .showErrorMessage(
                 `Preflight validation failed with exit code ${code}. Check the output for details.`,
-                "Show Output"
+                "Show Output",
               )
               .then((choice) => {
                 if (choice === "Show Output") {
@@ -204,7 +204,7 @@ export async function runPreflightValidation(
                 }
               });
             reject(
-              new Error(`Preflight validation failed with exit code ${code}`)
+              new Error(`Preflight validation failed with exit code ${code}`),
             );
           }
         });
@@ -214,7 +214,7 @@ export async function runPreflightValidation(
           vscode.window
             .showErrorMessage(
               `Failed to execute preflight validation: ${error.message}`,
-              "Show Output"
+              "Show Output",
             )
             .then((choice) => {
               if (choice === "Show Output") {
@@ -224,6 +224,6 @@ export async function runPreflightValidation(
           reject(error);
         });
       });
-    }
+    },
   );
 }

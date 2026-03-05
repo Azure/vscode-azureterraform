@@ -15,7 +15,7 @@ export async function isDotInstalled(): Promise<boolean> {
   } catch (error) {
     openUrlHint(
       "GraphViz is not installed, please make sure GraphViz is in the PATH environment variable.",
-      "https://aka.ms/azTerraform-requirement"
+      "https://aka.ms/azTerraform-requirement",
     );
     return false;
   }
@@ -23,7 +23,7 @@ export async function isDotInstalled(): Promise<boolean> {
 
 export async function drawGraph(
   workingDirectory: string,
-  inputFile: string
+  inputFile: string,
 ): Promise<void> {
   await executeCommand("dot", ["-Tpng", "-o", "graph.png", inputFile], {
     cwd: workingDirectory,

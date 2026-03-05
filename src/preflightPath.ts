@@ -59,7 +59,7 @@ export class PreflightPath {
       throw new Error(
         `Unable to locate aztfpreflight: ${
           err instanceof Error ? err.message : err
-        }${extraHint}`
+        }${extraHint}`,
       );
     }
 

@@ -35,7 +35,7 @@ export async function selectWorkspaceFolder(): Promise<string | undefined> {
     const response = await vscode.window.showInformationMessage(
       "There is no folder opened in current workspace, would you like to open a folder?",
       DialogOption.open,
-      DialogOption.cancel
+      DialogOption.cancel,
     );
     if (response === DialogOption.open) {
       const selectedFolder: vscode.Uri = await showFolderDialog();
@@ -48,7 +48,7 @@ export async function selectWorkspaceFolder(): Promise<string | undefined> {
         await vscode.commands.executeCommand(
           "vscode.openFolder",
           selectedFolder,
-          false /* forceNewWindow */
+          false /* forceNewWindow */,
         );
       }
     }

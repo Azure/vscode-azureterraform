@@ -16,7 +16,7 @@ export async function isDockerInstalled(): Promise<boolean> {
   } catch (error) {
     openUrlHint(
       "Docker is not installed, please install Docker to continue.",
-      "https://www.docker.com"
+      "https://www.docker.com",
     );
     return false;
   }
@@ -24,7 +24,7 @@ export async function isDockerInstalled(): Promise<boolean> {
 
 export async function runLintInDocker(
   volumn: string,
-  containerName: string
+  containerName: string,
 ): Promise<boolean> {
   try {
     if (!(await pullLatestImage(containerName))) {
@@ -36,7 +36,7 @@ export async function runLintInDocker(
   } catch (error) {
     promptForOpenOutputChannel(
       "Failed to run lint task in Docker. Please open the output channel for more details.",
-      DialogType.error
+      DialogType.error,
     );
     return false;
   }
@@ -44,7 +44,7 @@ export async function runLintInDocker(
 
 export async function runE2EInDocker(
   volumn: string,
-  containerName: string
+  containerName: string,
 ): Promise<boolean> {
   try {
     if (!(await pullLatestImage(containerName))) {
@@ -65,7 +65,7 @@ export async function runE2EInDocker(
   } catch (error) {
     promptForOpenOutputChannel(
       "Failed to run end to end tests in Docker. Please open the output channel for more details.",
-      DialogType.error
+      DialogType.error,
     );
     return false;
   }
@@ -73,7 +73,7 @@ export async function runE2EInDocker(
 
 export async function runCustomCommandInDocker(
   cmd: string,
-  containerName: string
+  containerName: string,
 ): Promise<boolean> {
   try {
     if (!(await pullLatestImage(containerName))) {
@@ -84,7 +84,7 @@ export async function runCustomCommandInDocker(
   } catch (error) {
     promptForOpenOutputChannel(
       "Failed to run the custom command in Docker. Please open the output channel for more details.",
-      DialogType.error
+      DialogType.error,
     );
     return false;
   }
@@ -99,7 +99,7 @@ async function pullLatestImage(image: string): Promise<boolean> {
   } catch (error) {
     promptForOpenOutputChannel(
       `Failed to pull the latest image: ${image}. Please open the output channel for more details.`,
-      DialogType.error
+      DialogType.error,
     );
     return false;
   }

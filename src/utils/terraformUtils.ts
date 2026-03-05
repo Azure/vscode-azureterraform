@@ -24,7 +24,7 @@ export async function checkTerraformInstalled(): Promise<void> {
       "https://aka.ms/azTerraform-requirement",
       () => {
         settingUtils.setCheckTerraformCmd(false);
-      }
+      },
     );
   }
 }

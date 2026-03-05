@@ -12,12 +12,12 @@ import { terraformChannel } from "../terraformChannel";
 export async function openUrlHintOrNotShowAgain(
   message: string,
   url: string,
-  notShowCallback: () => void
+  notShowCallback: () => void,
 ): Promise<void> {
   const response = await vscode.window.showInformationMessage(
     message,
     DialogOption.learnMore,
-    DialogOption.notShownAgain
+    DialogOption.notShownAgain,
   );
   if (response === DialogOption.learnMore && url) {
     opn(url);
@@ -30,7 +30,7 @@ export async function openUrlHint(message: string, url: string): Promise<void> {
   const response = await vscode.window.showInformationMessage(
     message,
     DialogOption.learnMore,
-    DialogOption.cancel
+    DialogOption.cancel,
   );
   if (response === DialogOption.learnMore && url) {
     opn(url);
@@ -48,9 +48,8 @@ export async function showFolderDialog(): Promise<vscode.Uri | undefined> {
     openLabel: "Select",
     defaultUri,
   };
-  const result: vscode.Uri[] | undefined = await vscode.window.showOpenDialog(
-    options
-  );
+  const result: vscode.Uri[] | undefined =
+    await vscode.window.showOpenDialog(options);
   if (!result || result.length === 0) {
     return undefined;
   }
@@ -59,7 +58,7 @@ export async function showFolderDialog(): Promise<vscode.Uri | undefined> {
 
 export async function promptForOpenOutputChannel(
   message: string,
-  type: DialogType
+  type: DialogType,
 ): Promise<void> {
   let result: vscode.MessageItem;
   switch (type) {
@@ -67,21 +66,21 @@ export async function promptForOpenOutputChannel(
       result = await vscode.window.showInformationMessage(
         message,
         DialogOption.open,
-        DialogOption.cancel
+        DialogOption.cancel,
       );
       break;
     case DialogType.warning:
       result = await vscode.window.showWarningMessage(
         message,
         DialogOption.open,
-        DialogOption.cancel
+        DialogOption.cancel,
       );
       break;
     case DialogType.error:
       result = await vscode.window.showErrorMessage(
         message,
         DialogOption.open,
-        DialogOption.cancel
+        DialogOption.cancel,
       );
       break;
     default:

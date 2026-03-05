@@ -39,7 +39,7 @@ async function getRelease(): Promise<Release> {
     "https://api.github.com/repos/Azure/aztfpreflight/releases",
     {
       headers: {},
-    }
+    },
   );
   if (response.status === 200 && response.data.length !== 0) {
     const assets: Build[] = [];
@@ -89,7 +89,7 @@ async function run(platform: string, architecture: string) {
 
   if (!build) {
     throw new Error(
-      `Install error: no matching aztfpreflight binary for ${os}/${arch}`
+      `Install error: no matching aztfpreflight binary for ${os}/${arch}`,
     );
   }
 
@@ -98,7 +98,7 @@ async function run(platform: string, architecture: string) {
   // download zip
   const zipfile = path.resolve(
     installPath,
-    `aztfpreflight_${release.version}.zip`
+    `aztfpreflight_${release.version}.zip`,
   );
   await axios
     .get(build!.downloadUrl, { responseType: "stream" })

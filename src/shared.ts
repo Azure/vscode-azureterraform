@@ -49,15 +49,15 @@ export async function azFileDelete(
   storageAccountName: string,
   storageAccountKey: string,
   fileShareName: string,
-  localFileUri: string
+  localFileUri: string,
 ): Promise<void> {
   const credential = new StorageSharedKeyCredential(
     storageAccountName,
-    storageAccountKey
+    storageAccountKey,
   );
   const serviceClient = new ShareServiceClient(
     `https://${storageAccountName}.file.core.windows.net`,
-    credential
+    credential,
   );
   const shareClient = serviceClient.getShareClient(fileShareName);
 
@@ -65,7 +65,7 @@ export async function azFileDelete(
     workspaceName,
     fileShareName,
     localFileUri,
-    FileSystem.local
+    FileSystem.local,
   );
 
   await deleteFile(cf, shareClient);
@@ -76,15 +76,15 @@ export async function azFilePull(
   storageAccountName: string,
   storageAccountKey: string,
   fileShareName: string,
-  cloudShellFileName: string
+  cloudShellFileName: string,
 ): Promise<void> {
   const credential = new StorageSharedKeyCredential(
     storageAccountName,
-    storageAccountKey
+    storageAccountKey,
   );
   const serviceClient = new ShareServiceClient(
     `https://${storageAccountName}.file.core.windows.net`,
-    credential
+    credential,
   );
   const shareClient = serviceClient.getShareClient(fileShareName);
 
@@ -92,7 +92,7 @@ export async function azFilePull(
     workspaceName,
     fileShareName,
     cloudShellFileName,
-    FileSystem.cloudshell
+    FileSystem.cloudshell,
   );
 
   await readFile(cf, shareClient);
@@ -103,15 +103,15 @@ export async function azFilePush(
   storageAccountName: string,
   storageAccountKey: string,
   fileShareName: string,
-  fileName: string
+  fileName: string,
 ): Promise<void> {
   const credential = new StorageSharedKeyCredential(
     storageAccountName,
-    storageAccountKey
+    storageAccountKey,
   );
   const serviceClient = new ShareServiceClient(
     `https://${storageAccountName}.file.core.windows.net`,
-    credential
+    credential,
   );
   const shareClient = serviceClient.getShareClient(fileShareName);
 
@@ -119,7 +119,7 @@ export async function azFilePush(
     workspaceName,
     fileShareName,
     fileName,
-    FileSystem.local
+    FileSystem.local,
   );
   const pathCount = cf.cloudShellDir.split(path.sep).length;
 
@@ -153,7 +153,7 @@ export async function azFilePush(
 
 async function createShare(
   cf: CloudFile,
-  shareClient: ShareClient
+  shareClient: ShareClient,
 ): Promise<void> {
   const response = await shareClient.createIfNotExists();
   if (response.succeeded) {
@@ -164,7 +164,7 @@ async function createShare(
 async function createDirectoryPath(
   cf: CloudFile,
   i: number,
-  shareClient: ShareClient
+  shareClient: ShareClient,
 ): Promise<void> {
   let tempDir = "";
   const dirArray = cf.cloudShellDir.split(path.sep);
@@ -181,7 +181,7 @@ async function createDirectoryPath(
 
 async function createFile(
   cf: CloudFile,
-  shareClient: ShareClient
+  shareClient: ShareClient,
 ): Promise<void> {
   const fileName = path.basename(cf.localUri);
   const directoryClient = shareClient.getDirectoryClient(cf.cloudShellDir);
@@ -197,7 +197,7 @@ async function createFile(
 
 async function readFile(
   cf: CloudFile,
-  shareClient: ShareClient
+  shareClient: ShareClient,
 ): Promise<void> {
   const fileName = path.basename(cf.cloudShellUri);
   const directoryClient = shareClient.getDirectoryClient(cf.cloudShellDir);
@@ -223,7 +223,7 @@ async function readFile(
 
 async function deleteFile(
   cf: CloudFile,
-  shareClient: ShareClient
+  shareClient: ShareClient,
 ): Promise<void> {
   const fileName = path.basename(cf.localUri);
   const directoryClient = shareClient.getDirectoryClient(cf.cloudShellDir);

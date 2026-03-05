@@ -42,7 +42,7 @@ export async function activate(ctx: vscode.ExtensionContext) {
   reporter = new TelemetryReporter(manifest.appInsightsConnectionString);
   await checkTerraformInstalled();
   await TelemetryWrapper.initializeFromJsonFile(
-    ctx.asAbsolutePath("./package.json")
+    ctx.asAbsolutePath("./package.json"),
   );
   initFileWatcher(ctx);
 
@@ -55,8 +55,8 @@ export async function activate(ctx: vscode.ExtensionContext) {
       "azureTerraform.init",
       () => {
         terraformShellManager.getShell().runTerraformCmd(TerraformCommand.Init);
-      }
-    )
+      },
+    ),
   );
 
   ctx.subscriptions.push(
@@ -64,8 +64,8 @@ export async function activate(ctx: vscode.ExtensionContext) {
       "azureTerraform.plan",
       () => {
         terraformShellManager.getShell().runTerraformCmd(TerraformCommand.Plan);
-      }
-    )
+      },
+    ),
   );
 
   ctx.subscriptions.push(
@@ -75,8 +75,8 @@ export async function activate(ctx: vscode.ExtensionContext) {
         terraformShellManager
           .getShell()
           .runTerraformCmd(TerraformCommand.Apply);
-      }
-    )
+      },
+    ),
   );
 
   ctx.subscriptions.push(
@@ -86,8 +86,8 @@ export async function activate(ctx: vscode.ExtensionContext) {
         terraformShellManager
           .getShell()
           .runTerraformCmd(TerraformCommand.Destroy);
-      }
-    )
+      },
+    ),
   );
 
   ctx.subscriptions.push(
@@ -97,8 +97,8 @@ export async function activate(ctx: vscode.ExtensionContext) {
         terraformShellManager
           .getShell()
           .runTerraformCmd(TerraformCommand.Refresh);
-      }
-    )
+      },
+    ),
   );
 
   ctx.subscriptions.push(
@@ -108,8 +108,8 @@ export async function activate(ctx: vscode.ExtensionContext) {
         terraformShellManager
           .getShell()
           .runTerraformCmd(TerraformCommand.Validate);
-      }
-    )
+      },
+    ),
   );
 
   ctx.subscriptions.push(
@@ -121,22 +121,22 @@ export async function activate(ctx: vscode.ExtensionContext) {
             await vscode.window.showInformationMessage(
               "Visualization only works locally. Would you like to run it in the integrated terminal?",
               DialogOption.ok,
-              DialogOption.cancel
+              DialogOption.cancel,
             );
           if (choice === DialogOption.cancel) {
             return;
           }
         }
         await terraformShellManager.getIntegratedShell().visualize();
-      }
-    )
+      },
+    ),
   );
 
   ctx.subscriptions.push(
     vscode.commands.registerCommand("azureTerraform.exectest", async () => {
       const pick: string = await vscode.window.showQuickPick(
         [TestOption.lint, TestOption.e2e, TestOption.custom],
-        { placeHolder: "Select the type of test that you want to run" }
+        { placeHolder: "Select the type of test that you want to run" },
       );
       if (!pick) {
         return;
@@ -148,7 +148,7 @@ export async function activate(ctx: vscode.ExtensionContext) {
       await terraformShellManager
         .getShell()
         .runTerraformTests(pick, workingDirectory);
-    })
+    }),
   );
 
   ctx.subscriptions.push(
@@ -157,23 +157,23 @@ export async function activate(ctx: vscode.ExtensionContext) {
       async () => {
         if (!isTerminalSetToCloudShell()) {
           vscode.window.showErrorMessage(
-            "Push function only available when using cloudshell. Which is not currently supported."
+            "Push function only available when using cloudshell. Which is not currently supported.",
           );
           return;
         }
         if (_.isEmpty(vscode.workspace.workspaceFolders)) {
           vscode.window.showInformationMessage(
-            "Please open a workspace in VS Code first."
+            "Please open a workspace in VS Code first.",
           );
           return;
         }
         await terraformShellManager
           .getCloudShell()
           .pushFiles(
-            await vscode.workspace.findFiles(getSyncFileBlobPattern())
+            await vscode.workspace.findFiles(getSyncFileBlobPattern()),
           );
-      }
-    )
+      },
+    ),
   );
 
   ctx.subscriptions.push(
@@ -181,8 +181,8 @@ export async function activate(ctx: vscode.ExtensionContext) {
       "azureTerraform.showSurvey",
       async () => {
         await ShowSurvey();
-      }
-    )
+      },
+    ),
   );
 
   ctx.subscriptions.push(
@@ -192,11 +192,11 @@ export async function activate(ctx: vscode.ExtensionContext) {
         const subscription = await selectSubscription();
         if (subscription) {
           vscode.window.showInformationMessage(
-            `Set active Azure subscription to: ${subscription.name}`
+            `Set active Azure subscription to: ${subscription.name}`,
           );
         }
-      }
-    )
+      },
+    ),
   );
 
   ctx.subscriptions.push(
@@ -213,19 +213,19 @@ export async function activate(ctx: vscode.ExtensionContext) {
         const credential = subscription.credential;
         if (!credential) {
           vscode.window.showErrorMessage(
-            "Could not get credentials for the selected subscription."
+            "Could not get credentials for the selected subscription.",
           );
           return;
         }
 
         const groupedResources = await listAzureResourcesGrouped(
           credential,
-          subscription.subscriptionId
+          subscription.subscriptionId,
         );
 
         if (!groupedResources || groupedResources.size === 0) {
           vscode.window.showInformationMessage(
-            `No resource groups with exportable resources found in subscription "${subscription.name}".`
+            `No resource groups with exportable resources found in subscription "${subscription.name}".`,
           );
           return;
         }
@@ -254,8 +254,8 @@ export async function activate(ctx: vscode.ExtensionContext) {
               groupName,
               resources,
               isChangeSubscription: false,
-            })
-          )
+            }),
+          ),
         );
 
         const selectedGroupPick = await vscode.window.showQuickPick(
@@ -265,12 +265,12 @@ export async function activate(ctx: vscode.ExtensionContext) {
               "Select the Resource Group containing the resource(s) to export",
             matchOnDetail: true,
             ignoreFocusOut: true,
-          }
+          },
         );
 
         if (!selectedGroupPick) {
           vscode.window.showInformationMessage(
-            "Resource group selection cancelled."
+            "Resource group selection cancelled.",
           );
           return;
         }
@@ -323,7 +323,7 @@ export async function activate(ctx: vscode.ExtensionContext) {
               } | $(key) ID: ${res.id || "N/A"}`,
               resource: res,
               isGroupExport: false,
-            })
+            }),
           ),
         ];
 
@@ -348,7 +348,7 @@ export async function activate(ctx: vscode.ExtensionContext) {
 
         if (selectedResourceOrGroupPick.isGroupExport) {
           vscode.window.showInformationMessage(
-            `Starting export for all resources in group: ${selectedGroupPick.groupName}`
+            `Starting export for all resources in group: ${selectedGroupPick.groupName}`,
           );
           const targetProvider = await promptForTargetProvider();
           await ExportResourceGroup(
@@ -356,26 +356,26 @@ export async function activate(ctx: vscode.ExtensionContext) {
             selectedGroupPick.resources,
             selectedGroupPick.groupName,
             targetProvider,
-            ctx.extension.packageJSON.version
+            ctx.extension.packageJSON.version,
           );
         } else if (selectedResourceOrGroupPick.resource?.id) {
           vscode.window.showInformationMessage(
-            `Starting export for resource: ${selectedResourceOrGroupPick.resource.name}`
+            `Starting export for resource: ${selectedResourceOrGroupPick.resource.name}`,
           );
           const targetProvider = await promptForTargetProvider();
           await ExportSingleResource(
             subscription,
             selectedResourceOrGroupPick.resource,
             targetProvider,
-            ctx.extension.packageJSON.version
+            ctx.extension.packageJSON.version,
           );
         } else {
           vscode.window.showErrorMessage(
-            "Invalid selection or the selected resource is missing a required ID."
+            "Invalid selection or the selected resource is missing a required ID.",
           );
         }
-      }
-    )
+      },
+    ),
   );
 
   ctx.subscriptions.push(
@@ -388,7 +388,7 @@ export async function activate(ctx: vscode.ExtensionContext) {
             await vscode.window.showWarningMessage(
               "Preflight Validation only runs locally and cannot run in Cloud Shell. Run it in the integrated terminal?",
               DialogOption.ok,
-              DialogOption.cancel
+              DialogOption.cancel,
             );
           if (choice === DialogOption.cancel) {
             return;
@@ -404,7 +404,7 @@ export async function activate(ctx: vscode.ExtensionContext) {
           {
             placeHolder: "Do you already have a Terraform plan file?",
             ignoreFocusOut: true,
-          }
+          },
         );
 
         if (!planChoice) {
@@ -445,25 +445,25 @@ export async function activate(ctx: vscode.ExtensionContext) {
             planFilePath = await generateTerraformPlan(
               cwd,
               subscription.subscriptionId,
-              "planfile"
+              "planfile",
             );
             outputChannel.appendLine(
-              `[Preflight] Plan generated at: ${planFilePath}`
+              `[Preflight] Plan generated at: ${planFilePath}`,
             );
             vscode.window.showInformationMessage(
-              `Terraform plan generated: ${planFilePath}`
+              `Terraform plan generated: ${planFilePath}`,
             );
           } catch (err) {
             outputChannel.appendLine(
               `[Preflight] terraform plan failed: ${
                 err instanceof Error ? err.message : err
-              }`
+              }`,
             );
             const choice = await vscode.window.showErrorMessage(
               `terraform plan failed: ${
                 err instanceof Error ? err.message : err
               }. See output for details.`,
-              "Show Output"
+              "Show Output",
             );
             if (choice === "Show Output") {
               outputChannel.show();
@@ -481,10 +481,10 @@ export async function activate(ctx: vscode.ExtensionContext) {
           subscription,
           ctx,
           path.dirname(planFilePath),
-          planFilePath
+          planFilePath,
         );
-      }
-    )
+      },
+    ),
   );
 
   ctx.subscriptions.push(
@@ -498,12 +498,12 @@ export async function activate(ctx: vscode.ExtensionContext) {
           await config("azureTerraform").update(
             "languageServer",
             currentConfig,
-            vscode.ConfigurationTarget.Global
+            vscode.ConfigurationTarget.Global,
           );
           startLanguageServer();
         }
-      }
-    )
+      },
+    ),
   );
 
   ctx.subscriptions.push(
@@ -517,12 +517,12 @@ export async function activate(ctx: vscode.ExtensionContext) {
           await config("azureTerraform").update(
             "languageServer",
             currentConfig,
-            vscode.ConfigurationTarget.Global
+            vscode.ConfigurationTarget.Global,
           );
           stopLanguageServer();
         }
-      }
-    )
+      },
+    ),
   );
 
   ctx.subscriptions.push(
@@ -533,14 +533,14 @@ export async function activate(ctx: vscode.ExtensionContext) {
             "Reload VSCode window to apply language server changes";
           const selected = await vscode.window.showInformationMessage(
             reloadMsg,
-            "Reload"
+            "Reload",
           );
           if (selected === "Reload") {
             vscode.commands.executeCommand("workbench.action.reloadWindow");
           }
         }
-      }
-    )
+      },
+    ),
   );
 
   ctx.subscriptions.push(
@@ -584,7 +584,7 @@ export async function activate(ctx: vscode.ExtensionContext) {
               {
                 command: "ms-terraform.convertJsonToAzapi",
                 arguments: [`jsonContent=${clipboardText}`],
-              }
+              },
             );
 
             await editor.edit((editBuilder) => {
@@ -595,12 +595,12 @@ export async function activate(ctx: vscode.ExtensionContext) {
             });
           } catch (error) {
             outputChannel.appendLine(
-              `Error converting JSON to AzApi: ${error}`
+              `Error converting JSON to AzApi: ${error}`,
             );
           }
         }
-      }
-    )
+      },
+    ),
   );
 
   if (enabled()) {
@@ -639,14 +639,14 @@ export function deactivate(): void {
 
 function initFileWatcher(ctx: vscode.ExtensionContext): void {
   fileWatcher = vscode.workspace.createFileSystemWatcher(
-    getSyncFileBlobPattern()
+    getSyncFileBlobPattern(),
   );
   ctx.subscriptions.push(
     fileWatcher.onDidDelete((deletedUri) => {
       if (isTerminalSetToCloudShell()) {
         terraformShellManager.getCloudShell().deleteFiles([deletedUri]);
       }
-    })
+    }),
   );
 }
 
@@ -660,7 +660,7 @@ async function startLanguageServer() {
     });
     if (error instanceof Error) {
       vscode.window.showErrorMessage(
-        error instanceof Error ? error.message : error
+        error instanceof Error ? error.message : error,
       );
     } else if (typeof error === "string") {
       vscode.window.showErrorMessage(error);
@@ -678,7 +678,7 @@ async function stopLanguageServer() {
     });
     if (error instanceof Error) {
       vscode.window.showErrorMessage(
-        error instanceof Error ? error.message : error
+        error instanceof Error ? error.message : error,
       );
     } else if (typeof error === "string") {
       vscode.window.showErrorMessage(error);

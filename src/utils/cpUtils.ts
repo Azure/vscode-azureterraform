@@ -11,7 +11,7 @@ import { terraformChannel } from "../terraformChannel";
 export async function executeCommand(
   command: string,
   args: string[],
-  options: cp.SpawnOptions
+  options: cp.SpawnOptions,
 ): Promise<string> {
   return new Promise(
     (resolve: (res: string) => void, reject: (e: Error) => void): void => {
@@ -43,6 +43,6 @@ export async function executeCommand(
           resolve(result);
         }
       });
-    }
+    },
   );
 }

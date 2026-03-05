@@ -13,7 +13,7 @@ import * as vscode from "vscode";
 let currentSubscription: AzureSubscription | undefined;
 
 export async function selectSubscription(
-  forceRefresh = false
+  forceRefresh = false,
 ): Promise<AzureSubscription | undefined> {
   const provider = new VSCodeAzureSubscriptionProvider();
 
@@ -51,7 +51,7 @@ export async function selectSubscription(
           isSignedIn = await provider.isSignedIn();
           if (!isSignedIn) {
             vscode.window.showErrorMessage(
-              "Azure sign-in failed or was cancelled."
+              "Azure sign-in failed or was cancelled.",
             );
             return;
           }
@@ -60,7 +60,7 @@ export async function selectSubscription(
           });
         } catch (error) {
           vscode.window.showErrorMessage(
-            `Azure sign-in error: ${error.message || error}`
+            `Azure sign-in error: ${error.message || error}`,
           );
           return;
         }
@@ -76,14 +76,14 @@ export async function selectSubscription(
         subscriptions = await provider.getSubscriptions(false);
       } catch (error) {
         vscode.window.showErrorMessage(
-          `Error fetching subscriptions: ${error.message || error}`
+          `Error fetching subscriptions: ${error.message || error}`,
         );
         return;
       }
 
       if (!subscriptions || subscriptions.length === 0) {
         vscode.window.showErrorMessage(
-          "No Azure subscriptions found for this account."
+          "No Azure subscriptions found for this account.",
         );
         return;
       }
@@ -130,13 +130,13 @@ export async function selectSubscription(
       }
 
       newlySelectedSubscription = selectedSubPick.subscription;
-    }
+    },
   );
 
   if (newlySelectedSubscription) {
     currentSubscription = newlySelectedSubscription;
     vscode.window.showInformationMessage(
-      `Using Tenant: ${currentSubscription.tenantId}, Subscription: ${currentSubscription.subscriptionId}`
+      `Using Tenant: ${currentSubscription.tenantId}, Subscription: ${currentSubscription.subscriptionId}`,
     );
     return currentSubscription;
   } else {
@@ -146,7 +146,7 @@ export async function selectSubscription(
 
 export async function listAzureResourcesGrouped(
   credential: TokenCredential,
-  subscriptionId: string
+  subscriptionId: string,
 ): Promise<Map<string, GenericResourceExpanded[]>> {
   const groupedResources = new Map<string, GenericResourceExpanded[]>();
 
@@ -160,7 +160,7 @@ export async function listAzureResourcesGrouped(
       try {
         const resourceClient = new ResourceManagementClient(
           credential,
-          subscriptionId
+          subscriptionId,
         );
 
         // 1. List all resource groups
@@ -203,10 +203,10 @@ export async function listAzureResourcesGrouped(
             } catch (listError) {
               console.error(
                 `Error listing resources in group ${group.name}:`,
-                listError
+                listError,
               );
               vscode.window.showWarningMessage(
-                `Could not list resources in group '${group.name}'. Error: ${listError.message}. See console for details.`
+                `Could not list resources in group '${group.name}'. Error: ${listError.message}. See console for details.`,
               );
             }
           }
@@ -238,11 +238,11 @@ export async function listAzureResourcesGrouped(
         });
       } catch (error) {
         vscode.window.showErrorMessage(
-          `Failed to list Azure resources by group: ${error.message}`
+          `Failed to list Azure resources by group: ${error.message}`,
         );
         console.error("Resource Group Listing Error:", error);
       }
-    }
+    },
   );
 
   return groupedResources;
@@ -250,11 +250,11 @@ export async function listAzureResourcesGrouped(
 
 export async function getAccessTokenFromSubscription(
   subscription: AzureSubscription,
-  scope: string
+  scope: string,
 ): Promise<AccessToken | undefined> {
   if (!subscription) {
     vscode.window.showErrorMessage(
-      "Cannot get access token: No Azure subscription provided."
+      "Cannot get access token: No Azure subscription provided.",
     );
     return undefined;
   }
@@ -263,7 +263,7 @@ export async function getAccessTokenFromSubscription(
     return await subscription.credential.getToken(scope);
   } catch (error) {
     vscode.window.showErrorMessage(
-      `Failed to get access token for subscription '${subscription.name}': ${error.message}`
+      `Failed to get access token for subscription '${subscription.name}': ${error.message}`,
     );
     console.error("Access Token Error:", error);
     return undefined;

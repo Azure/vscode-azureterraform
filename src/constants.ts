@@ -19,7 +19,7 @@ export function aciConfig(
   storageAccountShare: string,
   location: string,
   testContainer: string,
-  projectName: string
+  projectName: string,
 ): string {
   // TODO - add a check on the location where ACI is available - if (['westus', eastus].indexOf(location) == -1) {
   const TFConfiguration = `variable "location" {
@@ -73,7 +73,7 @@ export function exportTestScript(
   TFConfiguration: string,
   resoureGroupName: string,
   storageAccountName: string,
-  testDirectory: string
+  testDirectory: string,
 ): string {
   const testScript = `
         #!/bin/bash
@@ -96,7 +96,7 @@ export function exportTestScript(
 
 export function exportContainerCmd(
   moduleDir: string,
-  containerCommand: string
+  containerCommand: string,
 ): string {
   const containerScript = `#!/bin/bash
 

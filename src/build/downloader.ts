@@ -48,7 +48,7 @@ async function getRelease(): Promise<Release> {
     "https://api.github.com/repos/Azure/ms-terraform-lsp/releases",
     {
       headers: {},
-    }
+    },
   );
   if (response.status == 200 && response.data.length != 0) {
     const assets: Build[] = [];
@@ -76,7 +76,7 @@ async function run(platform: string, architecture: string) {
   const fileExtension = os === "windows" ? ".exe" : "";
   const binaryName = path.resolve(
     installPath,
-    `ms-terraform-lsp${fileExtension}`
+    `ms-terraform-lsp${fileExtension}`,
   );
   if (fs.existsSync(binaryName)) {
     console.log("ms-terraform-lsp already exists. Exiting");
@@ -100,7 +100,7 @@ async function run(platform: string, architecture: string) {
 
   if (!build) {
     throw new Error(
-      `Install error: no matching ms-terraform-lsp binary for ${os}/${arch}`
+      `Install error: no matching ms-terraform-lsp binary for ${os}/${arch}`,
     );
   }
 
@@ -109,7 +109,7 @@ async function run(platform: string, architecture: string) {
   // download zip
   const zipfile = path.resolve(
     installPath,
-    `ms-terraform-lsp_${release.version}.zip`
+    `ms-terraform-lsp_${release.version}.zip`,
   );
   await axios
     .get(build!.downloadUrl, { responseType: "stream" })

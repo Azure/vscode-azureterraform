@@ -17,7 +17,10 @@ type TelemetryEvent = {
 };
 
 export class TelemetryFeature implements StaticFeature {
-  constructor(private client: BaseLanguageClient, reporter: TelemetryReporter) {
+  constructor(
+    private client: BaseLanguageClient,
+    reporter: TelemetryReporter,
+  ) {
     this.client.onTelemetry((event: TelemetryEvent) => {
       if (event.v != TELEMETRY_VERSION) {
         console.log(`unsupported telemetry event: ${event}`);
@@ -39,7 +42,7 @@ export class TelemetryFeature implements StaticFeature {
   }
 
   public fillClientCapabilities(
-    capabilities: ClientCapabilities & ExperimentalClientCapabilities
+    capabilities: ClientCapabilities & ExperimentalClientCapabilities,
   ): void {
     if (!capabilities["experimental"]) {
       capabilities["experimental"] = {};

@@ -17,13 +17,13 @@ export interface IStorageAccount {
 }
 
 export async function getStorageAccountforCloudShell(
-  cloudShell: CloudShell
+  cloudShell: CloudShell,
 ): Promise<IStorageAccount | undefined> {
   const session: AzureSession = await cloudShell.session;
   const token: IToken = await acquireToken(session);
   const userSettings: IUserSettings | undefined = await getUserSettings(
     token.accessToken,
-    session.environment.resourceManagerEndpointUrl
+    session.environment.resourceManagerEndpointUrl,
   );
   if (!userSettings) {
     TelemetryWrapper.sendError(Error("getUserSettingsFail"));
@@ -37,7 +37,7 @@ export async function getStorageAccountforCloudShell(
     token.accessToken,
     storageAccountSettings[1],
     storageAccountSettings[3],
-    storageAccountSettings[7]
+    storageAccountSettings[7],
   );
 
   if (!storageAccountKey) {
@@ -83,7 +83,7 @@ async function acquireToken(session: AzureSession): Promise<IToken> {
             refreshToken: result.refreshToken,
           });
         }
-      }
+      },
     );
   });
 }
@@ -91,7 +91,7 @@ async function acquireToken(session: AzureSession): Promise<IToken> {
 const consoleApiVersion = "2017-08-01-preview";
 async function getUserSettings(
   accessToken: string,
-  armEndpoint: string
+  armEndpoint: string,
 ): Promise<IUserSettings | undefined> {
   const targetUri = `${armEndpoint}/providers/Microsoft.Portal/userSettings/cloudconsole?api-version=${consoleApiVersion}`;
 
@@ -116,7 +116,7 @@ async function getStorageAccountKey(
   accessToken: string,
   subscriptionId: string,
   resourceGroup: string,
-  storageAccountName: string
+  storageAccountName: string,
 ): Promise<string | undefined> {
   try {
     const response = await axios.post(
@@ -128,7 +128,7 @@ async function getStorageAccountKey(
           Authorization: `Bearer ${accessToken}`,
         },
         validateStatus: (status) => status >= 200 && status <= 299,
-      }
+      },
     );
 
     return (
