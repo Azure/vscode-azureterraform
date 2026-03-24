@@ -122,6 +122,7 @@ async function run(platform: string, architecture: string) {
         let candidate: string | undefined;
         const files = fs.readdirSync(installPath);
         for (const f of files) {
+          if (f.endsWith(".zip")) continue;
           const startsWithVersion = f.indexOf("aztfpreflight_v") === 0;
           const extOk = fileExtension ? f.endsWith(fileExtension) : true;
           if (startsWithVersion && extOk) {
