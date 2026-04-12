@@ -284,7 +284,7 @@
     "@typescript-eslint/eslint-plugin": "^8.56.1",
     "@typescript-eslint/parser": "^8.56.1",
     "@vscode/extension-telemetry": "^1.0.0",
-    "axios": "^1.13.5",
+    "axios": "^1.15.0",
     "chai": "^4.3.4",
     "esbuild": "^0.25.2",
     "eslint": "^10.0.2",
