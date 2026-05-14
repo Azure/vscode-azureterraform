@@ -4,9 +4,15 @@ on:
   push:
     branches:
       - main
+    paths-ignore:
+      - '.github/dependabot.yml'
+      - '.github/workflows/dependabot-validate.yaml'
   pull_request:
     branches:
       - main
+    paths-ignore:
+      - '.github/dependabot.yml'
+      - '.github/workflows/dependabot-validate.yaml'
 
 jobs:
   lint:
@@ -14,8 +20,8 @@ jobs:
     timeout-minutes: 3
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
+        uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
       - name: npm install
@@ -36,8 +42,8 @@ jobs:
 
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
+        uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
       - name: Set up Xvfb (Ubuntu)
