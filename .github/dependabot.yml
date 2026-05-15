@@ -15,3 +15,10 @@ updates:
       - dependency-name: "*"
         update-types:
           - "version-update:semver-major"
+      # @types/vscode must stay in sync with engines.vscode in package.json.
+      # Bumping it forces a minimum VS Code version upgrade for all users, so
+      # we manage it manually rather than letting dependabot auto-update it.
+      - dependency-name: "@types/vscode"
+        update-types:
+          - "version-update:semver-minor"
+          - "version-update:semver-patch"
