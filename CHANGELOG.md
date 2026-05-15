@@ -6,6 +6,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [0.9.0]
 ### Changed
+- Updated ms-terraform-lsp to v0.9.0
 - Migrate to ESLint v9 flat config. ([#304](https://github.com/Azure/vscode-azureterraform/pull/304))
 - Updated dependencies:
   - `@azure/identity`: `^4.9.1` → `^4.13.1`
