@@ -5,8 +5,28 @@ All notable changes to the "Microsoft Terraform" extension will be documented in
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
 ## [0.9.0]
-### Added
-- Update ms-terraform-lsp to v0.9.0
+### Changed
+- Updated ms-terraform-lsp to v0.9.0
+- Migrate to ESLint v9 flat config. ([#304](https://github.com/Azure/vscode-azureterraform/pull/304))
+- Updated dependencies:
+  - `@azure/identity`: `^4.9.1` → `^4.13.1`
+  - `@azure/storage-file-share`: `^12.28.0` → `^12.30.0`
+  - `@microsoft/vscode-azext-azureauth`: `^4.1.1` → `^4.2.2`
+  - `@typescript-eslint/eslint-plugin`: `^3.9.0` → `^8.59.3`
+  - `@typescript-eslint/parser`: `^3.9.0` → `^8.59.3`
+  - `@vscode/extension-telemetry`: `^1.0.0` → `^1.5.2`
+  - `axios`: `^1.12.0` → `^1.16.1`
+  - `esbuild`: `^0.25.2` → `^0.28.0`
+  - `eslint`: `^7.32.0` → `^10.3.0`
+  - `eslint-config-prettier`: `^8.3.0` → `^10.1.8`
+  - `eslint-plugin-prettier`: `^3.4.1` → `^5.5.5`
+  - `lodash`: `^4.17.21` → `^4.18.1`
+  - `mocha`: `^11.0.1` → `^11.7.5`
+  - `opn`: `5.1.0` → `5.5.0`
+  - `prettier`: `^2.3.2` → `^3.8.3`
+  - `typescript-eslint`: added `^8.59.3`
+  - `vscode-extension-telemetry-wrapper`: `^0.8.0` → `^0.15.3`
+
 
 ## [0.8.0]
 ### Added
