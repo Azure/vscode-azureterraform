@@ -60,7 +60,7 @@
       "title": "Microsoft Terraform",
       "properties": {
         "azureTerraform.aztfpreflight.pathToBinary": {
-          "scope": "resource",
+          "scope": "machine",
           "type": "string",
           "default": "",
           "description": "Path to aztfpreflight executable (optional). If empty, 'aztfpreflight' will be resolved from PATH."
