@@ -6,10 +6,11 @@ documented in this file.
 Check [Keep a Changelog](https://keepachangelog.com/) for recommendations on
 how to structure this file.
 
-## [0.9.1]
+## [0.10.0]
 
-### Changed for 0.9.1
+### Changed for 0.10.0
 
+- Changed `azureTerraform.aztfpreflight.pathToBinary` from `resource` to `machine` scope.
 - Updated package dependencies:
   - `@azure/identity`: `^4.9.1` → `^4.13.1`
   - `@azure/storage-file-share`: `^12.28.0` → `^12.30.0`
@@ -32,7 +33,12 @@ how to structure this file.
 ### Changed for 0.9.0
 
 - Updated ms-terraform-lsp to v0.9.0
-- Migrate to ESLint v9 flat config. ([#304](https://github.com/Azure/vscode-azureterraform/pull/304))
+- Migrated to ESLint v9 flat config. ([#304](https://github.com/Azure/vscode-azureterraform/pull/304))
+- Refreshed several dependencies, including `axios`, `lodash`, `fast-xml-parser`, `flatted`, `js-yaml`, `jws`, and `minimatch`.
+
+### Fixed for 0.9.0
+
+- Skipped `.zip` files when locating the extracted `aztfpreflight` binary on Linux and macOS, preventing the downloader from renaming the archive by mistake. ([#309](https://github.com/Azure/vscode-azureterraform/pull/309))
 
 ## [0.8.0]
 
