@@ -281,8 +281,8 @@
     "@microsoft/vscode-azext-azureauth": "^4.2.2",
     "@types/chai": "^4.2.22",
     "@types/mocha": "^9.0.0",
-    "@typescript-eslint/eslint-plugin": "^8.60.0",
-    "@typescript-eslint/parser": "^8.60.0",
+    "@typescript-eslint/eslint-plugin": "^8.60.1",
+    "@typescript-eslint/parser": "^8.60.1",
     "@vscode/extension-telemetry": "^1.5.2",
     "axios": "^1.16.1",
     "chai": "^4.3.4",
@@ -295,7 +295,7 @@
     "mocha": "^11.7.6",
     "opn": "5.5.0",
     "prettier": "^3.8.3",
-    "typescript-eslint": "^8.60.0",
+    "typescript-eslint": "^8.60.1",
     "vscode-extension-telemetry-wrapper": "^0.15.3",
     "vscode-languageclient": "^9.0.1"
   }
