@@ -6,6 +6,14 @@ documented in this file.
 Check [Keep a Changelog](https://keepachangelog.com/) for recommendations on
 how to structure this file.
 
+## [0.10.1]
+
+### Changed for 0.10.1
+
+- Updated package dependencies:
+  - `eslint`: `^10.4.0` → `^10.4.1`
+  - `eslint-plugin-prettier`: `^5.5.5` → `^5.5.6`
+
 ## [0.10.0]
 
 ### Changed for 0.10.0
