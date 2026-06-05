@@ -6,6 +6,16 @@ documented in this file.
 Check [Keep a Changelog](https://keepachangelog.com/) for recommendations on
 how to structure this file.
 
+## [0.10.2]
+
+### Changed for 0.10.2
+
+- Updated package dependencies:
+  - `@typescript-eslint/eslint-plugin`: `^8.60.0` → `^8.60.1`
+  - `@typescript-eslint/parser`: `^8.60.0` → `^8.60.1`
+  - `axios`: `^1.16.1` → `^1.17.0`
+  - `typescript-eslint`: `^8.60.0` → `^8.60.1`
+
 ## [0.10.1]
 
 ### Changed for 0.10.1
