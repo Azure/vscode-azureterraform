@@ -607,7 +607,10 @@ export async function activate(ctx: vscode.ExtensionContext) {
     startLanguageServer();
   }
 
-  if (await ShouldShowSurvey()) {
+  if (
+    ctx.extensionMode !== vscode.ExtensionMode.Test &&
+    (await ShouldShowSurvey())
+  ) {
     await ShowSurvey();
   }
 }
