@@ -30,7 +30,15 @@ import { config } from "./vscodeUtils";
 import { TelemetryReporter } from "@vscode/extension-telemetry";
 import { terraformChannel } from "./terraformChannel";
 import { generateTerraformPlan } from "./utils/terraformPlan";
+import { ConvertJsonToAzapiResult, LanguageServerSettings } from "./types";
 import * as path from "path";
+
+const defaultLanguageServerSettings: LanguageServerSettings = {
+  external: true,
+  pathToBinary: "",
+  args: ["serve"],
+  "trace.server": "off",
+};
 
 let fileWatcher: vscode.FileSystemWatcher;
 
@@ -492,8 +500,12 @@ export async function activate(ctx: vscode.ExtensionContext) {
       "azureTerraform.enableLanguageServer",
       async () => {
         if (!enabled()) {
-          const currentConfig: any =
-            config("azureTerraform").get("languageServer");
+          const currentConfig = config(
+            "azureTerraform",
+          ).get<LanguageServerSettings>(
+            "languageServer",
+            defaultLanguageServerSettings,
+          );
           currentConfig.external = true;
           await config("azureTerraform").update(
             "languageServer",
@@ -511,8 +523,12 @@ export async function activate(ctx: vscode.ExtensionContext) {
       "azureTerraform.disableLanguageServer",
       async () => {
         if (enabled()) {
-          const currentConfig: any =
-            config("azureTerraform").get("languageServer");
+          const currentConfig = config(
+            "azureTerraform",
+          ).get<LanguageServerSettings>(
+            "languageServer",
+            defaultLanguageServerSettings,
+          );
           currentConfig.external = false;
           await config("azureTerraform").update(
             "languageServer",
@@ -579,13 +595,14 @@ export async function activate(ctx: vscode.ExtensionContext) {
           }
 
           try {
-            const result: any = await lsClient.client.sendRequest(
-              "workspace/executeCommand",
-              {
-                command: "ms-terraform.convertJsonToAzapi",
-                arguments: [`jsonContent=${clipboardText}`],
-              },
-            );
+            const result =
+              await lsClient.client.sendRequest<ConvertJsonToAzapiResult>(
+                "workspace/executeCommand",
+                {
+                  command: "ms-terraform.convertJsonToAzapi",
+                  arguments: [`jsonContent=${clipboardText}`],
+                },
+              );
 
             await editor.edit((editBuilder) => {
               const startPoint = contentChange.range.start;
