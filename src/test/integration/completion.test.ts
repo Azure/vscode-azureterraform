@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { expect } from 'chai';
-import { getDocUri, open } from '../helper';
+import { getDocUri, open, doc } from '../helper';
 
 suite('completion', () => {
   teardown(async () => {
@@ -8,8 +8,30 @@ suite('completion', () => {
   });
 
   test('schema attribute completion', async () => {
+    // --- Diagnostics: extension activation ---------------------------------
+    const ext = vscode.extensions.getExtension('ms-azuretools.vscode-azureterraform');
+    console.log(`[diag] extension found=${!!ext} isActive(before)=${ext?.isActive}`);
+    if (ext && !ext.isActive) {
+      try {
+        await ext.activate();
+        console.log('[diag] extension activated via test');
+      } catch (e) {
+        console.log(`[diag] extension activate() threw: ${e}`);
+      }
+    }
+    console.log(`[diag] isActive(after)=${ext?.isActive}`);
+
     const docUri = getDocUri('properties-completion.tf');
     await open(docUri);
+
+    // --- Diagnostics: document language registration -----------------------
+    console.log(`[diag] doc.languageId=${doc.languageId} scheme=${doc.uri.scheme}`);
+    if (doc.languageId !== 'terraform') {
+      // The ms-terraform-lsp documentSelector only matches language "terraform".
+      // Force the association in case the .tf mapping has not registered yet.
+      await vscode.languages.setTextDocumentLanguage(doc, 'terraform');
+      console.log(`[diag] forced languageId -> ${doc.languageId}`);
+    }
 
     // Request attribute completion on the empty line inside the
     // `azurerm_resource_group` block. These suggestions come from the provider
@@ -24,14 +46,23 @@ suite('completion', () => {
     // those are filtered out when deciding whether the server has responded.
     const deadline = Date.now() + 1000 * 60;
     let schemaItems: vscode.CompletionItem[] = [];
+    let polls = 0;
     while (Date.now() < deadline) {
       const list = await vscode.commands.executeCommand<vscode.CompletionList>(
         'vscode.executeCompletionItemProvider',
         docUri,
         position,
       );
-      schemaItems = (list?.items ?? []).filter(
-        (i) => i.kind !== vscode.CompletionItemKind.Text,
+      const items = list?.items ?? [];
+      const byKind: Record<string, number> = {};
+      for (const i of items) {
+        const k = i.kind !== undefined ? vscode.CompletionItemKind[i.kind] : 'undefined';
+        byKind[k] = (byKind[k] ?? 0) + 1;
+      }
+      schemaItems = items.filter((i) => i.kind !== vscode.CompletionItemKind.Text);
+      polls += 1;
+      console.log(
+        `[diag] poll #${polls}: total=${items.length} nonText=${schemaItems.length} byKind=${JSON.stringify(byKind)}`,
       );
       if (schemaItems.length > 0) {
         break;
@@ -42,6 +73,7 @@ suite('completion', () => {
     const labels = schemaItems.map((i) =>
       typeof i.label === 'string' ? i.label : i.label.label,
     );
+    console.log(`[diag] final non-Text labels: ${JSON.stringify(labels)}`);
 
     // `azurerm_resource_group` always exposes these attributes in its schema.
     expect(labels).to.include.members(['name', 'location', 'tags']);
