@@ -32,24 +32,6 @@ import { terraformChannel } from "./terraformChannel";
 import { generateTerraformPlan } from "./utils/terraformPlan";
 import { ConvertJsonToAzapiResult, LanguageServerSettings } from "./types";
 import * as path from "path";
-import * as os from "os";
-import * as fs from "fs";
-
-const aztfBreadcrumbFile = path.join(
-  os.tmpdir(),
-  "aztf-activate-breadcrumb.log",
-);
-function aztfBreadcrumb(msg: string): void {
-  try {
-    fs.appendFileSync(
-      aztfBreadcrumbFile,
-      `${new Date().toISOString()} ${msg}\n`,
-    );
-  } catch {
-    // ignore
-  }
-}
-aztfBreadcrumb("module-loaded");
 
 const defaultLanguageServerSettings: LanguageServerSettings = {
   external: true,
@@ -64,54 +46,17 @@ let reporter: TelemetryReporter;
 let clientHandler: ClientHandler;
 
 export async function activate(ctx: vscode.ExtensionContext) {
-  aztfBreadcrumb("activate-called");
-  try {
-    await activateInternal(ctx);
-    (globalThis as Record<string, unknown>).__aztfActivateStep = "completed";
-    aztfBreadcrumb("activate-completed");
-  } catch (error) {
-    (globalThis as Record<string, unknown>).__aztfActivateError = `${error}\n${
-      error instanceof Error ? error.stack : ""
-    }`;
-    aztfBreadcrumb(
-      `activate-error: ${error}\n${error instanceof Error ? error.stack : ""}`,
-    );
-    throw error;
-  }
-}
-
-async function activateInternal(ctx: vscode.ExtensionContext) {
-  (globalThis as Record<string, unknown>).__aztfActivateStep = "start";
   const manifest = ctx.extension.packageJSON;
   reporter = new TelemetryReporter(manifest.appInsightsConnectionString);
-  (globalThis as Record<string, unknown>).__aztfActivateStep = "reporter";
-
-  // Telemetry and the Terraform install check are best-effort: a failure in
-  // either must never abort activation, otherwise none of the commands below
-  // get registered and the language server never starts (observed in CI).
-  try {
-    await TelemetryWrapper.initializeFromJsonFile(
-      ctx.asAbsolutePath("./package.json"),
-    );
-  } catch (error) {
-    console.log(`Failed to initialize telemetry: ${error}`);
-  }
-  (globalThis as Record<string, unknown>).__aztfActivateStep = "telemetry";
-
-  try {
-    await checkTerraformInstalled();
-  } catch (error) {
-    console.log(`Failed to check Terraform installation: ${error}`);
-  }
-  (globalThis as Record<string, unknown>).__aztfActivateStep = "terraform";
-
+  await checkTerraformInstalled();
+  await TelemetryWrapper.initializeFromJsonFile(
+    ctx.asAbsolutePath("./package.json"),
+  );
   initFileWatcher(ctx);
-  (globalThis as Record<string, unknown>).__aztfActivateStep = "fileWatcher";
 
   const lsPath = new ServerPath(ctx);
   const outputChannel = terraformChannel.getChannel();
   clientHandler = new ClientHandler(lsPath, outputChannel, reporter);
-  (globalThis as Record<string, unknown>).__aztfActivateStep = "clientHandler";
 
   ctx.subscriptions.push(
     TelemetryWrapper.instrumentOperationAsVsCodeCommand(
@@ -676,8 +621,6 @@ async function activateInternal(ctx: vscode.ExtensionContext) {
   );
 
   if (enabled()) {
-    (globalThis as Record<string, unknown>).__aztfActivateStep =
-      "startingLanguageServer";
     startLanguageServer();
   }
 

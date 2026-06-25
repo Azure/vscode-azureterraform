@@ -1,7 +1,4 @@
 import * as vscode from 'vscode';
-import * as fs from 'fs';
-import * as path from 'path';
-import * as cp from 'child_process';
 import { expect } from 'chai';
 import { getDocUri, open, doc } from '../helper';
 
@@ -10,124 +7,14 @@ suite('completion', () => {
     await vscode.commands.executeCommand('workbench.action.closeAllEditors');
   });
 
-  test.only('schema attribute completion', async () => {
-    // --- Diagnostics: extension activation ---------------------------------
-    const ext = vscode.extensions.getExtension('ms-azuretools.vscode-azureterraform');
-    console.log(`[diag] extension found=${!!ext} isActive(before)=${ext?.isActive}`);
-
-    // --- Diagnostics: which extension.js is actually loaded? --------------
-    if (ext) {
-      console.log(`[diag] ext.extensionPath=${ext.extensionPath}`);
-      console.log(`[diag] ext.packageJSON.main=${ext.packageJSON?.main}`);
-      const mainRel = (ext.packageJSON?.main ?? 'out/extension.js') as string;
-      const mainPath = path.join(ext.extensionPath, mainRel.endsWith('.js') ? mainRel : `${mainRel}.js`);
-      try {
-        const content = fs.readFileSync(mainPath, 'utf8');
-        console.log(
-          `[diag] mainPath=${mainPath} size=${content.length} hasBreadcrumb=${content.includes(
-            'aztf-activate-breadcrumb',
-          )}`,
-        );
-      } catch (e) {
-        console.log(`[diag] main read failed: ${e}`);
-      }
-    }
-
-    // --- Diagnostics: force activation and capture the REAL failure -------
-    if (ext) {
-      try {
-        const exp = await ext.activate();
-        console.log(`[diag] activate() resolved; exports=${exp === undefined ? 'undefined' : typeof exp}`);
-      } catch (e) {
-        const err = e as Error;
-        console.log(`[diag] activate() REJECTED: ${err?.stack || String(err)}`);
-      }
-    }
-    console.log(`[diag] isActive(after)=${ext?.isActive}`);
-
-    // --- Diagnostics: capture where activate() failed (shared globalThis) --
-    const g = globalThis as Record<string, unknown>;
-    console.log(`[diag] activate step=${String(g.__aztfActivateStep)}`);
-    console.log(`[diag] activate error=${String(g.__aztfActivateError)}`);
-
-    // --- Diagnostics: file breadcrumbs (unambiguous, on-disk) -------------
-    const breadcrumbFile = path.join(require('os').tmpdir(), 'aztf-activate-breadcrumb.log');
-    try {
-      console.log(`[diag] breadcrumb file=${breadcrumbFile}\n${fs.readFileSync(breadcrumbFile, 'utf8')}`);
-    } catch (e) {
-      console.log(`[diag] breadcrumb read failed: ${e}`);
-    }
-
-    // --- Diagnostics: which azureTerraform.* commands are registered ------
-    try {
-      const all = await vscode.commands.getCommands(true);
-      console.log(`[diag] azureTerraform commands=${JSON.stringify(all.filter((c) => c.startsWith('azureTerraform.')))}`);
-    } catch (e) {
-      console.log(`[diag] getCommands failed: ${e}`);
-    }
-
-    // --- Diagnostics: configuration the extension actually reads -----------
-    const cfg = vscode.workspace.getConfiguration('azureTerraform');
-    console.log(`[diag] cfg languageServer.external=${JSON.stringify(cfg.get('languageServer.external'))}`);
-    console.log(`[diag] cfg languageServer.args=${JSON.stringify(cfg.get('languageServer.args'))}`);
-    console.log(`[diag] cfg languageServer.pathToBinary=${JSON.stringify(cfg.get('languageServer.pathToBinary'))}`);
-    console.log(`[diag] cfg languageServer(object)=${JSON.stringify(cfg.get('languageServer'))}`);
-
-    // --- Diagnostics: the language server binary on disk ------------------
-    const binName = process.platform === 'win32' ? 'ms-terraform-lsp.exe' : 'ms-terraform-lsp';
-    const binPath = ext ? path.join(ext.extensionPath, 'bin', binName) : '';
-    console.log(`[diag] binPath=${binPath}`);
-    try {
-      const st = fs.statSync(binPath);
-      console.log(`[diag] binary exists size=${st.size} mode=${(st.mode & 0o777).toString(8)}`);
-    } catch (e) {
-      console.log(`[diag] binary stat failed: ${e}`);
-    }
-
-    // --- Diagnostics: can the binary actually run on this runner? ----------
-    try {
-      const args = (cfg.get<string[]>('languageServer.args') ?? ['serve']).slice();
-      const child = cp.spawn(binPath, args, { stdio: ['ignore', 'pipe', 'pipe'] });
-      let out = '';
-      let err = '';
-      let exitInfo = 'still-running';
-      child.stdout?.on('data', (d) => (out += d.toString()));
-      child.stderr?.on('data', (d) => (err += d.toString()));
-      child.on('error', (e) => console.log(`[diag] spawn error: ${e}`));
-      child.on('exit', (code, signal) => (exitInfo = `code=${code} signal=${signal}`));
-      await new Promise((r) => setTimeout(r, 3000));
-      console.log(`[diag] spawn pid=${child.pid} killed=${child.killed} exit=${exitInfo}`);
-      console.log(`[diag] spawn stdout(first 300)=${JSON.stringify(out.slice(0, 300))}`);
-      console.log(`[diag] spawn stderr(first 300)=${JSON.stringify(err.slice(0, 300))}`);
-      child.kill();
-    } catch (e) {
-      console.log(`[diag] spawn threw: ${e}`);
-    }
-
-    // --- Diagnostics: force the extension to start its LSP client ----------
-    // The binary runs fine when spawned directly (above), so if completions
-    // still fail it means the extension never started its language client.
-    // Explicitly invoke the command that starts it and observe.
-    const cmds = await vscode.commands.getCommands(true);
-    console.log(`[diag] has enableLanguageServer command=${cmds.includes('azureTerraform.enableLanguageServer')}`);
-    try {
-      await vscode.commands.executeCommand('azureTerraform.enableLanguageServer');
-      console.log('[diag] enableLanguageServer command returned');
-    } catch (e) {
-      console.log(`[diag] enableLanguageServer threw: ${e}`);
-    }
-    await new Promise((r) => setTimeout(r, 3000));
-
+  test('schema attribute completion', async () => {
     const docUri = getDocUri('properties-completion.tf');
     await open(docUri);
 
-    // --- Diagnostics: document language registration -----------------------
-    console.log(`[diag] doc.languageId=${doc.languageId} scheme=${doc.uri.scheme}`);
+    // The ms-terraform-lsp documentSelector only matches language "terraform",
+    // so make sure the opened document is associated with it.
     if (doc.languageId !== 'terraform') {
-      // The ms-terraform-lsp documentSelector only matches language "terraform".
-      // Force the association in case the .tf mapping has not registered yet.
       await vscode.languages.setTextDocumentLanguage(doc, 'terraform');
-      console.log(`[diag] forced languageId -> ${doc.languageId}`);
     }
 
     // Request attribute completion on the empty line inside the
@@ -143,7 +30,6 @@ suite('completion', () => {
     // those are filtered out when deciding whether the server has responded.
     const deadline = Date.now() + 1000 * 25;
     let schemaItems: vscode.CompletionItem[] = [];
-    let polls = 0;
     while (Date.now() < deadline) {
       const list = await vscode.commands.executeCommand<vscode.CompletionList>(
         'vscode.executeCompletionItemProvider',
@@ -151,16 +37,7 @@ suite('completion', () => {
         position,
       );
       const items = list?.items ?? [];
-      const byKind: Record<string, number> = {};
-      for (const i of items) {
-        const k = i.kind !== undefined ? vscode.CompletionItemKind[i.kind] : 'undefined';
-        byKind[k] = (byKind[k] ?? 0) + 1;
-      }
       schemaItems = items.filter((i) => i.kind !== vscode.CompletionItemKind.Text);
-      polls += 1;
-      console.log(
-        `[diag] poll #${polls}: total=${items.length} nonText=${schemaItems.length} byKind=${JSON.stringify(byKind)}`,
-      );
       if (schemaItems.length > 0) {
         break;
       }
@@ -170,7 +47,6 @@ suite('completion', () => {
     const labels = schemaItems.map((i) =>
       typeof i.label === 'string' ? i.label : i.label.label,
     );
-    console.log(`[diag] final non-Text labels: ${JSON.stringify(labels)}`);
 
     // `azurerm_resource_group` always exposes these attributes in its schema.
     expect(labels).to.include.members(['name', 'location', 'tags']);
