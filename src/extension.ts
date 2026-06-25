@@ -32,6 +32,18 @@ import { terraformChannel } from "./terraformChannel";
 import { generateTerraformPlan } from "./utils/terraformPlan";
 import { ConvertJsonToAzapiResult, LanguageServerSettings } from "./types";
 import * as path from "path";
+import * as os from "os";
+import * as fs from "fs";
+
+const aztfBreadcrumbFile = path.join(os.tmpdir(), "aztf-activate-breadcrumb.log");
+function aztfBreadcrumb(msg: string): void {
+  try {
+    fs.appendFileSync(aztfBreadcrumbFile, `${new Date().toISOString()} ${msg}\n`);
+  } catch {
+    // ignore
+  }
+}
+aztfBreadcrumb("module-loaded");
 
 const defaultLanguageServerSettings: LanguageServerSettings = {
   external: true,
@@ -46,13 +58,18 @@ let reporter: TelemetryReporter;
 let clientHandler: ClientHandler;
 
 export async function activate(ctx: vscode.ExtensionContext) {
+  aztfBreadcrumb("activate-called");
   try {
     await activateInternal(ctx);
     (globalThis as Record<string, unknown>).__aztfActivateStep = "completed";
+    aztfBreadcrumb("activate-completed");
   } catch (error) {
     (globalThis as Record<string, unknown>).__aztfActivateError = `${error}\n${
       error instanceof Error ? error.stack : ""
     }`;
+    aztfBreadcrumb(
+      `activate-error: ${error}\n${error instanceof Error ? error.stack : ""}`,
+    );
     throw error;
   }
 }

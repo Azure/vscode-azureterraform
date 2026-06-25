@@ -29,6 +29,22 @@ suite('completion', () => {
     console.log(`[diag] activate step=${String(g.__aztfActivateStep)}`);
     console.log(`[diag] activate error=${String(g.__aztfActivateError)}`);
 
+    // --- Diagnostics: file breadcrumbs (unambiguous, on-disk) -------------
+    const breadcrumbFile = path.join(require('os').tmpdir(), 'aztf-activate-breadcrumb.log');
+    try {
+      console.log(`[diag] breadcrumb file=${breadcrumbFile}\n${fs.readFileSync(breadcrumbFile, 'utf8')}`);
+    } catch (e) {
+      console.log(`[diag] breadcrumb read failed: ${e}`);
+    }
+
+    // --- Diagnostics: which azureTerraform.* commands are registered ------
+    try {
+      const all = await vscode.commands.getCommands(true);
+      console.log(`[diag] azureTerraform commands=${JSON.stringify(all.filter((c) => c.startsWith('azureTerraform.')))}`);
+    } catch (e) {
+      console.log(`[diag] getCommands failed: ${e}`);
+    }
+
     // --- Diagnostics: configuration the extension actually reads -----------
     const cfg = vscode.workspace.getConfiguration('azureTerraform');
     console.log(`[diag] cfg languageServer.external=${JSON.stringify(cfg.get('languageServer.external'))}`);
