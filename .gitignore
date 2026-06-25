@@ -9,4 +9,3 @@ bin
 ms-terraform-lsp
 ms-terraform-lsp.exe
 .DS_Store
-npm-run-test-*.log
