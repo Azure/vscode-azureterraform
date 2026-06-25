@@ -46,8 +46,22 @@ let reporter: TelemetryReporter;
 let clientHandler: ClientHandler;
 
 export async function activate(ctx: vscode.ExtensionContext) {
+  try {
+    await activateInternal(ctx);
+    (globalThis as Record<string, unknown>).__aztfActivateStep = "completed";
+  } catch (error) {
+    (globalThis as Record<string, unknown>).__aztfActivateError = `${error}\n${
+      error instanceof Error ? error.stack : ""
+    }`;
+    throw error;
+  }
+}
+
+async function activateInternal(ctx: vscode.ExtensionContext) {
+  (globalThis as Record<string, unknown>).__aztfActivateStep = "start";
   const manifest = ctx.extension.packageJSON;
   reporter = new TelemetryReporter(manifest.appInsightsConnectionString);
+  (globalThis as Record<string, unknown>).__aztfActivateStep = "reporter";
 
   // Telemetry and the Terraform install check are best-effort: a failure in
   // either must never abort activation, otherwise none of the commands below
@@ -59,18 +73,22 @@ export async function activate(ctx: vscode.ExtensionContext) {
   } catch (error) {
     console.log(`Failed to initialize telemetry: ${error}`);
   }
+  (globalThis as Record<string, unknown>).__aztfActivateStep = "telemetry";
 
   try {
     await checkTerraformInstalled();
   } catch (error) {
     console.log(`Failed to check Terraform installation: ${error}`);
   }
+  (globalThis as Record<string, unknown>).__aztfActivateStep = "terraform";
 
   initFileWatcher(ctx);
+  (globalThis as Record<string, unknown>).__aztfActivateStep = "fileWatcher";
 
   const lsPath = new ServerPath(ctx);
   const outputChannel = terraformChannel.getChannel();
   clientHandler = new ClientHandler(lsPath, outputChannel, reporter);
+  (globalThis as Record<string, unknown>).__aztfActivateStep = "clientHandler";
 
   ctx.subscriptions.push(
     TelemetryWrapper.instrumentOperationAsVsCodeCommand(
@@ -635,6 +653,8 @@ export async function activate(ctx: vscode.ExtensionContext) {
   );
 
   if (enabled()) {
+    (globalThis as Record<string, unknown>).__aztfActivateStep =
+      "startingLanguageServer";
     startLanguageServer();
   }
 

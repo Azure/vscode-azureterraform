@@ -1,0 +1,467 @@
+2026-06-25T01:46:57.8016185Z Current runner version: '2.335.1'
+2026-06-25T01:46:57.8041569Z ##[group]Runner Image Provisioner
+2026-06-25T01:46:57.8042749Z Hosted Compute Agent
+2026-06-25T01:46:57.8043378Z Version: 20260611.554
+2026-06-25T01:46:57.8044018Z Commit: 5e0782fdc9014723d3be820dd114dd31555c2bd1
+2026-06-25T01:46:57.8044851Z Build Date: 2026-06-11T21:40:46Z
+2026-06-25T01:46:57.8045569Z Worker ID: {65dea967-13a0-43f0-8a7e-d6dfe007e79a}
+2026-06-25T01:46:57.8046364Z Azure Region: eastus
+2026-06-25T01:46:57.8046958Z ##[endgroup]
+2026-06-25T01:46:57.8048824Z ##[group]Operating System
+2026-06-25T01:46:57.8049636Z Ubuntu
+2026-06-25T01:46:57.8050175Z 24.04.4
+2026-06-25T01:46:57.8050675Z LTS
+2026-06-25T01:46:57.8051263Z ##[endgroup]
+2026-06-25T01:46:57.8052306Z ##[group]Runner Image
+2026-06-25T01:46:57.8053000Z Image: ubuntu-24.04
+2026-06-25T01:46:57.8053598Z Version: 20260615.205.1
+2026-06-25T01:46:57.8054938Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20260615.205/images/ubuntu/Ubuntu2404-Readme.md
+2026-06-25T01:46:57.8056473Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20260615.205
+2026-06-25T01:46:57.8057544Z ##[endgroup]
+2026-06-25T01:46:57.8058783Z ##[group]GITHUB_TOKEN Permissions
+2026-06-25T01:46:57.8061185Z Contents: read
+2026-06-25T01:46:57.8061822Z Metadata: read
+2026-06-25T01:46:57.8062822Z Packages: read
+2026-06-25T01:46:57.8063490Z ##[endgroup]
+2026-06-25T01:46:57.8065687Z Secret source: Actions
+2026-06-25T01:46:57.8066778Z Prepare workflow directory
+2026-06-25T01:46:57.8417805Z Prepare all required actions
+2026-06-25T01:46:57.8456969Z Getting action download info
+2026-06-25T01:46:58.0961465Z Download action repository 'actions/checkout@v4' (SHA:34e114876b0b11c390a56381ad16ebd13914f8d5)
+2026-06-25T01:46:58.1983010Z Download action repository 'actions/setup-node@v4' (SHA:49933ea5288caeca8642d1e84afbd3f7d6820020)
+2026-06-25T01:46:58.4291470Z Complete job name: test (stable, ubuntu-latest)
+2026-06-25T01:46:58.5079375Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+2026-06-25T01:46:58.5088342Z ##[group]Run actions/checkout@v4
+2026-06-25T01:46:58.5089107Z with:
+2026-06-25T01:46:58.5089596Z   repository: Azure/vscode-azureterraform
+2026-06-25T01:46:58.5094183Z   token: ***
+2026-06-25T01:46:58.5094640Z   ssh-strict: true
+2026-06-25T01:46:58.5095107Z   ssh-user: git
+2026-06-25T01:46:58.5095577Z   persist-credentials: true
+2026-06-25T01:46:58.5096092Z   clean: true
+2026-06-25T01:46:58.5096564Z   sparse-checkout-cone-mode: true
+2026-06-25T01:46:58.5097109Z   fetch-depth: 1
+2026-06-25T01:46:58.5097557Z   fetch-tags: false
+2026-06-25T01:46:58.5098013Z   show-progress: true
+2026-06-25T01:46:58.5098483Z   lfs: false
+2026-06-25T01:46:58.5098966Z   submodules: false
+2026-06-25T01:46:58.5099435Z   set-safe-directory: true
+2026-06-25T01:46:58.5100266Z ##[endgroup]
+2026-06-25T01:46:58.6082889Z Syncing repository: Azure/vscode-azureterraform
+2026-06-25T01:46:58.6084958Z ##[group]Getting Git version info
+2026-06-25T01:46:58.6085861Z Working directory is '/home/runner/work/vscode-azureterraform/vscode-azureterraform'
+2026-06-25T01:46:58.6087044Z [command]/usr/bin/git version
+2026-06-25T01:46:58.6174539Z git version 2.54.0
+2026-06-25T01:46:58.6228663Z ##[endgroup]
+2026-06-25T01:46:58.6243301Z Temporarily overriding HOME='/home/runner/work/_temp/5336483c-bfe5-4510-86d4-d4a25800d214' before making global git config changes
+2026-06-25T01:46:58.6245610Z Adding repository directory to the temporary git global config as a safe directory
+2026-06-25T01:46:58.6249154Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/vscode-azureterraform/vscode-azureterraform
+2026-06-25T01:46:58.6303714Z Deleting the contents of '/home/runner/work/vscode-azureterraform/vscode-azureterraform'
+2026-06-25T01:46:58.6307117Z ##[group]Initializing the repository
+2026-06-25T01:46:58.6313083Z [command]/usr/bin/git init /home/runner/work/vscode-azureterraform/vscode-azureterraform
+2026-06-25T01:46:58.6424612Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-06-25T01:46:58.6425674Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-06-25T01:46:58.6427115Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-06-25T01:46:58.6428340Z hint: call:
+2026-06-25T01:46:58.6428771Z hint:
+2026-06-25T01:46:58.6429588Z hint: 	git config --global init.defaultBranch <name>
+2026-06-25T01:46:58.6430565Z hint:
+2026-06-25T01:46:58.6431172Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-06-25T01:46:58.6432814Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-06-25T01:46:58.6433593Z hint:
+2026-06-25T01:46:58.6434108Z hint: 	git branch -m <name>
+2026-06-25T01:46:58.6434946Z hint:
+2026-06-25T01:46:58.6436022Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-06-25T01:46:58.6438099Z Initialized empty Git repository in /home/runner/work/vscode-azureterraform/vscode-azureterraform/.git/
+2026-06-25T01:46:58.6443571Z [command]/usr/bin/git remote add origin https://github.com/Azure/vscode-azureterraform
+2026-06-25T01:46:58.6492700Z ##[endgroup]
+2026-06-25T01:46:58.6493968Z ##[group]Disabling automatic garbage collection
+2026-06-25T01:46:58.6495719Z [command]/usr/bin/git config --local gc.auto 0
+2026-06-25T01:46:58.6525903Z ##[endgroup]
+2026-06-25T01:46:58.6527038Z ##[group]Setting up auth
+2026-06-25T01:46:58.6532558Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-06-25T01:46:58.6565615Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-06-25T01:46:58.6907615Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-06-25T01:46:58.6938809Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-06-25T01:46:58.7165371Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-06-25T01:46:58.7198583Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-06-25T01:46:58.7427247Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-06-25T01:46:58.7464711Z ##[endgroup]
+2026-06-25T01:46:58.7465615Z ##[group]Fetching the repository
+2026-06-25T01:46:58.7473671Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +0bc6a700bbe9636db270f2b53c50334f9e1fe0b6:refs/remotes/pull/350/merge
+2026-06-25T01:46:59.3606994Z From https://github.com/Azure/vscode-azureterraform
+2026-06-25T01:46:59.3610577Z  * [new ref]         0bc6a700bbe9636db270f2b53c50334f9e1fe0b6 -> pull/350/merge
+2026-06-25T01:46:59.3988027Z ##[endgroup]
+2026-06-25T01:46:59.3989747Z ##[group]Determining the checkout info
+2026-06-25T01:46:59.3991508Z ##[endgroup]
+2026-06-25T01:46:59.3996135Z [command]/usr/bin/git sparse-checkout disable
+2026-06-25T01:46:59.4073552Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-06-25T01:46:59.4111006Z ##[group]Checking out the ref
+2026-06-25T01:46:59.4114439Z [command]/usr/bin/git checkout --progress --force refs/remotes/pull/350/merge
+2026-06-25T01:46:59.7475979Z Note: switching to 'refs/remotes/pull/350/merge'.
+2026-06-25T01:46:59.7476561Z 
+2026-06-25T01:46:59.7476858Z You are in 'detached HEAD' state. You can look around, make experimental
+2026-06-25T01:46:59.7477843Z changes and commit them, and you can discard any commits you make in this
+2026-06-25T01:46:59.7479278Z state without impacting any branches by switching back to a branch.
+2026-06-25T01:46:59.7479951Z 
+2026-06-25T01:46:59.7480386Z If you want to create a new branch to retain commits you create, you may
+2026-06-25T01:46:59.7481311Z do so (now or later) by using -c with the switch command. Example:
+2026-06-25T01:46:59.7481804Z 
+2026-06-25T01:46:59.7482429Z   git switch -c <new-branch-name>
+2026-06-25T01:46:59.7482807Z 
+2026-06-25T01:46:59.7483101Z Or undo this operation with:
+2026-06-25T01:46:59.7483501Z 
+2026-06-25T01:46:59.7483694Z   git switch -
+2026-06-25T01:46:59.7483990Z 
+2026-06-25T01:46:59.7484429Z Turn off this advice by setting config variable advice.detachedHead to false
+2026-06-25T01:46:59.7485104Z 
+2026-06-25T01:46:59.7485783Z HEAD is now at 0bc6a70 Merge 60ac0eba2be5a12d913cfa7840d04db8faf44f52 into 50832671f3f69efa1103085fb813b4efddb17175
+2026-06-25T01:46:59.7488236Z ##[endgroup]
+2026-06-25T01:46:59.7535638Z [command]/usr/bin/git log -1 --format=%H
+2026-06-25T01:46:59.7562387Z 0bc6a700bbe9636db270f2b53c50334f9e1fe0b6
+2026-06-25T01:46:59.7835545Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+2026-06-25T01:46:59.7837478Z ##[group]Run actions/setup-node@v4
+2026-06-25T01:46:59.7837810Z with:
+2026-06-25T01:46:59.7838081Z   node-version-file: .nvmrc
+2026-06-25T01:46:59.7838384Z   always-auth: false
+2026-06-25T01:46:59.7838658Z   check-latest: false
+2026-06-25T01:46:59.7841656Z   token: ***
+2026-06-25T01:46:59.7842150Z ##[endgroup]
+2026-06-25T01:46:59.9319400Z Node version file is not JSON file
+2026-06-25T01:46:59.9320713Z Resolved .nvmrc as 23.3.0
+2026-06-25T01:46:59.9437569Z Attempting to download 23.3.0...
+2026-06-25T01:46:59.9554942Z (node:2277) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-06-25T01:46:59.9556601Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-06-25T01:47:00.2795192Z Not found in manifest. Falling back to download directly from Node
+2026-06-25T01:47:00.3333937Z Acquiring 23.3.0 - x64 from https://nodejs.org/dist/v23.3.0/node-v23.3.0-linux-x64.tar.gz
+2026-06-25T01:47:00.5968760Z Extracting ...
+2026-06-25T01:47:00.6077667Z [command]/usr/bin/tar xz --strip 1 --warning=no-unknown-keyword --overwrite -C /home/runner/work/_temp/f0b77733-9435-4c27-a143-621a5c55a39e -f /home/runner/work/_temp/6529052b-10ba-45fb-a34b-bf505f6ab04f
+2026-06-25T01:47:01.7640691Z Adding to the cache ...
+2026-06-25T01:47:03.6542380Z Done
+2026-06-25T01:47:03.6543166Z ##[group]Environment details
+2026-06-25T01:47:03.9928801Z node: v23.3.0
+2026-06-25T01:47:03.9929327Z npm: 10.9.0
+2026-06-25T01:47:03.9929650Z yarn: 1.22.22
+2026-06-25T01:47:03.9930528Z ##[endgroup]
+2026-06-25T01:47:04.0155836Z ##[group]Run /usr/bin/Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
+2026-06-25T01:47:04.0156476Z [36;1m/usr/bin/Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &[0m
+2026-06-25T01:47:04.0156838Z [36;1mecho ">>> Started xvfb"[0m
+2026-06-25T01:47:04.0328984Z shell: /usr/bin/bash -e {0}
+2026-06-25T01:47:04.0329343Z ##[endgroup]
+2026-06-25T01:47:04.0417219Z >>> Started xvfb
+2026-06-25T01:47:04.0456824Z ##[group]Run npm ci
+2026-06-25T01:47:04.0457141Z [36;1mnpm ci[0m
+2026-06-25T01:47:04.0489306Z shell: /usr/bin/bash -e {0}
+2026-06-25T01:47:04.0489596Z ##[endgroup]
+2026-06-25T01:47:04.4030128Z (node:2314) ExperimentalWarning: CommonJS module /opt/hostedtoolcache/node/23.3.0/x64/lib/node_modules/npm/node_modules/debug/src/node.js is loading ES Module /opt/hostedtoolcache/node/23.3.0/x64/lib/node_modules/npm/node_modules/supports-color/index.js using require().
+2026-06-25T01:47:04.4031780Z Support for loading ES Module in require() is an experimental feature and might change at any time
+2026-06-25T01:47:04.4032778Z (Use `node --trace-warnings ...` to show where the warning was created)
+2026-06-25T01:47:04.6136741Z npm warn EBADENGINE Unsupported engine {
+2026-06-25T01:47:04.6137739Z npm warn EBADENGINE   package: '@eslint/config-array@0.23.5',
+2026-06-25T01:47:04.6138708Z npm warn EBADENGINE   required: { node: '^20.19.0 || ^22.13.0 || >=24' },
+2026-06-25T01:47:04.6139756Z npm warn EBADENGINE   current: { node: 'v23.3.0', npm: '10.9.0' }
+2026-06-25T01:47:04.6140412Z npm warn EBADENGINE }
+2026-06-25T01:47:04.6206304Z npm warn EBADENGINE Unsupported engine {
+2026-06-25T01:47:04.6207284Z npm warn EBADENGINE   package: '@eslint/config-helpers@0.6.0',
+2026-06-25T01:47:04.6208254Z npm warn EBADENGINE   required: { node: '^20.19.0 || ^22.13.0 || >=24' },
+2026-06-25T01:47:04.6209250Z npm warn EBADENGINE   current: { node: 'v23.3.0', npm: '10.9.0' }
+2026-06-25T01:47:04.6209901Z npm warn EBADENGINE }
+2026-06-25T01:47:04.6224783Z npm warn EBADENGINE Unsupported engine {
+2026-06-25T01:47:04.6225555Z npm warn EBADENGINE   package: '@eslint/core@1.2.1',
+2026-06-25T01:47:04.6226485Z npm warn EBADENGINE   required: { node: '^20.19.0 || ^22.13.0 || >=24' },
+2026-06-25T01:47:04.6227500Z npm warn EBADENGINE   current: { node: 'v23.3.0', npm: '10.9.0' }
+2026-06-25T01:47:04.6228177Z npm warn EBADENGINE }
+2026-06-25T01:47:04.6243709Z npm warn EBADENGINE Unsupported engine {
+2026-06-25T01:47:04.6244868Z npm warn EBADENGINE   package: '@eslint/object-schema@3.0.5',
+2026-06-25T01:47:04.6246167Z npm warn EBADENGINE   required: { node: '^20.19.0 || ^22.13.0 || >=24' },
+2026-06-25T01:47:04.6247476Z npm warn EBADENGINE   current: { node: 'v23.3.0', npm: '10.9.0' }
+2026-06-25T01:47:04.6248477Z npm warn EBADENGINE }
+2026-06-25T01:47:04.6259887Z npm warn EBADENGINE Unsupported engine {
+2026-06-25T01:47:04.6261099Z npm warn EBADENGINE   package: '@eslint/plugin-kit@0.7.2',
+2026-06-25T01:47:04.6262841Z npm warn EBADENGINE   required: { node: '^20.19.0 || ^22.13.0 || >=24' },
+2026-06-25T01:47:04.6264251Z npm warn EBADENGINE   current: { node: 'v23.3.0', npm: '10.9.0' }
+2026-06-25T01:47:04.6265392Z npm warn EBADENGINE }
+2026-06-25T01:47:04.7127902Z npm warn EBADENGINE Unsupported engine {
+2026-06-25T01:47:04.7129281Z npm warn EBADENGINE   package: 'eslint-visitor-keys@5.0.1',
+2026-06-25T01:47:04.7130724Z npm warn EBADENGINE   required: { node: '^20.19.0 || ^22.13.0 || >=24' },
+2026-06-25T01:47:04.7132433Z npm warn EBADENGINE   current: { node: 'v23.3.0', npm: '10.9.0' }
+2026-06-25T01:47:04.7133447Z npm warn EBADENGINE }
+2026-06-25T01:47:04.8273758Z npm warn EBADENGINE Unsupported engine {
+2026-06-25T01:47:04.8274384Z npm warn EBADENGINE   package: 'eslint@10.5.0',
+2026-06-25T01:47:04.8275040Z npm warn EBADENGINE   required: { node: '^20.19.0 || ^22.13.0 || >=24' },
+2026-06-25T01:47:04.8275723Z npm warn EBADENGINE   current: { node: 'v23.3.0', npm: '10.9.0' }
+2026-06-25T01:47:04.8276208Z npm warn EBADENGINE }
+2026-06-25T01:47:04.8322455Z npm warn EBADENGINE Unsupported engine {
+2026-06-25T01:47:04.8323098Z npm warn EBADENGINE   package: 'eslint-scope@9.1.2',
+2026-06-25T01:47:04.8323775Z npm warn EBADENGINE   required: { node: '^20.19.0 || ^22.13.0 || >=24' },
+2026-06-25T01:47:04.8324493Z npm warn EBADENGINE   current: { node: 'v23.3.0', npm: '10.9.0' }
+2026-06-25T01:47:04.8324954Z npm warn EBADENGINE }
+2026-06-25T01:47:04.8401318Z npm warn EBADENGINE Unsupported engine {
+2026-06-25T01:47:04.8402698Z npm warn EBADENGINE   package: 'eslint-visitor-keys@5.0.1',
+2026-06-25T01:47:04.8403435Z npm warn EBADENGINE   required: { node: '^20.19.0 || ^22.13.0 || >=24' },
+2026-06-25T01:47:04.8404107Z npm warn EBADENGINE   current: { node: 'v23.3.0', npm: '10.9.0' }
+2026-06-25T01:47:04.8404572Z npm warn EBADENGINE }
+2026-06-25T01:47:04.8463581Z npm warn EBADENGINE Unsupported engine {
+2026-06-25T01:47:04.8464225Z npm warn EBADENGINE   package: 'espree@11.2.0',
+2026-06-25T01:47:04.8464858Z npm warn EBADENGINE   required: { node: '^20.19.0 || ^22.13.0 || >=24' },
+2026-06-25T01:47:04.8465538Z npm warn EBADENGINE   current: { node: 'v23.3.0', npm: '10.9.0' }
+2026-06-25T01:47:04.8466000Z npm warn EBADENGINE }
+2026-06-25T01:47:04.8479932Z npm warn EBADENGINE Unsupported engine {
+2026-06-25T01:47:04.8480939Z npm warn EBADENGINE   package: 'eslint-visitor-keys@5.0.1',
+2026-06-25T01:47:04.8481511Z npm warn EBADENGINE   required: { node: '^20.19.0 || ^22.13.0 || >=24' },
+2026-06-25T01:47:04.8482702Z npm warn EBADENGINE   current: { node: 'v23.3.0', npm: '10.9.0' }
+2026-06-25T01:47:04.8483136Z npm warn EBADENGINE }
+2026-06-25T01:47:06.4388375Z npm warn deprecated rimraf@3.0.2: Rimraf versions prior to v4 are no longer supported
+2026-06-25T01:47:06.6675535Z npm warn deprecated vscode-test@1.6.1: This package has been renamed to @vscode/test-electron, please update to the new name
+2026-06-25T01:47:06.6717980Z npm warn deprecated prebuild-install@7.1.3: No longer maintained. Please contact the author of the relevant native addon; alternatives are available.
+2026-06-25T01:47:06.8924953Z npm warn deprecated inflight@1.0.6: This module is not supported, and leaks memory. Do not use it. Check out lru-cache if you want a good and tested way to coalesce async requests by a key value, which is much more comprehensive and powerful.
+2026-06-25T01:47:07.0013936Z npm warn deprecated glob@7.1.6: Glob versions prior to v9 are no longer supported
+2026-06-25T01:47:07.2973052Z npm warn deprecated @types/opn@5.5.0: This is a stub types definition. opn provides its own type definitions, so you do not need this installed.
+2026-06-25T01:47:07.3063621Z npm warn deprecated fstream@1.0.12: This package is no longer supported.
+2026-06-25T01:47:07.3095881Z npm warn deprecated @types/keytar@4.4.2: This is a stub types definition. keytar provides its own type definitions, so you do not need this installed.
+2026-06-25T01:47:08.0135043Z npm warn deprecated rimraf@2.7.1: Rimraf versions prior to v4 are no longer supported
+2026-06-25T01:47:12.2171923Z 
+2026-06-25T01:47:12.2172868Z added 448 packages, and audited 449 packages in 8s
+2026-06-25T01:47:12.2173185Z 
+2026-06-25T01:47:12.2173415Z 104 packages are looking for funding
+2026-06-25T01:47:12.2173941Z   run `npm fund` for details
+2026-06-25T01:47:12.2270900Z 
+2026-06-25T01:47:12.2271646Z 10 vulnerabilities (4 low, 4 moderate, 2 high)
+2026-06-25T01:47:12.2272221Z 
+2026-06-25T01:47:12.2272461Z To address issues that do not require attention, run:
+2026-06-25T01:47:12.2272802Z   npm audit fix
+2026-06-25T01:47:12.2272933Z 
+2026-06-25T01:47:12.2273190Z To address all issues (including breaking changes), run:
+2026-06-25T01:47:12.2273547Z   npm audit fix --force
+2026-06-25T01:47:12.2273693Z 
+2026-06-25T01:47:12.2273817Z Run `npm audit` for details.
+2026-06-25T01:47:12.2531485Z ##[group]Run npm test
+2026-06-25T01:47:12.2531780Z [36;1mnpm test[0m
+2026-06-25T01:47:12.2564397Z shell: /usr/bin/bash -e {0}
+2026-06-25T01:47:12.2564650Z env:
+2026-06-25T01:47:12.2564826Z   CI: true
+2026-06-25T01:47:12.2565011Z   DISPLAY: :99.0
+2026-06-25T01:47:12.2565223Z   VSCODE_VERSION: stable
+2026-06-25T01:47:12.2565447Z ##[endgroup]
+2026-06-25T01:47:12.3637898Z 
+2026-06-25T01:47:12.3638569Z > vscode-azureterraform@0.10.2 pretest
+2026-06-25T01:47:12.3639479Z > npm run download:ls && npm run test-compile && npm run lint
+2026-06-25T01:47:12.3640012Z 
+2026-06-25T01:47:12.4695561Z 
+2026-06-25T01:47:12.4696262Z > vscode-azureterraform@0.10.2 download:ls
+2026-06-25T01:47:12.4696705Z > ts-node ./src/build/downloader.ts
+2026-06-25T01:47:12.4696898Z 
+2026-06-25T01:47:13.7396578Z {
+2026-06-25T01:47:13.7397551Z   name: 'ms-terraform-lsp_v0.9.0_linux_amd64.zip',
+2026-06-25T01:47:13.7399260Z   downloadUrl: 'https://github.com/Azure/ms-terraform-lsp/releases/download/v0.9.0/ms-terraform-lsp_v0.9.0_linux_amd64.zip'
+2026-06-25T01:47:13.7400604Z }
+2026-06-25T01:47:15.8768549Z 
+2026-06-25T01:47:15.8769578Z > vscode-azureterraform@0.10.2 test-compile
+2026-06-25T01:47:15.8770268Z > tsc -p ./
+2026-06-25T01:47:15.8770416Z 
+2026-06-25T01:47:17.7670619Z 
+2026-06-25T01:47:17.7671343Z > vscode-azureterraform@0.10.2 lint
+2026-06-25T01:47:17.7672372Z > eslint src
+2026-06-25T01:47:17.7672614Z 
+2026-06-25T01:47:19.8580986Z 
+2026-06-25T01:47:19.8581755Z /home/runner/work/vscode-azureterraform/vscode-azureterraform/src/survey.ts
+2026-06-25T01:47:19.8617384Z ##[warning]   5:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2026-06-25T01:47:19.8630408Z ##[warning]  41:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2026-06-25T01:47:19.8632244Z 
+2026-06-25T01:47:19.8632970Z /home/runner/work/vscode-azureterraform/vscode-azureterraform/src/terraformChannel.ts
+2026-06-25T01:47:19.8634861Z ##[warning]  11:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2026-06-25T01:47:19.8637692Z ##[warning]  12:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2026-06-25T01:47:19.8640354Z ##[warning]  21:30  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2026-06-25T01:47:19.8643217Z ##[warning]  33:26  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2026-06-25T01:47:19.8644813Z 
+2026-06-25T01:47:19.8645522Z /home/runner/work/vscode-azureterraform/vscode-azureterraform/src/terraformExport.ts
+2026-06-25T01:47:19.8647272Z ##[warning]   31:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2026-06-25T01:47:19.8649829Z ##[warning]   37:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2026-06-25T01:47:19.8682111Z ##[warning]  329:35  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2026-06-25T01:47:19.8684613Z ##[warning]  335:44  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2026-06-25T01:47:19.8686180Z ##[warning]  353:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2026-06-25T01:47:19.8687050Z 
+2026-06-25T01:47:19.8687445Z /home/runner/work/vscode-azureterraform/vscode-azureterraform/src/utils/cloudShellUtils.ts
+2026-06-25T01:47:19.8688453Z ##[warning]  32:25  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2026-06-25T01:47:19.8689826Z ##[warning]  33:33  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2026-06-25T01:47:19.8691188Z ##[warning]  59:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2026-06-25T01:47:19.8692978Z ##[warning]  70:24  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2026-06-25T01:47:19.8694670Z ##[warning]  71:24  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2026-06-25T01:47:19.8696076Z ##[warning]  76:13  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2026-06-25T01:47:19.8697395Z ##[warning]  76:26  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2026-06-25T01:47:19.8698177Z 
+2026-06-25T01:47:19.8698556Z /home/runner/work/vscode-azureterraform/vscode-azureterraform/src/utils/settingUtils.ts
+2026-06-25T01:47:19.8699474Z ##[warning]  73:30  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2026-06-25T01:47:19.8700795Z ##[warning]  77:35  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+2026-06-25T01:47:19.8701668Z 
+2026-06-25T01:47:19.8702362Z ✖ 20 problems (0 errors, 20 warnings)
+2026-06-25T01:47:19.8702573Z 
+2026-06-25T01:47:19.9584035Z 
+2026-06-25T01:47:19.9584418Z > vscode-azureterraform@0.10.2 test
+2026-06-25T01:47:19.9584894Z > npm run compile && node ./out/test/runTest.js
+2026-06-25T01:47:19.9585237Z 
+2026-06-25T01:47:20.0625598Z 
+2026-06-25T01:47:20.0626115Z > vscode-azureterraform@0.10.2 compile
+2026-06-25T01:47:20.0626515Z > npm run esbuild
+2026-06-25T01:47:20.0626668Z 
+2026-06-25T01:47:20.1677226Z 
+2026-06-25T01:47:20.1678023Z > vscode-azureterraform@0.10.2 esbuild
+2026-06-25T01:47:20.1679187Z > npm run esbuild-base -- --sourcemap
+2026-06-25T01:47:20.1679720Z 
+2026-06-25T01:47:20.2769402Z 
+2026-06-25T01:47:20.2770054Z > vscode-azureterraform@0.10.2 esbuild-base
+2026-06-25T01:47:20.2771375Z > esbuild ./src/extension.ts --bundle --outfile=out/extension.js --external:vscode --format=cjs --platform=node --sourcemap
+2026-06-25T01:47:20.2772187Z 
+2026-06-25T01:47:20.2924645Z ▲ [WARNING] Calling "opn" will crash at run-time because it's an import namespace object, not a function [call-import-namespace]
+2026-06-25T01:47:20.2962593Z 
+2026-06-25T01:47:20.2983076Z     src/utils/uiUtils.ts:23:4:
+2026-06-25T01:47:20.3013200Z       23 │     opn(url);
+2026-06-25T01:47:20.3013795Z          ╵     ~~~
+2026-06-25T01:47:20.3014082Z 
+2026-06-25T01:47:20.3014426Z   Consider changing "opn" to a default import instead:
+2026-06-25T01:47:20.3014800Z 
+2026-06-25T01:47:20.3014954Z     src/utils/uiUtils.ts:8:7:
+2026-06-25T01:47:20.3015535Z       8 │ import * as opn from "opn";
+2026-06-25T01:47:20.3016053Z         │        ~~~~~~~~
+2026-06-25T01:47:20.3016446Z         ╵        opn
+2026-06-25T01:47:20.3016657Z 
+2026-06-25T01:47:20.3018257Z   Make sure to enable TypeScript's "esModuleInterop" setting so that TypeScript's type checker generates an error when you try to do this. You can read more about this setting here: https://www.typescriptlang.org/tsconfig#esModuleInterop
+2026-06-25T01:47:20.3019846Z 
+2026-06-25T01:47:20.6439642Z 1 warning
+2026-06-25T01:47:20.6439995Z 
+2026-06-25T01:47:20.6440623Z   out/extension.js       5.5mb ⚠️
+2026-06-25T01:47:20.6441138Z   out/extension.js.map  12.3mb
+2026-06-25T01:47:20.6441420Z 
+2026-06-25T01:47:20.6441607Z ⚡ Done in 361ms
+2026-06-25T01:47:20.7583474Z - Resolving version...
+2026-06-25T01:47:20.8824255Z ✔ Validated version: 1.126.0
+2026-06-25T01:47:20.8843427Z - Found at https://update.code.visualstudio.com/1.126.0/linux-x64/stable?released=true
+2026-06-25T01:47:20.9778321Z ✔ Found at https://update.code.visualstudio.com/1.126.0/linux-x64/stable?released=true
+2026-06-25T01:47:20.9780880Z - Downloading (269.98 MB)
+2026-06-25T01:47:27.6374869Z ✔ Downloaded VS Code into /home/runner/work/vscode-azureterraform/vscode-azureterraform/.vscode-test/vscode-linux-x64-1.126.0
+2026-06-25T01:47:32.1170506Z [2496:0625/014732.116171:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+2026-06-25T01:47:32.1286323Z [2496:0625/014732.128277:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+2026-06-25T01:47:32.1324238Z [2496:0625/014732.129555:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+2026-06-25T01:47:32.1327175Z [2496:0625/014732.132219:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+2026-06-25T01:47:32.1354659Z [2496:0625/014732.133156:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+2026-06-25T01:47:32.1363715Z [2496:0625/014732.133432:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+2026-06-25T01:47:32.2838113Z [90m[main 2026-06-25T01:47:32.282Z][0m StorageMainService: creating application shared storage
+2026-06-25T01:47:32.3710270Z [2496:0625/014732.369726:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+2026-06-25T01:47:32.3718072Z [90m[main 2026-06-25T01:47:32.369Z][0m [shared storage] Creating shared storage database at ':memory:' (wasCreated: true)
+2026-06-25T01:47:32.3720178Z [90m[main 2026-06-25T01:47:32.370Z][0m [shared storage] Initializing fallback application storage (path: in-memory)
+2026-06-25T01:47:32.4033645Z [90m[main 2026-06-25T01:47:32.402Z][0m [shared storage] Fallback application storage initialized with 3 items
+2026-06-25T01:47:32.4039381Z [90m[main 2026-06-25T01:47:32.403Z][0m update#setState disabled
+2026-06-25T01:47:32.4040865Z [90m[main 2026-06-25T01:47:32.403Z][0m update#ctor - updates are disabled by the environment
+2026-06-25T01:47:32.4165515Z [2496:0625/014732.415397:ERROR:dbus/bus.cc:405] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
+2026-06-25T01:47:35.0415249Z workbench#open()
+2026-06-25T01:47:35.7021254Z Started local extension host with pid 2736.
+2026-06-25T01:47:35.7083266Z IExtensionHostStarter.start() took 38 ms.
+2026-06-25T01:47:35.8405562Z Started initializing default profile extensions in extensions installation folder. file:///home/runner/work/vscode-azureterraform/vscode-azureterraform/.vscode-test/extensions
+2026-06-25T01:47:36.1863463Z [AccountPolicyGate] apply: state=inactive, reason=undefined, isRestricted=false
+2026-06-25T01:47:36.1880483Z Completed initializing default profile extensions in extensions installation folder. file:///home/runner/work/vscode-azureterraform/vscode-azureterraform/.vscode-test/extensions
+2026-06-25T01:47:36.3163911Z Loading development extension at /home/runner/work/vscode-azureterraform/vscode-azureterraform
+2026-06-25T01:47:36.3220633Z filterEnabledExtensions: extension 'GitHub.copilot-chat' is disabled
+2026-06-25T01:47:36.5683982Z NativeExtensionHostFactory._createLocalProcessExtensionHostDataProvider.scannedExtensions: TypeScriptTeam.jsts-chat-features,vscode.bat,vscode.clojure,vscode.coffeescript,vscode.configuration-editing,GitHub.copilot-chat,vscode.cpp,vscode.csharp,vscode.css,vscode.css-language-features,vscode.dart,vscode.debug-auto-launch,vscode.debug-server-ready,vscode.diff,vscode.docker,vscode.dotenv,vscode.emmet,vscode.extension-editing,vscode.fsharp,vscode.git,vscode.git-base,vscode.github,vscode.github-authentication,vscode.go,vscode.groovy,vscode.grunt,vscode.gulp,vscode.handlebars,vscode.hlsl,vscode.html,vscode.html-language-features,vscode.ini,vscode.ipynb,vscode.jake,vscode.java,vscode.javascript,vscode.json,vscode.json-language-features,vscode.julia,vscode.latex,vscode.less,vscode.log,vscode.lua,vscode.make,vscode.markdown,vscode.markdown-language-features,vscode.markdown-math,vscode.media-preview,vscode.merge-conflict,vscode.mermaid-markdown-features,vscode.microsoft-authentication,ms-vscode.js-debug,ms-vscode.js-debug-companion,ms-vscode.vscode-js-profile-table,vscode.builtin-notebook-renderers,vscode.npm,vscode.objective-c,vscode.perl,vscode.php,vscode.php-language-features,vscode.powershell,vscode.prompt,vscode.pug,vscode.python,vscode.r,vscode.razor,vscode.references-view,vscode.restructuredtext,vscode.ruby,vscode.rust,vscode.scss,vscode.search-result,vscode.shaderlab,vscode.shellscript,vscode.simple-browser,vscode.sql,vscode.swift,vscode.terminal-suggest,vscode.theme-abyss,vscode.theme-defaults,vscode.theme-kimbie-dark,vscode.theme-monokai,vscode.theme-monokai-dimmed,vscode.theme-quietlight,vscode.theme-red,vscode.vscode-theme-seti,vscode.theme-solarized-dark,vscode.theme-solarized-light,vscode.theme-tomorrow-night-blue,vscode.tunnel-forwarding,vscode.typescript,vscode.typescript-language-features,vscode.vb,vscode.xml,vscode.yaml,ms-azuretools.vscode-azureterraform
+2026-06-25T01:47:36.5758517Z filterEnabledExtensions: extension 'GitHub.copilot-chat' is disabled
+2026-06-25T01:47:36.5836672Z NativeExtensionHostFactory._createLocalProcessExtensionHostDataProvider.localExtensions: ms-azuretools.vscode-azureterraform,TypeScriptTeam.jsts-chat-features,vscode.bat,vscode.clojure,vscode.coffeescript,vscode.configuration-editing,vscode.cpp,vscode.csharp,vscode.css,vscode.css-language-features,vscode.dart,vscode.debug-auto-launch,vscode.debug-server-ready,vscode.diff,vscode.docker,vscode.dotenv,vscode.emmet,vscode.extension-editing,vscode.fsharp,vscode.git,vscode.git-base,vscode.github,vscode.github-authentication,vscode.go,vscode.groovy,vscode.grunt,vscode.gulp,vscode.handlebars,vscode.hlsl,vscode.html,vscode.html-language-features,vscode.ini,vscode.ipynb,vscode.jake,vscode.java,vscode.javascript,vscode.json,vscode.json-language-features,vscode.julia,vscode.latex,vscode.less,vscode.log,vscode.lua,vscode.make,vscode.markdown,vscode.markdown-language-features,vscode.markdown-math,vscode.media-preview,vscode.merge-conflict,vscode.mermaid-markdown-features,vscode.microsoft-authentication,ms-vscode.js-debug,ms-vscode.js-debug-companion,ms-vscode.vscode-js-profile-table,vscode.builtin-notebook-renderers,vscode.npm,vscode.objective-c,vscode.perl,vscode.php,vscode.php-language-features,vscode.powershell,vscode.prompt,vscode.pug,vscode.python,vscode.r,vscode.razor,vscode.references-view,vscode.restructuredtext,vscode.ruby,vscode.rust,vscode.scss,vscode.search-result,vscode.shaderlab,vscode.shellscript,vscode.simple-browser,vscode.sql,vscode.swift,vscode.terminal-suggest,vscode.theme-abyss,vscode.theme-defaults,vscode.theme-kimbie-dark,vscode.theme-monokai,vscode.theme-monokai-dimmed,vscode.theme-quietlight,vscode.theme-red,vscode.vscode-theme-seti,vscode.theme-solarized-dark,vscode.theme-solarized-light,vscode.theme-tomorrow-night-blue,vscode.tunnel-forwarding,vscode.typescript,vscode.typescript-language-features,vscode.vb,vscode.xml,vscode.yaml
+2026-06-25T01:47:36.6052747Z NativeExtensionHostFactory._createLocalProcessExtensionHostDataProvider.myExtensions: ms-azuretools.vscode-azureterraform,TypeScriptTeam.jsts-chat-features,vscode.bat,vscode.clojure,vscode.coffeescript,vscode.configuration-editing,vscode.cpp,vscode.csharp,vscode.css,vscode.css-language-features,vscode.dart,vscode.debug-auto-launch,vscode.debug-server-ready,vscode.diff,vscode.docker,vscode.dotenv,vscode.emmet,vscode.extension-editing,vscode.fsharp,vscode.git,vscode.git-base,vscode.github,vscode.github-authentication,vscode.go,vscode.groovy,vscode.grunt,vscode.gulp,vscode.handlebars,vscode.hlsl,vscode.html,vscode.html-language-features,vscode.ini,vscode.ipynb,vscode.jake,vscode.java,vscode.javascript,vscode.json,vscode.json-language-features,vscode.julia,vscode.latex,vscode.less,vscode.log,vscode.lua,vscode.make,vscode.markdown,vscode.markdown-language-features,vscode.markdown-math,vscode.media-preview,vscode.merge-conflict,vscode.mermaid-markdown-features,vscode.microsoft-authentication,ms-vscode.js-debug,ms-vscode.js-debug-companion,ms-vscode.vscode-js-profile-table,vscode.builtin-notebook-renderers,vscode.npm,vscode.objective-c,vscode.perl,vscode.php,vscode.php-language-features,vscode.powershell,vscode.prompt,vscode.pug,vscode.python,vscode.r,vscode.razor,vscode.references-view,vscode.restructuredtext,vscode.ruby,vscode.rust,vscode.scss,vscode.search-result,vscode.shaderlab,vscode.shellscript,vscode.simple-browser,vscode.sql,vscode.swift,vscode.terminal-suggest,vscode.theme-abyss,vscode.theme-defaults,vscode.theme-kimbie-dark,vscode.theme-monokai,vscode.theme-monokai-dimmed,vscode.theme-quietlight,vscode.theme-red,vscode.vscode-theme-seti,vscode.theme-solarized-dark,vscode.theme-solarized-light,vscode.theme-tomorrow-night-blue,vscode.tunnel-forwarding,vscode.typescript,vscode.typescript-language-features,vscode.vb,vscode.xml,vscode.yaml
+2026-06-25T01:47:37.0832321Z Settings Sync: Account status changed from uninitialized to unavailable
+2026-06-25T01:47:37.6154412Z 
+2026-06-25T01:47:37.6335086Z   completion
+2026-06-25T01:47:37.6401446Z [diag] extension found=true isActive(before)=true
+2026-06-25T01:47:37.6417880Z [diag] isActive(after)=true
+2026-06-25T01:47:37.6419340Z [diag] cfg languageServer.external=true
+2026-06-25T01:47:37.6420564Z [diag] cfg languageServer.args=["serve"]
+2026-06-25T01:47:37.6422190Z [diag] cfg languageServer.pathToBinary=""
+2026-06-25T01:47:37.6424988Z [diag] cfg languageServer(object)={"external":true,"pathToBinary":"","args":["serve"],"trace.server":"off"}
+2026-06-25T01:47:37.6433099Z [diag] binPath=/home/runner/work/vscode-azureterraform/vscode-azureterraform/bin/ms-terraform-lsp
+2026-06-25T01:47:37.6438506Z [diag] binary exists size=423764152 mode=755
+2026-06-25T01:47:40.6500565Z [diag] spawn pid=2925 killed=false exit=code=0 signal=null
+2026-06-25T01:47:40.6534969Z [diag] spawn stdout(first 300)=""
+2026-06-25T01:47:40.6548151Z [diag] spawn stderr(first 300)="2026/06/25 01:47:38 serve_command.go:98: Starting azurerm-lsp v0.9.0\n2026/06/25 01:47:38 service.go:63: Preparing new session ...\n2026/06/25 01:47:38 langserver.go:93: Starting server (pid 2925; concurrency: 2) ...\n2026/06/25 01:47:38 opts.go:252: Server signaled to stop with err=EOF\n2026/06/25 01:4"
+2026-06-25T01:47:40.6550588Z [diag] has enableLanguageServer command=false
+2026-06-25T01:47:40.6558515Z [diag] enableLanguageServer threw: Error: command 'azureTerraform.enableLanguageServer' not found
+2026-06-25T01:47:41.1792934Z [AccountPolicyGate] apply: state=inactive, reason=undefined, isRestricted=false
+2026-06-25T01:47:43.7996277Z [diag] doc.languageId=terraform scheme=file
+2026-06-25T01:47:43.8203593Z [diag] poll #1: total=9 nonText=0 byKind={"Text":9}
+2026-06-25T01:47:44.8224135Z [diag] poll #2: total=9 nonText=0 byKind={"Text":9}
+2026-06-25T01:47:45.8248448Z [diag] poll #3: total=9 nonText=0 byKind={"Text":9}
+2026-06-25T01:47:46.8272635Z [diag] poll #4: total=9 nonText=0 byKind={"Text":9}
+2026-06-25T01:47:47.8300622Z [diag] poll #5: total=9 nonText=0 byKind={"Text":9}
+2026-06-25T01:47:48.8323665Z [diag] poll #6: total=9 nonText=0 byKind={"Text":9}
+2026-06-25T01:47:49.8347168Z [diag] poll #7: total=9 nonText=0 byKind={"Text":9}
+2026-06-25T01:47:50.8369022Z [diag] poll #8: total=9 nonText=0 byKind={"Text":9}
+2026-06-25T01:47:51.8393013Z [diag] poll #9: total=9 nonText=0 byKind={"Text":9}
+2026-06-25T01:47:52.8419310Z [diag] poll #10: total=9 nonText=0 byKind={"Text":9}
+2026-06-25T01:47:53.8439102Z [diag] poll #11: total=9 nonText=0 byKind={"Text":9}
+2026-06-25T01:47:54.8459134Z [diag] poll #12: total=9 nonText=0 byKind={"Text":9}
+2026-06-25T01:47:55.8475991Z [diag] poll #13: total=9 nonText=0 byKind={"Text":9}
+2026-06-25T01:47:56.8496850Z [diag] poll #14: total=9 nonText=0 byKind={"Text":9}
+2026-06-25T01:47:57.8516679Z [diag] poll #15: total=9 nonText=0 byKind={"Text":9}
+2026-06-25T01:47:58.8537644Z [diag] poll #16: total=9 nonText=0 byKind={"Text":9}
+2026-06-25T01:47:59.8557135Z [diag] poll #17: total=9 nonText=0 byKind={"Text":9}
+2026-06-25T01:48:00.8578849Z [diag] poll #18: total=9 nonText=0 byKind={"Text":9}
+2026-06-25T01:48:01.8600699Z [diag] poll #19: total=9 nonText=0 byKind={"Text":9}
+2026-06-25T01:48:02.8624530Z [diag] poll #20: total=9 nonText=0 byKind={"Text":9}
+2026-06-25T01:48:03.8643815Z [diag] poll #21: total=9 nonText=0 byKind={"Text":9}
+2026-06-25T01:48:04.8663033Z [diag] poll #22: total=9 nonText=0 byKind={"Text":9}
+2026-06-25T01:48:05.8684027Z [diag] poll #23: total=9 nonText=0 byKind={"Text":9}
+2026-06-25T01:48:06.8709853Z [diag] poll #24: total=9 nonText=0 byKind={"Text":9}
+2026-06-25T01:48:07.8733833Z [diag] poll #25: total=9 nonText=0 byKind={"Text":9}
+2026-06-25T01:48:08.8741630Z [diag] final non-Text labels: []
+2026-06-25T01:48:08.8783019Z     1) schema attribute completion
+2026-06-25T01:48:08.9035652Z   0 passing (31s)
+2026-06-25T01:48:08.9036139Z   1 failing
+2026-06-25T01:48:08.9038888Z   1) completion
+2026-06-25T01:48:08.9039430Z        schema attribute completion:
+2026-06-25T01:48:08.9040801Z 
+2026-06-25T01:48:08.9041347Z       AssertionError: expected [] to be a superset of [ 'name', 'location', 'tags' ]
+2026-06-25T01:48:08.9042566Z       + expected - actual
+2026-06-25T01:48:08.9042864Z 
+2026-06-25T01:48:08.9043013Z       -[]
+2026-06-25T01:48:08.9043353Z       +[
+2026-06-25T01:48:08.9043676Z       +  "name"
+2026-06-25T01:48:08.9044027Z       +  "location"
+2026-06-25T01:48:08.9044389Z       +  "tags"
+2026-06-25T01:48:08.9044743Z       +]
+2026-06-25T01:48:08.9045105Z       
+2026-06-25T01:48:08.9046038Z   	at /home/runner/work/vscode-azureterraform/vscode-azureterraform/out/test/integration/completion.test.js:130:47
+2026-06-25T01:48:08.9047025Z   	at Generator.next (<anonymous>)
+2026-06-25T01:48:08.9047636Z   	at fulfilled (out/test/integration/completion.test.js:5:58)
+2026-06-25T01:48:08.9048092Z 
+2026-06-25T01:48:08.9059380Z Error: 1 tests failed.
+2026-06-25T01:48:08.9068316Z 	at /home/runner/work/vscode-azureterraform/vscode-azureterraform/out/test/integration/index.js:37:36
+2026-06-25T01:48:08.9078607Z 	at done (/home/runner/work/vscode-azureterraform/vscode-azureterraform/node_modules/mocha/lib/mocha.js:1000:7)
+2026-06-25T01:48:08.9080076Z Extension host test runner error Error: 1 tests failed.
+2026-06-25T01:48:08.9081318Z 	at /home/runner/work/vscode-azureterraform/vscode-azureterraform/out/test/integration/index.js:37:36
+2026-06-25T01:48:08.9083235Z 	at done (/home/runner/work/vscode-azureterraform/vscode-azureterraform/node_modules/mocha/lib/mocha.js:1000:7)
+2026-06-25T01:48:08.9120094Z Asking native host service to exit with code 1.
+2026-06-25T01:48:08.9198075Z [90m[main 2026-06-25T01:48:08.919Z][0m Extension host with pid 2736 exited with code: 0, signal: unknown.
+2026-06-25T01:48:09.0582605Z Exit code:   1
+2026-06-25T01:48:09.0583345Z TestRunFailedError: Test run failed with code 1
+2026-06-25T01:48:09.0603963Z     at ChildProcess.onProcessClosed (/home/runner/work/vscode-azureterraform/vscode-azureterraform/node_modules/@vscode/test-electron/out/runTest.js:110:24)
+2026-06-25T01:48:09.0605543Z     at ChildProcess.emit (node:events:513:28)
+2026-06-25T01:48:09.0606455Z     at ChildProcess._handle.onexit (node:internal/child_process:294:12) {
+2026-06-25T01:48:09.0607175Z   code: 1,
+2026-06-25T01:48:09.0607527Z   signal: undefined
+2026-06-25T01:48:09.0607923Z }
+2026-06-25T01:48:09.0608293Z Failed to run tests
+2026-06-25T01:48:09.0707554Z ##[error]Process completed with exit code 1.
+2026-06-25T01:48:09.0843889Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+2026-06-25T01:48:09.0845188Z Post job cleanup.
+2026-06-25T01:48:09.1680946Z [command]/usr/bin/git version
+2026-06-25T01:48:09.1748078Z git version 2.54.0
+2026-06-25T01:48:09.1786832Z Temporarily overriding HOME='/home/runner/work/_temp/de524700-cca0-4c36-8f24-ca48ed5356cd' before making global git config changes
+2026-06-25T01:48:09.1787776Z Adding repository directory to the temporary git global config as a safe directory
+2026-06-25T01:48:09.1792505Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/vscode-azureterraform/vscode-azureterraform
+2026-06-25T01:48:09.1830426Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-06-25T01:48:09.1863624Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-06-25T01:48:09.2082179Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-06-25T01:48:09.2111308Z http.https://github.com/.extraheader
+2026-06-25T01:48:09.2123724Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-06-25T01:48:09.2153932Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-06-25T01:48:09.2369401Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-06-25T01:48:09.2399253Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-06-25T01:48:09.2758659Z Cleaning up orphan processes
+2026-06-25T01:48:09.3093235Z Terminate orphan process: pid (2312) (Xvfb)
+2026-06-25T01:48:09.3126952Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/setup-node@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

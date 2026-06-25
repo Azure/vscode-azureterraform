@@ -24,6 +24,11 @@ suite('completion', () => {
     }
     console.log(`[diag] isActive(after)=${ext?.isActive}`);
 
+    // --- Diagnostics: capture where activate() failed (shared globalThis) --
+    const g = globalThis as Record<string, unknown>;
+    console.log(`[diag] activate step=${String(g.__aztfActivateStep)}`);
+    console.log(`[diag] activate error=${String(g.__aztfActivateError)}`);
+
     // --- Diagnostics: configuration the extension actually reads -----------
     const cfg = vscode.workspace.getConfiguration('azureTerraform');
     console.log(`[diag] cfg languageServer.external=${JSON.stringify(cfg.get('languageServer.external'))}`);
