@@ -62,6 +62,20 @@ suite('completion', () => {
       console.log(`[diag] spawn threw: ${e}`);
     }
 
+    // --- Diagnostics: force the extension to start its LSP client ----------
+    // The binary runs fine when spawned directly (above), so if completions
+    // still fail it means the extension never started its language client.
+    // Explicitly invoke the command that starts it and observe.
+    const cmds = await vscode.commands.getCommands(true);
+    console.log(`[diag] has enableLanguageServer command=${cmds.includes('azureTerraform.enableLanguageServer')}`);
+    try {
+      await vscode.commands.executeCommand('azureTerraform.enableLanguageServer');
+      console.log('[diag] enableLanguageServer command returned');
+    } catch (e) {
+      console.log(`[diag] enableLanguageServer threw: ${e}`);
+    }
+    await new Promise((r) => setTimeout(r, 3000));
+
     const docUri = getDocUri('properties-completion.tf');
     await open(docUri);
 
@@ -85,7 +99,7 @@ suite('completion', () => {
     // contributes schema-based items instead of relying on a single fixed delay.
     // VS Code also returns word-based (`Text`) completions from the buffer, so
     // those are filtered out when deciding whether the server has responded.
-    const deadline = Date.now() + 1000 * 60;
+    const deadline = Date.now() + 1000 * 25;
     let schemaItems: vscode.CompletionItem[] = [];
     let polls = 0;
     while (Date.now() < deadline) {
