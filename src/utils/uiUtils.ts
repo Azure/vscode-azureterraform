@@ -5,7 +5,6 @@
 
 "use strict";
 
-import * as opn from "opn";
 import * as vscode from "vscode";
 import { terraformChannel } from "../terraformChannel";
 
@@ -20,7 +19,7 @@ export async function openUrlHintOrNotShowAgain(
     DialogOption.notShownAgain,
   );
   if (response === DialogOption.learnMore && url) {
-    opn(url);
+    await vscode.env.openExternal(vscode.Uri.parse(url));
   } else if (response === DialogOption.notShownAgain) {
     notShowCallback();
   }
@@ -33,7 +32,7 @@ export async function openUrlHint(message: string, url: string): Promise<void> {
     DialogOption.cancel,
   );
   if (response === DialogOption.learnMore && url) {
-    opn(url);
+    await vscode.env.openExternal(vscode.Uri.parse(url));
   }
 }
 
