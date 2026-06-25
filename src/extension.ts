@@ -46,17 +46,23 @@ let reporter: TelemetryReporter;
 let clientHandler: ClientHandler;
 
 export async function activate(ctx: vscode.ExtensionContext) {
+  console.log("[diag-ext] activate: start");
   const manifest = ctx.extension.packageJSON;
   reporter = new TelemetryReporter(manifest.appInsightsConnectionString);
+  console.log("[diag-ext] activate: reporter created");
   await checkTerraformInstalled();
+  console.log("[diag-ext] activate: checkTerraformInstalled done");
   await TelemetryWrapper.initializeFromJsonFile(
     ctx.asAbsolutePath("./package.json"),
   );
+  console.log("[diag-ext] activate: telemetry initialized");
   initFileWatcher(ctx);
+  console.log("[diag-ext] activate: file watcher initialized");
 
   const lsPath = new ServerPath(ctx);
   const outputChannel = terraformChannel.getChannel();
   clientHandler = new ClientHandler(lsPath, outputChannel, reporter);
+  console.log("[diag-ext] activate: clientHandler created");
 
   ctx.subscriptions.push(
     TelemetryWrapper.instrumentOperationAsVsCodeCommand(
@@ -621,6 +627,7 @@ export async function activate(ctx: vscode.ExtensionContext) {
   );
 
   if (enabled()) {
+    console.log("[diag-ext] activate: enabled, starting language server");
     startLanguageServer();
   }
 
