@@ -1,4 +1,7 @@
 import * as vscode from 'vscode';
+import * as fs from 'fs';
+import * as path from 'path';
+import * as cp from 'child_process';
 import { expect } from 'chai';
 import { getDocUri, open, doc } from '../helper';
 
@@ -7,7 +10,7 @@ suite('completion', () => {
     await vscode.commands.executeCommand('workbench.action.closeAllEditors');
   });
 
-  test('schema attribute completion', async () => {
+  test.only('schema attribute completion', async () => {
     // --- Diagnostics: extension activation ---------------------------------
     const ext = vscode.extensions.getExtension('ms-azuretools.vscode-azureterraform');
     console.log(`[diag] extension found=${!!ext} isActive(before)=${ext?.isActive}`);
@@ -20,6 +23,44 @@ suite('completion', () => {
       }
     }
     console.log(`[diag] isActive(after)=${ext?.isActive}`);
+
+    // --- Diagnostics: configuration the extension actually reads -----------
+    const cfg = vscode.workspace.getConfiguration('azureTerraform');
+    console.log(`[diag] cfg languageServer.external=${JSON.stringify(cfg.get('languageServer.external'))}`);
+    console.log(`[diag] cfg languageServer.args=${JSON.stringify(cfg.get('languageServer.args'))}`);
+    console.log(`[diag] cfg languageServer.pathToBinary=${JSON.stringify(cfg.get('languageServer.pathToBinary'))}`);
+    console.log(`[diag] cfg languageServer(object)=${JSON.stringify(cfg.get('languageServer'))}`);
+
+    // --- Diagnostics: the language server binary on disk ------------------
+    const binName = process.platform === 'win32' ? 'ms-terraform-lsp.exe' : 'ms-terraform-lsp';
+    const binPath = ext ? path.join(ext.extensionPath, 'bin', binName) : '';
+    console.log(`[diag] binPath=${binPath}`);
+    try {
+      const st = fs.statSync(binPath);
+      console.log(`[diag] binary exists size=${st.size} mode=${(st.mode & 0o777).toString(8)}`);
+    } catch (e) {
+      console.log(`[diag] binary stat failed: ${e}`);
+    }
+
+    // --- Diagnostics: can the binary actually run on this runner? ----------
+    try {
+      const args = (cfg.get<string[]>('languageServer.args') ?? ['serve']).slice();
+      const child = cp.spawn(binPath, args, { stdio: ['ignore', 'pipe', 'pipe'] });
+      let out = '';
+      let err = '';
+      let exitInfo = 'still-running';
+      child.stdout?.on('data', (d) => (out += d.toString()));
+      child.stderr?.on('data', (d) => (err += d.toString()));
+      child.on('error', (e) => console.log(`[diag] spawn error: ${e}`));
+      child.on('exit', (code, signal) => (exitInfo = `code=${code} signal=${signal}`));
+      await new Promise((r) => setTimeout(r, 3000));
+      console.log(`[diag] spawn pid=${child.pid} killed=${child.killed} exit=${exitInfo}`);
+      console.log(`[diag] spawn stdout(first 300)=${JSON.stringify(out.slice(0, 300))}`);
+      console.log(`[diag] spawn stderr(first 300)=${JSON.stringify(err.slice(0, 300))}`);
+      child.kill();
+    } catch (e) {
+      console.log(`[diag] spawn threw: ${e}`);
+    }
 
     const docUri = getDocUri('properties-completion.tf');
     await open(docUri);
