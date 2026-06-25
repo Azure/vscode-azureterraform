@@ -46,23 +46,31 @@ let reporter: TelemetryReporter;
 let clientHandler: ClientHandler;
 
 export async function activate(ctx: vscode.ExtensionContext) {
-  console.log("[diag-ext] activate: start");
   const manifest = ctx.extension.packageJSON;
   reporter = new TelemetryReporter(manifest.appInsightsConnectionString);
-  console.log("[diag-ext] activate: reporter created");
-  await checkTerraformInstalled();
-  console.log("[diag-ext] activate: checkTerraformInstalled done");
-  await TelemetryWrapper.initializeFromJsonFile(
-    ctx.asAbsolutePath("./package.json"),
-  );
-  console.log("[diag-ext] activate: telemetry initialized");
+
+  // Telemetry and the Terraform install check are best-effort: a failure in
+  // either must never abort activation, otherwise none of the commands below
+  // get registered and the language server never starts (observed in CI).
+  try {
+    await TelemetryWrapper.initializeFromJsonFile(
+      ctx.asAbsolutePath("./package.json"),
+    );
+  } catch (error) {
+    console.log(`Failed to initialize telemetry: ${error}`);
+  }
+
+  try {
+    await checkTerraformInstalled();
+  } catch (error) {
+    console.log(`Failed to check Terraform installation: ${error}`);
+  }
+
   initFileWatcher(ctx);
-  console.log("[diag-ext] activate: file watcher initialized");
 
   const lsPath = new ServerPath(ctx);
   const outputChannel = terraformChannel.getChannel();
   clientHandler = new ClientHandler(lsPath, outputChannel, reporter);
-  console.log("[diag-ext] activate: clientHandler created");
 
   ctx.subscriptions.push(
     TelemetryWrapper.instrumentOperationAsVsCodeCommand(
@@ -627,7 +635,6 @@ export async function activate(ctx: vscode.ExtensionContext) {
   );
 
   if (enabled()) {
-    console.log("[diag-ext] activate: enabled, starting language server");
     startLanguageServer();
   }
 
