@@ -35,10 +35,16 @@ import * as path from "path";
 import * as os from "os";
 import * as fs from "fs";
 
-const aztfBreadcrumbFile = path.join(os.tmpdir(), "aztf-activate-breadcrumb.log");
+const aztfBreadcrumbFile = path.join(
+  os.tmpdir(),
+  "aztf-activate-breadcrumb.log",
+);
 function aztfBreadcrumb(msg: string): void {
   try {
-    fs.appendFileSync(aztfBreadcrumbFile, `${new Date().toISOString()} ${msg}\n`);
+    fs.appendFileSync(
+      aztfBreadcrumbFile,
+      `${new Date().toISOString()} ${msg}\n`,
+    );
   } catch {
     // ignore
   }
