@@ -14,12 +14,33 @@ suite('completion', () => {
     // --- Diagnostics: extension activation ---------------------------------
     const ext = vscode.extensions.getExtension('ms-azuretools.vscode-azureterraform');
     console.log(`[diag] extension found=${!!ext} isActive(before)=${ext?.isActive}`);
-    if (ext && !ext.isActive) {
+
+    // --- Diagnostics: which extension.js is actually loaded? --------------
+    if (ext) {
+      console.log(`[diag] ext.extensionPath=${ext.extensionPath}`);
+      console.log(`[diag] ext.packageJSON.main=${ext.packageJSON?.main}`);
+      const mainRel = (ext.packageJSON?.main ?? 'out/extension.js') as string;
+      const mainPath = path.join(ext.extensionPath, mainRel.endsWith('.js') ? mainRel : `${mainRel}.js`);
       try {
-        await ext.activate();
-        console.log('[diag] extension activated via test');
+        const content = fs.readFileSync(mainPath, 'utf8');
+        console.log(
+          `[diag] mainPath=${mainPath} size=${content.length} hasBreadcrumb=${content.includes(
+            'aztf-activate-breadcrumb',
+          )}`,
+        );
       } catch (e) {
-        console.log(`[diag] extension activate() threw: ${e}`);
+        console.log(`[diag] main read failed: ${e}`);
+      }
+    }
+
+    // --- Diagnostics: force activation and capture the REAL failure -------
+    if (ext) {
+      try {
+        const exp = await ext.activate();
+        console.log(`[diag] activate() resolved; exports=${exp === undefined ? 'undefined' : typeof exp}`);
+      } catch (e) {
+        const err = e as Error;
+        console.log(`[diag] activate() REJECTED: ${err?.stack || String(err)}`);
       }
     }
     console.log(`[diag] isActive(after)=${ext?.isActive}`);
