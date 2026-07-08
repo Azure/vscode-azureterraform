@@ -344,7 +344,7 @@ function handleExportError(error: unknown, operationDescription: string): void {
   let detailedMessage = error instanceof Error ? error.message : String(error);
 
   if (axios.isAxiosError(error)) {
-    const axiosError = error as AxiosError<IAzureErrorResponse>;
+    const axiosError = error as AxiosError<IAzureErrorResponse | string>;
     userMessage = `Network or API error during export for ${operationDescription}.`;
     detailedMessage = `Request to ${
       axiosError.config?.url || "Azure API"
@@ -352,34 +352,38 @@ function handleExportError(error: unknown, operationDescription: string): void {
     if (axiosError.response) {
       detailedMessage += ` with status ${axiosError.response.status}.`;
       const responseData = axiosError.response.data;
-      const azureError = responseData?.error?.message || responseData?.Message;
       let specificDetails = "";
-      if (
-        responseData?.properties?.errors &&
-        Array.isArray(responseData.properties.errors) &&
-        responseData.properties.errors.length > 0
-      ) {
-        specificDetails = responseData.properties.errors
-          .map(
-            (e: IExportStatusDetail) =>
-              `${e.code || "Error"}: ${e.message || "Details not provided"}`,
-          )
-          .join("; ");
-      } else if (azureError) {
-        specificDetails = azureError;
-      }
 
-      if (specificDetails) {
-        detailedMessage += ` Azure Error: ${specificDetails}`;
-      } else if (
-        typeof responseData === "string" &&
-        responseData.length < 200 &&
-        responseData.length > 0
-      ) {
-        detailedMessage += ` Details: ${responseData}`;
-      } else {
-        detailedMessage += ` Check the extension's output channel or console log for full response details.`;
-        console.error("Full Axios Error Response Data:", responseData);
+      if (typeof responseData === "string") {
+        if (responseData.length < 200 && responseData.length > 0) {
+          detailedMessage += ` Details: ${responseData}`;
+        } else {
+          detailedMessage += ` Check the extension's output channel or console log for full response details.`;
+          console.error("Full Axios Error Response Data:", responseData);
+        }
+      } else if (responseData && typeof responseData === "object") {
+        const azureError = responseData.error?.message || responseData.Message;
+        if (
+          responseData.properties?.errors &&
+          Array.isArray(responseData.properties.errors) &&
+          responseData.properties.errors.length > 0
+        ) {
+          specificDetails = responseData.properties.errors
+            .map(
+              (e: IExportStatusDetail) =>
+                `${e.code || "Error"}: ${e.message || "Details not provided"}`,
+            )
+            .join("; ");
+        } else if (azureError) {
+          specificDetails = azureError;
+        }
+
+        if (specificDetails) {
+          detailedMessage += ` Azure Error: ${specificDetails}`;
+        } else {
+          detailedMessage += ` Check the extension's output channel or console log for full response details.`;
+          console.error("Full Axios Error Response Data:", responseData);
+        }
       }
     } else if (axiosError.request) {
       detailedMessage += `. No response received. Check network or Azure service status.`;
