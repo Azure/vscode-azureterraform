@@ -320,19 +320,17 @@ export async function activate(ctx: vscode.ExtensionContext) {
             detail: `Exports the entire resource group configuration.`,
             isGroupExport: true,
           },
-          ...selectedGroupPick.resources.map(
-            (res): ResourcePickItem => ({
-              label: `${getIconForResourceType(res.type)} ${
-                res.name || "Unnamed Resource"
-              }`,
-              description: res.type || "Unknown Type",
-              detail: `$(location) Location: ${
-                res.location || "N/A"
-              } | $(key) ID: ${res.id || "N/A"}`,
-              resource: res,
-              isGroupExport: false,
-            }),
-          ),
+          ...selectedGroupPick.resources.map((res): ResourcePickItem => ({
+            label: `${getIconForResourceType(res.type)} ${
+              res.name || "Unnamed Resource"
+            }`,
+            description: res.type || "Unknown Type",
+            detail: `$(location) Location: ${
+              res.location || "N/A"
+            } | $(key) ID: ${res.id || "N/A"}`,
+            resource: res,
+            isGroupExport: false,
+          })),
         ];
 
         const selectedResourceOrGroupPick =

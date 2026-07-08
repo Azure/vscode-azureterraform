@@ -70,11 +70,18 @@ export function setCheckTerraformCmd(checked: boolean): void {
     .update("azureTerraform.checkTerraformCmd", checked);
 }
 
-export function getSurvey(): any {
-  return vscode.workspace.getConfiguration().get("azureTerraform.survey");
+export interface ISurveyConfig {
+  surveyPromptDate?: string;
+  surveyPromptIgnoredCount?: number;
 }
 
-export function setSurvey(survey: any): void {
+export function getSurvey(): ISurveyConfig | undefined {
+  return vscode.workspace
+    .getConfiguration()
+    .get<ISurveyConfig>("azureTerraform.survey");
+}
+
+export function setSurvey(survey: ISurveyConfig): void {
   vscode.workspace
     .getConfiguration()
     .update("azureTerraform.survey", survey, ConfigurationTarget.Global);

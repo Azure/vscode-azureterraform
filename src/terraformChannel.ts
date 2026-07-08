@@ -8,8 +8,8 @@
 import * as vscode from "vscode";
 
 export interface ITerraformChannel {
-  appendLine(message: any, title?: string): void;
-  append(message: any): void;
+  appendLine(message: string | Error | unknown, title?: string): void;
+  append(message: string | Error | unknown): void;
   show(): void;
   getChannel(): vscode.OutputChannel;
 }
@@ -18,7 +18,7 @@ class TerraformChannel implements ITerraformChannel {
   private readonly channel: vscode.OutputChannel =
     vscode.window.createOutputChannel("Microsoft Terraform");
 
-  public appendLine(message: any, title?: string): void {
+  public appendLine(message: string | Error | unknown, title?: string): void {
     if (title) {
       const simplifiedTime = new Date()
         .toISOString()
@@ -27,11 +27,11 @@ class TerraformChannel implements ITerraformChannel {
       const hightlightingTitle = `[${title} ${simplifiedTime}]`;
       this.channel.appendLine(hightlightingTitle);
     }
-    this.channel.appendLine(message);
+    this.channel.appendLine(String(message));
   }
 
-  public append(message: any): void {
-    this.channel.append(message);
+  public append(message: string | Error | unknown): void {
+    this.channel.append(String(message));
   }
 
   public show(): void {
