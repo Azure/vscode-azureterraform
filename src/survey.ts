@@ -1,21 +1,21 @@
 import * as vscode from "vscode";
-import { getSurvey, setSurvey } from "./utils/settingUtils";
+import { getSurvey, setSurvey, type ISurveyConfig } from "./utils/settingUtils";
 
 export async function ShouldShowSurvey(): Promise<boolean> {
-  let currentConfig: any = getSurvey();
+  const currentConfig: ISurveyConfig | undefined = getSurvey();
 
   if (
     !currentConfig ||
     !currentConfig.surveyPromptDate ||
     currentConfig.surveyPromptDate === "none"
   ) {
-    currentConfig = {};
+    const surveyConfig: ISurveyConfig = {};
     // first time, remind after 10 days
     const surveyPromptDate = new Date();
     surveyPromptDate.setDate(surveyPromptDate.getDate() + 10);
-    currentConfig.surveyPromptDate = surveyPromptDate.toISOString();
-    currentConfig.surveyPromptIgnoredCount = 0;
-    setSurvey(currentConfig);
+    surveyConfig.surveyPromptDate = surveyPromptDate.toISOString();
+    surveyConfig.surveyPromptIgnoredCount = 0;
+    setSurvey(surveyConfig);
     return false;
   }
 
@@ -38,7 +38,7 @@ export async function ShowSurvey(): Promise<void> {
     "Not Now",
     "Never",
   );
-  let currentConfig: any = getSurvey();
+  let currentConfig: ISurveyConfig | undefined = getSurvey();
 
   if (currentConfig === undefined) {
     currentConfig = {};
@@ -65,7 +65,8 @@ export async function ShowSurvey(): Promise<void> {
       break;
     case "Not Now":
     case undefined:
-      currentConfig.surveyPromptIgnoredCount++;
+      currentConfig.surveyPromptIgnoredCount =
+        (currentConfig.surveyPromptIgnoredCount ?? 0) + 1;
       if (currentConfig.surveyPromptIgnoredCount === 1) {
         // first time ignore, remind after 7 days
         nextPromptDate.setDate(nextPromptDate.getDate() + 7);

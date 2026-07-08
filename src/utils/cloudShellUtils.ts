@@ -29,8 +29,8 @@ export async function getStorageAccountforCloudShell(
     TelemetryWrapper.sendError(Error("getUserSettingsFail"));
     return;
   }
-  const storageProfile: any = userSettings.storageProfile;
-  const storageAccountSettings: any = storageProfile.storageAccountResourceId
+  const storageProfile: IStorageProfile = userSettings.storageProfile;
+  const storageAccountSettings = storageProfile.storageAccountResourceId
     .substr(1, storageProfile.storageAccountResourceId.length)
     .split("/");
   const storageAccountKey: string | undefined = await getStorageAccountKey(
@@ -56,7 +56,12 @@ export async function getStorageAccountforCloudShell(
 interface IUserSettings {
   preferredLocation: string;
   preferredOsType: string; // The last OS chosen in the portal.
-  storageProfile: any;
+  storageProfile: IStorageProfile;
+}
+
+interface IStorageProfile {
+  storageAccountResourceId: string;
+  fileShareName: string;
 }
 
 interface IToken {
@@ -65,17 +70,39 @@ interface IToken {
   refreshToken: string;
 }
 
+interface ITokenResult {
+  accessToken: string;
+  refreshToken: string;
+}
+
+interface ICredentialsContext {
+  acquireToken(
+    resource: string,
+    username: string,
+    clientId: string,
+    callback: (err: Error | null, result?: ITokenResult) => void,
+  ): void;
+}
+
 async function acquireToken(session: AzureSession): Promise<IToken> {
   return new Promise<IToken>((resolve, reject) => {
-    const credentials: any = session.credentials;
-    const environment: any = session.environment;
+    const credentials = session.credentials as {
+      username: string;
+      clientId: string;
+      context: ICredentialsContext;
+    };
+    const environment = session.environment as {
+      activeDirectoryResourceId: string;
+    };
     credentials.context.acquireToken(
       environment.activeDirectoryResourceId,
       credentials.username,
       credentials.clientId,
-      (err: any, result: any) => {
+      (err, result) => {
         if (err) {
           reject(err);
+        } else if (!result) {
+          reject(new Error("Failed to acquire token."));
         } else {
           resolve({
             session,
@@ -106,7 +133,7 @@ async function getUserSettings(
     });
 
     return response.data && response.data.properties;
-  } catch (error) {
+  } catch {
     // If the request fails or returns non-2xx status, return undefined
     return undefined;
   }
@@ -137,7 +164,7 @@ async function getStorageAccountKey(
       response.data.keys[0] &&
       response.data.keys[0].value
     );
-  } catch (error) {
+  } catch {
     // If the request fails or returns non-2xx status, return undefined
     return undefined;
   }
