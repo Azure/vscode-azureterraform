@@ -6,6 +6,26 @@ documented in this file.
 Check [Keep a Changelog](https://keepachangelog.com/) for recommendations on
 how to structure this file.
 
+## [0.10.3]
+
+### Changed for 0.10.3
+
+- Updated package dependencies:
+  - `@azure/storage-file-share`: `^12.30.0` → `^12.32.0`
+  - `@typescript-eslint/eslint-plugin`: `^8.60.1` → `^8.62.1`
+  - `@typescript-eslint/parser`: `^8.60.1` → `^8.62.1`
+  - `axios`: `^1.17.0` → `^1.18.1`
+  - `esbuild`: `^0.28.0` → `^0.28.1`
+  - `eslint`: `^10.4.1` → `^10.6.0`
+  - `prettier`: `^3.8.3` → `^3.9.3`
+  - `typescript-eslint`: `^8.60.1` → `^8.62.1`
+
+### Fixed for 0.10.3
+
+- Fixed extension activation in CI by resolving `import.meta.url` in the esbuild bundle. ([#350](https://github.com/Azure/vscode-azureterraform/pull/350))
+- Bumped `form-data` to `4.0.6` to resolve a CVE. ([#347](https://github.com/Azure/vscode-azureterraform/pull/347))
+- Skipped the survey prompt when running under test mode. ([#345](https://github.com/Azure/vscode-azureterraform/pull/345))
+
 ## [0.10.2]
 
 ### Changed for 0.10.2
