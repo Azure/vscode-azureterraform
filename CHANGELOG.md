@@ -6,6 +6,26 @@ documented in this file.
 Check [Keep a Changelog](https://keepachangelog.com/) for recommendations on
 how to structure this file.
 
+## [0.10.4]
+
+### Changed for 0.10.4
+
+- Updated `ms-terraform-lsp` to `v0.10.0`
+- Updated package dependencies:
+  - `@typescript-eslint/eslint-plugin`: `^8.62.1` → `^8.67.0`
+  - `@typescript-eslint/parser`: `^8.62.1` → `^8.67.0`
+  - `@types/lodash`: `^4.17.24` → `^4.17.25`
+  - `axios`: `^1.18.1` → `^1.19.0`
+  - `esbuild`: `^0.28.1` → `^0.28.2`
+  - `eslint`: `^10.6.0` → `^10.8.1`
+  - `mocha`: `^11.7.6` → `^11.8.0`
+  - `prettier`: `^3.9.3` → `^3.9.6`
+  - `typescript-eslint`: `^8.62.1` → `^8.67.0`
+
+### Fixed for 0.10.4
+
+- Bump `brace-expansion` to `5.0.9` to resolve CVEs. ([#364](https://github.com/Azure/vscode-azureterraform/pull/364))
+
 ## [0.10.3]
 
 ### Changed for 0.10.3
