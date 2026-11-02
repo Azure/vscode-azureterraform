@@ -276,7 +276,7 @@
   },
   "dependencies": {
     "@azure/arm-resources": "^6.1.0",
-    "@azure/identity": "^4.14.0",
+    "@azure/identity": "^4.14.1",
     "@azure/storage-file-share": "^12.33.0",
     "@microsoft/vscode-azext-azureauth": "^4.2.2",
     "@types/chai": "^4.2.22",
