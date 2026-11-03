@@ -6,6 +6,28 @@ documented in this file.
 Check [Keep a Changelog](https://keepachangelog.com/) for recommendations on
 how to structure this file.
 
+## [0.10.5]
+
+### Changed for 0.10.5
+
+- Updated package dependencies:
+  - `@azure/identity`: `4.13.1` to `4.14.1`
+  - `@azure/msal-node`: `6.0.1` to `7.1.2`
+  - `@azure/storage-file-share`: `12.32.0` to `12.33.0`
+  - `@humanfs/node`: `0.16.7` to `0.16.8`
+  - `@typescript-eslint/eslint-plugin`: `8.67.0` to `8.72.1`
+  - `@typescript-eslint/parser`: `8.67.0` to `8.72.1`
+  - `axios`: `1.19.0` to `1.21.0`
+  - `brace-expansion`: `1.1.18` to `1.1.21`, `2.1.4` to `2.1.7`, and `5.0.9` to `5.0.12`
+  - `eslint`: `10.8.1` to `10.13.0`
+  - `eslint-plugin-prettier`: `5.5.6` to `5.5.7`
+  - `follow-redirects`: `1.16.0` to `1.16.2`
+  - `glob`: `10.4.5` to `10.5.0`
+  - `js-yaml`: `3.14.2` to `3.15.2` and `4.1.1` to `4.3.2`
+  - `prettier`: `3.9.6` to `3.9.10`
+  - `typescript-eslint`: `8.67.0` to `8.72.1`
+  - `@types/lodash`: `4.17.25` to `4.17.27`
+
 ## [0.10.4]
 
 ### Changed for 0.10.4
