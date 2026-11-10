@@ -298,5 +298,15 @@
     "typescript-eslint": "^8.72.1",
     "vscode-extension-telemetry-wrapper": "^0.15.3",
     "vscode-languageclient": "^9.0.1"
+  },
+  "_comment": "Override of `semver` package version below is done as later version is not available in ADO feed, remove this once later version is available",
+  "overrides": {
+    "@azure/identity": {
+      "@azure/msal-node": {
+        "jsonwebtoken": {
+          "semver": "7.8.5"
+		}
+	  }
+    }
   }
 }
